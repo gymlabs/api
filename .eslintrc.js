@@ -4,17 +4,21 @@ module.exports = {
     es2022: true,
     node: true,
   },
-  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+  extends: [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+  ],
   overrides: [],
-  parser: '@typescript-eslint/parser',
+  parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: 'latest',
+    ecmaVersion: "latest",
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ["@typescript-eslint"],
   rules: {
-    '@typescript-eslint/no-unused-vars': [
-      'warn',
-      { args: 'none', ignoreRestSiblings: true, varsIgnorePattern: '^_' },
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { args: "none", ignoreRestSiblings: true, varsIgnorePattern: "^_" },
     ],
   },
 };

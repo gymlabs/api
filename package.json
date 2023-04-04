@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "concurrently \"npm run watch-compile\" \"npm run watch-dev\"",
     "watch-compile": "swc src -w -d dist",
-    "watch-dev": "nodemon --watch \"dist/**/*\" -e js ./dist/main.js",
+    "watch-dev": "nodemon --watch \"dist/**/*\" -e js ./build/main.js",
     "build": "swc src -d dist",
-    "start": "NODE_ENV=production node ./dist/main.js",
+    "start": "NODE_ENV=production node ./build/main.js",
     "lint": "eslint --ext .ts src",
-    "lint:fix": "eslint --ext .ts src --fix"
+    "lint:fix": "eslint --ext .ts src --fix",
+    "format": "prettier --write \"src/**/*\""
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,9 @@
     "chokidar": "^3.5.3",
     "concurrently": "^8.0.1",
     "eslint": "^8.37.0",
+    "eslint-config-prettier": "^8.8.0",
     "nodemon": "^2.0.22",
+    "prettier": "^2.8.7",
     "typescript": "^5.0.3"
   }
 }
