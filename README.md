@@ -1,5 +1,7 @@
 # API Core
 
+[![Create and publish a Docker image](https://github.com/gymlabs/core.api/actions/workflows/build-image.yaml/badge.svg)](https://github.com/gymlabs/core.api/actions/workflows/build-image.yaml)
+
 ## Get up and running 🏃🏻‍♂️
 - install pretty printing for logging during development by `npm i -g pino-pretty`
 - create `.env` and configure it to your liking according to `.env.example`
