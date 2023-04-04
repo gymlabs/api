@@ -22,3 +22,11 @@ export class InvalidAccessTokenError extends GraphQLError {
     this.name = "InvalidAccessTokenError";
   }
 }
+
+export class NotFoundError extends GraphQLError {
+  constructor(resource?: string) {
+    const message = resource ? `${resource} not found.` : "Not found.";
+    super(message, { extensions: { code: "NOT_FOUND" } });
+    this.name = "NotFoundError";
+  }
+}
