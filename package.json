@@ -7,11 +7,12 @@
     "dev": "dotenv -e .env -- concurrently \"npm run watch-compile\" \"npm run watch-dev\"",
     "watch-compile": "swc src -w -d build",
     "watch-dev": "nodemon --watch \"build/**/*\" -e js ./build/main.js | pino-pretty",
-    "build": "swc src -d dist",
+    "build": "swc src -d build",
     "start": "NODE_ENV=production node ./build/main.js",
     "lint": "eslint --ext .ts src",
     "lint:fix": "eslint --ext .ts src --fix",
-    "format": "prettier --write \"src/**/*\""
+    "format": "prettier --write \"src/**/*\"",
+    "prisma:generate": "prisma generate"
   },
   "repository": {
     "type": "git",
