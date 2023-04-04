@@ -14,7 +14,10 @@
     "moduleResolution": "node",
     "alwaysStrict": true,
     "noUnusedLocals": true,
-    "outDir": "dist"
+    "outDir": "dist",
+
+    // SWC related
+    "verbatimModuleSyntax": true // ensure that TypeScript properly marks all type imports during type checking as type, thus removing them accurately in SWC
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
