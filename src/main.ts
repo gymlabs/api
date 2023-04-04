@@ -1,5 +1,5 @@
 import { once } from "events";
-import { createServer } from "https";
+import { createServer } from "node:http";
 
 import { config } from "~/config";
 import { db } from "~/db";

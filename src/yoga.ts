@@ -9,6 +9,6 @@ export const yoga = createYoga({
   logging: logger,
   context: getContext,
   plugins: [],
-  graphiql: false,
+  graphiql: true,
   landingPage: false,
 });
