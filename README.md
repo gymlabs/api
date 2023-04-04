@@ -1,5 +1,9 @@
 # API Core
 
+## Get up and running 🏃🏻‍♂️
+- install pretty printing for logging during development by `npm i -g pino-pretty`
+- create `.env` and configure it to your liking according to `.env.example`
+- feel free to replace `password` in the `docker-compose.yaml` and set the environment variable (`DB_URL`) accordingly
 ## Database
 ![Schema](images/db-schema.png)
 

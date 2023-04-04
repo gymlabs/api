@@ -1,11 +1,48 @@
-import http = require("http");
+import { once } from "events";
+import { createServer } from "https";
 
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("Hello, SWC!");
-});
+import { config } from "~/config";
+import { db } from "~/db";
+import { logger } from "~/logger";
+import { yoga } from "~/yoga";
 
-const port = process.env.PORT || 3000;
-server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+async function main() {
+  logger.info(`Log-Level: "${config.logging.level}"`);
+
+  logger.debug("Connecting to database..");
+  await db.$connect();
+  logger.debug("Connected to database ✅");
+
+  const server = createServer(yoga);
+
+  logger.info("Starting server.. 🚀");
+
+  const { host, port } = config.server;
+  server.listen(port, host);
+  await once(server, "listening");
+
+  logger.info(`Server ready at https://${host}:${port}`);
+
+  // handle graceful shutdown
+  ["SIGINT", "SIGTERM"].forEach((signal) => {
+    process.on(signal, async () => {
+      logger.info(`Received ${signal}..`);
+      logger.info("Closing server..");
+      server.close();
+      await once(server, "close");
+      server.closeAllConnections();
+      logger.info("Server closed ✅");
+
+      logger.info("Disconnecting from database..");
+      await db.$disconnect();
+      logger.info("Disconnected from database ✅");
+      logger.info("Exiting process..");
+      process.exit(0);
+    });
+  });
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
 });
