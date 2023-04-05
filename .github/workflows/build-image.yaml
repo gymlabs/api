@@ -47,5 +47,5 @@ jobs:
       - name: Deploy to Portainer
         run:
           - echo "Deploying to Portainer"
-          - - curl -X POST ${{ secrets.PORTAINER_WEBHOOK_PREVIEW }} -d "" -k
+          - curl -X POST ${{ secrets.PORTAINER_WEBHOOK_PREVIEW }} -d "" -k
  
