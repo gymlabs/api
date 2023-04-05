@@ -15,7 +15,7 @@
     "prisma:generate": "prisma generate",
     "prisma:dbml": "prisma-dbml-generator --output ./docs/dbml/schema.dbml",
     "prisma:studio": "prisma studio",
-    "start:migrate": "node ./build/main.js && prisma migrate deploy"
+    "start:migrate": "prisma migrate deploy && node ./build/main.js"
   },
   "repository": {
     "type": "git",
