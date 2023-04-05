@@ -2,7 +2,7 @@ name: Create and publish a Docker image
 
 on:
   push:
-    branches: ["main", "preview"]
+    branches: ["main"]
 
 env:
   REGISTRY: ghcr.io
@@ -45,5 +45,5 @@ jobs:
     needs: build-and-push-image
     steps:
       - run: echo "Deploying to Portainer"
-      - run: curl -X POST ${{ secrets.PORTAINER_WEBHOOK_PREVIEW }} -d "" -k
+      - run: curl -X POST ${{ secrets.PORTAINER_WEBHOOK_MAIN }} -d "" -k
  
