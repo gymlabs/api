@@ -21,4 +21,4 @@ COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 8000
 
-CMD ["node", "build/main.js"]
+CMD [ "npm", "run", "start:migrate" ]

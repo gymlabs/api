@@ -12,7 +12,10 @@
     "lint": "eslint --ext .ts src",
     "lint:fix": "eslint --ext .ts src --fix",
     "format": "prettier --write \"src/**/*\"",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "prisma:dbml": "prisma-dbml-generator --output ./docs/dbml/schema.dbml",
+    "prisma:studio": "prisma studio",
+    "start:migrate": "node ./build/main.js && prisma migrate deploy"
   },
   "repository": {
     "type": "git",
