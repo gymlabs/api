@@ -1,0 +1,24 @@
+version: "3.6"
+
+x-backend-variables: &backend-variables
+  DATABASE_URL:
+
+services:
+  api-gymlabs-de:
+    container_name: api-gymlabs-de
+    image: ghcr.io/gymlabs/core.api:main
+    environment: *backend-variables
+    restart: always
+    networks:
+      - public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api-gymlabs-de.rule=Host(`api.gymlabs.de`)"
+      - "traefik.http.routers.api-gymlabs-de.entrypoints=websecure"
+      - "traefik.http.services.api-gymlabs-de.loadbalancer.server.port=8000"
+      - "traefik.http.routers.api-gymlabs-de.service=api-gymlabs-de"
+      - "traefik.http.routers.api-gymlabs-de.tls.certresolver=myresolver"
+
+networks:
+  public:
+    external: true
