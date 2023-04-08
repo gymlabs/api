@@ -21,7 +21,7 @@ async function main() {
   server.listen(port, host);
   await once(server, "listening");
 
-  logger.info(`Server ready at https://${host}:${port}`);
+  logger.info(`Server ready at http://${host}:${port}`);
 
   // handle graceful shutdown
   ["SIGINT", "SIGTERM"].forEach((signal) => {

@@ -1,4 +1,3 @@
-import cookie from "cookie";
 import { addMilliseconds } from "date-fns";
 import { ZodError } from "zod";
 
@@ -24,6 +23,10 @@ import {
   ResetPasswordTokenExpiredError,
 } from "./types";
 import { builder } from "../builder";
+import { sendMail } from "~/services/mail/sendMail";
+import { WelcomeEmail } from "~/services/mail/templates/WelcomeEmail";
+import { EmailUpdatedEmail } from "~/services/mail/templates/EmailUpdatedEmail";
+import { ResetPasswordRequestEmail } from "~/services/mail/templates/ResetPasswordRequestEmail";
 
 builder.mutationFields((t) => ({
   register: t.fieldWithInput({
@@ -62,10 +65,9 @@ builder.mutationFields((t) => ({
         },
       });
 
-      // TODO
-      //   await sendMail(new WelcomeEmail(user.firstName, verificationToken), {
-      //     to: user.email,
-      //   });
+      await sendMail(new WelcomeEmail(user.firstName, verificationToken), {
+        to: user.email,
+      });
 
       return true;
     },
@@ -107,15 +109,10 @@ builder.mutationFields((t) => ({
         },
       });
 
-      const setCookieHeader = cookie.serialize("accessToken", token, {
-        ...config.security.cookie,
-        expires: expiresAt,
-      });
-      res.setHeader("Set-Cookie", setCookieHeader);
-
       return {
         // return unhashed token to the user
         accessToken: token,
+        expiresAt: expiresAt.toISOString(),
       };
     },
   }),
@@ -187,18 +184,17 @@ builder.mutationFields((t) => ({
         }),
       });
 
-      // TODO
-      //   if (emailData) {
-      //     await sendMail(
-      //       new EmailUpdatedEmail(
-      //         updatedUser.firstName,
-      //         emailData.emailVerificationToken
-      //       ),
-      //       {
-      //         to: updatedUser.email,
-      //       }
-      //     );
-      //   }
+      if (emailData) {
+        await sendMail(
+          new EmailUpdatedEmail(
+            updatedUser.firstName,
+            emailData.emailVerificationToken
+          ),
+          {
+            to: updatedUser.email,
+          }
+        );
+      }
 
       return updatedUser;
     },
@@ -256,13 +252,6 @@ builder.mutationFields((t) => ({
         });
       }
 
-      // remove access token cookie
-      const setCookieHeader = cookie.serialize("accessToken", "", {
-        ...config.security.cookie,
-        expires: new Date(0),
-      });
-      context.res.setHeader("Set-Cookie", setCookieHeader);
-
       return true;
     },
   }),
@@ -302,10 +291,9 @@ builder.mutationFields((t) => ({
         },
       });
 
-      // TODO
-      //   await sendMail(new ResetPasswordRequestEmail(user.firstName, token), {
-      //     to: user.email,
-      //   });
+      await sendMail(new ResetPasswordRequestEmail(user.firstName, token), {
+        to: user.email,
+      });
 
       return true;
     },
@@ -366,13 +354,6 @@ builder.mutationFields((t) => ({
       await db.accessToken.deleteMany({
         where: { userId: resetPasswordRequest.userId },
       });
-
-      // remove access token cookie
-      const setCookieHeader = cookie.serialize("accessToken", "", {
-        ...config.security.cookie,
-        expires: new Date(0),
-      });
-      context.res.setHeader("Set-Cookie", setCookieHeader);
 
       return true;
     },
