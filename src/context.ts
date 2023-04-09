@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse } from "node:http";
 
 import { AccessToken, User } from "@prisma/client";
-import cookie from "cookie";
+import { parse } from "cookie";
 import { YogaInitialContext } from "graphql-yoga";
 import { SetNonNullable } from "type-fest";
 
@@ -25,7 +25,7 @@ export async function getContext({
   if (authorizationHeader) {
     bearerToken = extractBearerToken(authorizationHeader);
   } else if (cookieHeader) {
-    const cookies = cookie.parse(cookieHeader);
+    const cookies = parse(cookieHeader);
     bearerToken = cookies["accessToken"] ?? null;
   }
 

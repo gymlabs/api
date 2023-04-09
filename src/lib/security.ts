@@ -1,18 +1,18 @@
 import crypto from "node:crypto";
 
-import bcrypt from "bcrypt";
+import { compare, hash } from "bcrypt";
 
 import { config } from "~/config";
 
 export async function hashPassword(password: string): Promise<string> {
-  return await bcrypt.hash(password, config.security.bcryptSaltRounds);
+  return await hash(password, config.security.bcryptSaltRounds);
 }
 
 export async function comparePassword(
   password: string,
   hash: string
 ): Promise<boolean> {
-  return await bcrypt.compare(password, hash);
+  return await compare(password, hash);
 }
 
 export function randomToken(): string {

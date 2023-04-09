@@ -1,4 +1,4 @@
-import cookie from "cookie";
+import { serialize } from "cookie";
 import { addMilliseconds } from "date-fns";
 import { ZodError } from "zod";
 
@@ -6,7 +6,6 @@ import { config } from "~/config";
 import { db } from "~/db";
 import { ForbiddenError, NotFoundError } from "~/errors";
 import { mapNullToUndefined } from "~/lib/mapNullToUndefined";
-
 import {
   comparePassword,
   hashPassword,
@@ -54,6 +53,8 @@ builder.mutationFields((t) => ({
 
       const verificationToken = randomToken();
 
+      // TODO
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const user = await db.user.create({
         data: {
           ...input,
@@ -107,7 +108,7 @@ builder.mutationFields((t) => ({
         },
       });
 
-      const setCookieHeader = cookie.serialize("accessToken", token, {
+      const setCookieHeader = serialize("accessToken", token, {
         ...config.security.cookie,
         expires: expiresAt,
       });
@@ -257,7 +258,7 @@ builder.mutationFields((t) => ({
       }
 
       // remove access token cookie
-      const setCookieHeader = cookie.serialize("accessToken", "", {
+      const setCookieHeader = serialize("accessToken", "", {
         ...config.security.cookie,
         expires: new Date(0),
       });
@@ -368,7 +369,7 @@ builder.mutationFields((t) => ({
       });
 
       // remove access token cookie
-      const setCookieHeader = cookie.serialize("accessToken", "", {
+      const setCookieHeader = serialize("accessToken", "", {
         ...config.security.cookie,
         expires: new Date(0),
       });
