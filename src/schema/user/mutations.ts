@@ -5,13 +5,16 @@ import { config } from "~/config";
 import { db } from "~/db";
 import { ForbiddenError, NotFoundError } from "~/errors";
 import { mapNullToUndefined } from "~/lib/mapNullToUndefined";
-
 import {
   comparePassword,
   hashPassword,
   hashToken,
   randomToken,
 } from "~/lib/security";
+import { sendMail } from "~/services/mail/sendMail";
+import { EmailUpdatedEmail } from "~/services/mail/templates/EmailUpdatedEmail";
+import { ResetPasswordRequestEmail } from "~/services/mail/templates/ResetPasswordRequestEmail";
+import { WelcomeEmail } from "~/services/mail/templates/WelcomeEmail";
 
 import {
   AccessTokenResponse,
@@ -23,10 +26,6 @@ import {
   ResetPasswordTokenExpiredError,
 } from "./types";
 import { builder } from "../builder";
-import { sendMail } from "~/services/mail/sendMail";
-import { WelcomeEmail } from "~/services/mail/templates/WelcomeEmail";
-import { EmailUpdatedEmail } from "~/services/mail/templates/EmailUpdatedEmail";
-import { ResetPasswordRequestEmail } from "~/services/mail/templates/ResetPasswordRequestEmail";
 
 builder.mutationFields((t) => ({
   register: t.fieldWithInput({
@@ -57,6 +56,8 @@ builder.mutationFields((t) => ({
 
       const verificationToken = randomToken();
 
+      // TODO
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const user = await db.user.create({
         data: {
           ...input,

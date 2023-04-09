@@ -10,12 +10,19 @@
     "build": "swc src -d build",
     "start": "NODE_ENV=production node ./build/main.js",
     "lint": "eslint --ext .ts src",
-    "lint:fix": "eslint --ext .ts src --fix",
-    "format": "prettier --write \"src/**/*\"",
+    "lint:fix": "npm run lint -- --fix",
+    "format": "prettier --write --ignore-unknown \"src/**/*\"",
     "prisma:generate": "prisma generate",
     "prisma:dbml": "prisma-dbml-generator --output ./docs/dbml/schema.dbml",
     "prisma:studio": "prisma studio",
-    "start:migrate": "prisma migrate deploy && node ./build/main.js"
+    "start:migrate": "prisma migrate deploy && node ./build/main.js",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "npm run lint:fix",
+      "npm run format"
+    ]
   },
   "repository": {
     "type": "git",
@@ -44,6 +51,10 @@
     "dotenv-cli": "^7.1.0",
     "eslint": "^8.37.0",
     "eslint-config-prettier": "^8.8.0",
+    "eslint-import-resolver-typescript": "^3.5.5",
+    "eslint-plugin-import": "^2.27.5",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.2.1",
     "nodemon": "^2.0.22",
     "prettier": "^2.8.7",
     "prisma": "^4.12.0",

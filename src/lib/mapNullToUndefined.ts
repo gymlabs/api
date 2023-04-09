@@ -1,3 +1,5 @@
+// TODO: fix types
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 // type RecursivelyMapNullToUndefined and function mapNullToUndefined are both

@@ -1,8 +1,8 @@
-import nodemailer from "nodemailer";
+import { createTransport } from "nodemailer";
 
 import { config } from "~/config";
 
-export const smtpTransporter = nodemailer.createTransport({
+export const smtpTransporter = createTransport({
   host: config.smtp.host,
   port: config.smtp.port,
   auth: {
