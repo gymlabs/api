@@ -3,19 +3,65 @@ import { hash } from "bcrypt";
 
 const prisma = new PrismaClient();
 
+const firstNames = [
+  "Lukas",
+  "Maximilian",
+  "Johannes",
+  "Benjamin",
+  "Leon",
+  "Finn",
+  "Niklas",
+  "David",
+  "Paul",
+  "Jan",
+  "Sophie",
+  "Maria",
+  "Anna",
+  "Emma",
+  "Lena",
+  "Laura",
+  "Julia",
+  "Lisa",
+  "Hannah",
+  "Sarah",
+];
+
+const lastNames = [
+  "Müller",
+  "Schmidt",
+  "Schneider",
+  "Fischer",
+  "Weber",
+  "Meyer",
+  "Wagner",
+  "Becker",
+  "Hoffmann",
+  "Schulz",
+  "Koch",
+  "Bauer",
+  "Sauer",
+  "Krause",
+  "Huber",
+  "Berger",
+  "Kaiser",
+  "Schreiber",
+  "Bader",
+  "Bender",
+];
+
 async function main() {
   // Seed Users
   const users: Array<User> = [];
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 0; i < firstNames.length; i++) {
     const user = await prisma.user.upsert({
-      where: { email: `user${i}@example.com` },
+      where: { email: `${firstNames[i]}@${lastNames[i]}.de` },
       update: {},
       create: {
-        firstName: `User${i}`,
-        lastName: `LastName${i}`,
-        email: `user${i}@example.com`,
+        firstName: firstNames[i],
+        lastName: lastNames[i],
+        email: `${firstNames[i]}@${lastNames[i]}.de`.toLowerCase(),
         isEmailVerified: true,
-        password: `hashedpassword${i}`,
+        password: await hash(`${firstNames[i]}${lastNames[i]}`, 10),
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -25,7 +71,7 @@ async function main() {
 
   // Seed AccessTokens
   const accessTokens: Array<AccessToken> = [];
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 0; i < users.length; i++) {
     const token = `access_token${i}`;
     const saltRounds = 10;
     const hashedToken = await hash(token, saltRounds);
@@ -34,7 +80,7 @@ async function main() {
       where: { token: hashedToken },
       update: {},
       create: {
-        userId: users[i - 1].id,
+        userId: users[i].id,
         token: hashedToken,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
         createdAt: new Date(),
