@@ -10,9 +10,16 @@
     "build": "swc src -d build",
     "start": "NODE_ENV=production node ./build/main.js",
     "lint": "eslint --ext .ts src",
-    "lint:fix": "eslint --ext .ts src --fix",
-    "format": "prettier --write \"src/**/*\"",
-    "prisma:generate": "prisma generate"
+    "lint:fix": "npm run lint -- --fix",
+    "format": "prettier --write --ignore-unknown \"src/**/*\"",
+    "prisma:generate": "prisma generate",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "npm run lint:fix",
+      "npm run format"
+    ]
   },
   "repository": {
     "type": "git",
@@ -39,6 +46,8 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^3.5.5",
     "eslint-plugin-import": "^2.27.5",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.2.1",
     "nodemon": "^2.0.22",
     "prettier": "^2.8.7",
     "prisma": "^4.12.0",
