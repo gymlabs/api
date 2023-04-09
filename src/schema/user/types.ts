@@ -31,6 +31,7 @@ export const UserNodeRef = builder.prismaNode("User", {
 export const AccessTokenResponse = builder.simpleObject("AccessTokenResponse", {
   fields: (t) => ({
     accessToken: t.string(),
+    expiresAt: t.string(),
   }),
 });
 

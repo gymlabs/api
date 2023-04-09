@@ -1,4 +1,3 @@
-import { CookieSerializeOptions } from "cookie";
 import ms from "ms";
 import { z } from "zod";
 
@@ -7,6 +6,11 @@ const validatedEnv = z
     DATABASE_URL: z.string(),
     NODE_ENV: z.enum(["development", "production"]),
     HOST: z.string().default("localhost"),
+    SMTP_HOST: z.string(),
+    SMTP_PORT: z.preprocess(Number, z.number().int()),
+    SMTP_USER: z.string(),
+    SMTP_PASSWORD: z.string(),
+    SMTP_FROM: z.string(),
     PORT: z.number().default(8000),
     DEBUG: z
       .enum(["true", "false"])
@@ -40,11 +44,15 @@ export const config = {
     passwordResetRequestLifetime: ms("1d"),
     accessTokenLifetime: ms("1y"),
     bcryptSaltRounds: 10,
-    cookie: {
-      secure: env.NODE_ENV === "production",
-      httpOnly: true,
-      sameSite: "strict",
-    } satisfies CookieSerializeOptions,
+  },
+  smtp: {
+    host: env.SMTP_HOST,
+    port: env.SMTP_PORT,
+    auth: {
+      user: env.SMTP_USER,
+      password: env.SMTP_PASSWORD,
+    },
+    from: env.SMTP_FROM,
   },
 } as const;
 
