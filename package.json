@@ -13,7 +13,11 @@
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --write --ignore-unknown \"src/**/*\"",
     "prisma:generate": "prisma generate",
+    "prisma:seed": "prisma db seed",
     "prepare": "husky install"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "lint-staged": {
     "src/**/*.ts": [
@@ -52,6 +56,7 @@
     "prettier": "^2.8.7",
     "prisma": "^4.12.0",
     "prisma-dbml-generator": "^0.10.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.0.3"
   },
   "dependencies": {
