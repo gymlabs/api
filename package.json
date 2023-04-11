@@ -18,6 +18,7 @@
     "codegen:pre": "NODE_ENV=client ts-node -r tsconfig-paths/register -r ts-node/register ./node_modules/.bin/graphql-codegen --config ./codegen/pregen.ts",
     "codegen:operations": "gqlg --schemaFilePath ./codegen/gql/schema.graphql --destDirPath ./codegen/gql/operations --depthLimit 5",
     "codegen:post": "graphql-codegen --config ./codegen/degen.ts",
+    "codegen:build": "tsup --config ./codegen/tsup.config.ts",
     "codegen": "npm run codegen:pre && npm run codegen:operations && npm run codegen:post"
   },
   "prisma": {
@@ -68,6 +69,7 @@
     "prisma-dbml-generator": "^0.10.0",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
+    "tsup": "^6.7.0",
     "typescript": "^5.0.3"
   },
   "dependencies": {
