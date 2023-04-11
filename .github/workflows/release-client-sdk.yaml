@@ -2,9 +2,9 @@ name: Generate GraphQL Client and Publish Package
 on:
   pull_request:
   push:
-    # branches:
-    #   - main
-    #   - preview
+    branches:
+      - main
+      - preview
 jobs:
   generate-client:
     runs-on: ubuntu-latest
