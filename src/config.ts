@@ -4,8 +4,8 @@ import { z } from "zod";
 
 const validatedEnv = z
   .object({
-    DATABASE_URL: z.string(),
-    NODE_ENV: z.enum(["development", "production"]),
+    NODE_ENV: z.enum(["development", "production", "client"]),
+    DATABASE_URL: z.string().optional(),
     HOST: z.string().default("localhost"),
     PORT: z.number().default(8000),
     DEBUG: z
@@ -13,6 +13,18 @@ const validatedEnv = z
       .default("false")
       .transform((v) => v === "true"),
   })
+  .refine(
+    (env) => {
+      if (env.NODE_ENV === "client") {
+        return !("DATABASE_URL" in env);
+      }
+      return true;
+    },
+    {
+      message: "DATABASE_URL is required for NODE_ENV other than 'client'",
+      path: ["DATABASE_URL"],
+    }
+  )
   .safeParse(process.env);
 
 if (!validatedEnv.success) {
