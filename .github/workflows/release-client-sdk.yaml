@@ -26,7 +26,7 @@ jobs:
       - name: Extract package.json
         uses: sergeysova/jq-action@v2
         with:
-          cmd: "jq '{name: .name, version: .version, description: .description, author: .author, repository: .repository, bugs: .bugs, publishConfig: .publishConfig}' package.json > dist/package.json"
+          cmd: "jq '{name: .name, version: .version, description: .description, author: .author, repository: .repository, bugs: .bugs, publishConfig: .publishConfig, peerDependencies: .peerDependencies}' package.json > dist/package.json"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
