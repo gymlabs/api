@@ -1,7 +1,20 @@
 {
-  "name": "core.api",
+  "name": "@gymlabs/core.api",
   "version": "0.0.1",
   "description": "Core module for GymLabs architecture",
+  "author": "GymLabs",
+  "license": "ISC",
+  "homepage": "https://github.com/gymlabs/core.api#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gymlabs/core.api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gymlabs/core.api/issues"
+  },
+  "publishConfig": {
+    "@gymlabs:registry": "https://npm.pkg.github.com/"
+  },
   "main": "main.js",
   "scripts": {
     "dev": "dotenv -e .env -- concurrently \"npm run watch-compile\" \"npm run watch-dev\"",
@@ -19,7 +32,7 @@
     "codegen:operations": "gqlg --schemaFilePath ./codegen/gql/schema.graphql --destDirPath ./codegen/gql/operations --depthLimit 5",
     "codegen:post": "graphql-codegen --config ./codegen/degen.ts",
     "codegen:build": "tsup --config ./codegen/tsup.config.ts",
-    "codegen": "npm run codegen:pre && npm run codegen:operations && npm run codegen:post"
+    "codegen": "npm run codegen:pre && npm run codegen:operations && npm run codegen:post && npm run codegen:build"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -30,16 +43,6 @@
       "npm run format"
     ]
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gymlabs/core.api.git"
-  },
-  "author": "GymLabs",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/gymlabs/core.api/issues"
-  },
-  "homepage": "https://github.com/gymlabs/core.api#readme",
   "devDependencies": {
     "@graphql-codegen/cli": "^3.3.0",
     "@graphql-codegen/schema-ast": "^3.0.1",

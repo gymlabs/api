@@ -7,7 +7,7 @@ export default defineConfig({
   clean: true,
   dts: true,
   format: ["cjs", "esm"],
-  outDir: "./codegen/dist",
+  outDir: "./dist",
   minify: true,
   bundle: true,
 });

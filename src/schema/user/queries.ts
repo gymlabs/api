@@ -2,8 +2,6 @@ import { db } from "~/db";
 
 import { builder } from "../builder";
 
-
-
 builder.queryFields((t) => ({
   me: t.prismaField({
     type: "User",
