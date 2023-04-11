@@ -6,11 +6,11 @@ const validatedEnv = z
     NODE_ENV: z.enum(["development", "production", "client"]),
     DATABASE_URL: z.string().optional(),
     HOST: z.string().default("localhost"),
-    SMTP_HOST: z.string(),
-    SMTP_PORT: z.preprocess(Number, z.number().int()),
-    SMTP_USER: z.string(),
-    SMTP_PASSWORD: z.string(),
-    SMTP_FROM: z.string(),
+    SMTP_HOST: z.string().optional(),
+    SMTP_PORT: z.preprocess(Number, z.number().int()).optional(),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASSWORD: z.string().optional(),
+    SMTP_FROM: z.string().optional(),
     PORT: z.number().default(8000),
     DEBUG: z
       .enum(["true", "false"])
@@ -20,13 +20,28 @@ const validatedEnv = z
   .refine(
     (env) => {
       if (env.NODE_ENV === "client") {
-        return !("DATABASE_URL" in env);
+        return (
+          !("DATABASE_URL" in env) &&
+          !("SMTP_HOST" in env) &&
+          !("SMTP_PORT" in env) &&
+          !("SMTP_USER" in env) &&
+          !("SMTP_PASSWORD" in env) &&
+          !("SMTP_FROM" in env)
+        );
       }
       return true;
     },
     {
-      message: "DATABASE_URL is required for NODE_ENV other than 'client'",
-      path: ["DATABASE_URL"],
+      message:
+        "Additional fields are required for NODE_ENV other than 'client'",
+      path: [
+        "DATABASE_URL",
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_USER",
+        "SMTP_PASSWORD",
+        "SMTP_FROM",
+      ],
     }
   )
   .safeParse(process.env);
