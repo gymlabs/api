@@ -5,3 +5,5 @@ build
 !.env.example
 
 **/dbml/*
+/codegen/*
+!codegen/*.ts

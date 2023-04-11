@@ -15,7 +15,10 @@
     "prisma:generate": "prisma generate",
     "prisma:seed": "prisma db seed",
     "prepare": "husky install",
-    "codegen": "NODE_ENV=client ts-node -r tsconfig-paths/register -r ts-node/register ./node_modules/.bin/graphql-codegen"
+    "codegen:pre": "NODE_ENV=client ts-node -r tsconfig-paths/register -r ts-node/register ./node_modules/.bin/graphql-codegen --config ./codegen/pregen.ts",
+    "codegen:operations": "gqlg --schemaFilePath ./codegen/gql/schema.graphql --destDirPath ./codegen/gql/operations --depthLimit 5",
+    "codegen:post": "graphql-codegen --config ./codegen/degen.ts",
+    "codegen": "npm run codegen:pre && npm run codegen:operations && npm run codegen:post"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -38,6 +41,7 @@
   "homepage": "https://github.com/gymlabs/core.api#readme",
   "devDependencies": {
     "@graphql-codegen/cli": "^3.3.0",
+    "@graphql-codegen/schema-ast": "^3.0.1",
     "@graphql-codegen/typescript": "^3.0.3",
     "@graphql-codegen/typescript-graphql-request": "^4.5.9",
     "@graphql-codegen/typescript-operations": "^3.0.3",
@@ -55,6 +59,7 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^3.5.5",
     "eslint-plugin-import": "^2.27.5",
+    "gql-generator": "^1.0.19",
     "husky": "^8.0.0",
     "lint-staged": "^13.2.1",
     "nodemon": "^2.0.22",
