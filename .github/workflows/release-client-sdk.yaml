@@ -1,8 +1,10 @@
 name: Generate GraphQL Client and Publish Package
 on:
+  pull_request:
   push:
-    # branches:
-    #   - main # change this to the branch you want to trigger the workflow on
+    branches:
+      - main
+      - preview
 jobs:
   generate-client:
     runs-on: ubuntu-latest
