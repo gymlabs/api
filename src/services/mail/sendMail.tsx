@@ -1,10 +1,9 @@
 import { Transporter } from "nodemailer";
 
-import { config } from "~/config";
-import { logger } from "~/logger";
-
 import { smtpTransporter } from "./smtp";
 import { Email } from "./templates/Email";
+import { config } from "../../config";
+import { logger } from "../../logger";
 
 export type SendMailOptions = {
   to: string;

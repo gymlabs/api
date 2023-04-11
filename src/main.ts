@@ -1,10 +1,10 @@
 import { once } from "events";
 import { createServer } from "node:http";
 
-import { config } from "~/config";
-import { db } from "~/db";
-import { logger } from "~/logger";
-import { yoga } from "~/yoga";
+import { config } from "./config";
+import { db } from "./db";
+import { logger } from "./logger";
+import { yoga } from "./yoga";
 
 async function main() {
   logger.info(`Log-Level: "${config.logging.level}"`);

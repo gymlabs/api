@@ -1,5 +1,5 @@
 import "./user";
 import "./scalars";
-import { builder } from "~/schema/builder";
+import { builder } from "./builder";
 
 export const schema = builder.toSchema();

@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 
 import { compare, hash } from "bcrypt";
 
-import { config } from "~/config";
+import { config } from "../config";
 
 export async function hashPassword(password: string): Promise<string> {
   return await hash(password, config.security.bcryptSaltRounds);

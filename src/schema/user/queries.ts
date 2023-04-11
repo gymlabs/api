@@ -1,5 +1,4 @@
-import { db } from "~/db";
-
+import { db } from "../../db";
 import { builder } from "../builder";
 
 builder.queryFields((t) => ({

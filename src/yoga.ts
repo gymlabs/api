@@ -1,8 +1,8 @@
 import { createYoga } from "graphql-yoga";
 
-import { getContext } from "~/context";
-import { logger } from "~/logger";
-import { schema } from "~/schema";
+import { getContext } from "./context";
+import { logger } from "./logger";
+import { schema } from "./schema";
 
 export const yoga = createYoga({
   schema,

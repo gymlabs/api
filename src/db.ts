@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import { config } from "~/config";
+import { config } from "./config";
 
 let db: PrismaClient;
 

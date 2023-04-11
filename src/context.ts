@@ -5,9 +5,9 @@ import { parse } from "cookie";
 import { YogaInitialContext } from "graphql-yoga";
 import { SetNonNullable } from "type-fest";
 
-import { db } from "~/db";
-import { InvalidAccessTokenError } from "~/errors";
-import { extractBearerToken, hashToken } from "~/lib/security";
+import { db } from "./db";
+import { InvalidAccessTokenError } from "./errors";
+import { extractBearerToken, hashToken } from "./lib/security";
 
 export async function getContext({
   request,

@@ -17,11 +17,7 @@
     "noUnusedLocals": true,
 
     // Paths
-    "outDir": "build",
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["src/*"]
-    }
+    "outDir": "build"
 
     // SWC related
     // "verbatimModuleSyntax": true // ensure that TypeScript properly marks all type imports during type checking as type, thus removing them accurately in SWC

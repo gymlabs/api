@@ -7,11 +7,7 @@
       "dynamicImport": true,
       "decorators": true
     },
-    "target": "es2022",
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["src/*"]
-    }
+    "target": "es2022"
   },
   "module": {
     "type": "commonjs"

@@ -1,20 +1,6 @@
+import { ForbiddenError } from "@pothos/plugin-scope-auth";
 import { addMilliseconds } from "date-fns";
 import { ZodError } from "zod";
-
-import { config } from "~/config";
-import { db } from "~/db";
-import { ForbiddenError, NotFoundError } from "~/errors";
-import { mapNullToUndefined } from "~/lib/mapNullToUndefined";
-import {
-  comparePassword,
-  hashPassword,
-  hashToken,
-  randomToken,
-} from "~/lib/security";
-import { sendMail } from "~/services/mail/sendMail";
-import { EmailUpdatedEmail } from "~/services/mail/templates/EmailUpdatedEmail";
-import { ResetPasswordRequestEmail } from "~/services/mail/templates/ResetPasswordRequestEmail";
-import { WelcomeEmail } from "~/services/mail/templates/WelcomeEmail";
 
 import {
   AccessTokenResponse,
@@ -25,6 +11,20 @@ import {
   ResetPasswordTokenAlreadyUsedError,
   ResetPasswordTokenExpiredError,
 } from "./types";
+import { config } from "../../config";
+import { db } from "../../db";
+import { NotFoundError } from "../../errors";
+import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
+import {
+  comparePassword,
+  hashPassword,
+  hashToken,
+  randomToken,
+} from "../../lib/security";
+import { sendMail } from "../../services/mail/sendMail";
+import { EmailUpdatedEmail } from "../../services/mail/templates/EmailUpdatedEmail";
+import { ResetPasswordRequestEmail } from "../../services/mail/templates/ResetPasswordRequestEmail";
+import { WelcomeEmail } from "../../services/mail/templates/WelcomeEmail";
 import { builder } from "../builder";
 
 builder.mutationFields((t) => ({

@@ -4,7 +4,8 @@ import { z } from "zod";
 const validatedEnv = z
   .object({
     NODE_ENV: z.enum(["development", "production", "client"]),
-    DATABASE_URL: z.string().optional(),
+    DATABASE_URL:
+      process.env.NODE_ENV === "client" ? z.string().optional() : z.string(),
     HOST: z.string().default("localhost"),
     SMTP_HOST: z.string().optional(),
     SMTP_PORT: z.preprocess(Number, z.number().int()).optional(),
@@ -17,33 +18,34 @@ const validatedEnv = z
       .default("false")
       .transform((v) => v === "true"),
   })
-  .refine(
-    (env) => {
-      if (env.NODE_ENV === "client") {
-        return (
-          !("DATABASE_URL" in env) &&
-          !("SMTP_HOST" in env) &&
-          !("SMTP_PORT" in env) &&
-          !("SMTP_USER" in env) &&
-          !("SMTP_PASSWORD" in env) &&
-          !("SMTP_FROM" in env)
-        );
-      }
-      return true;
-    },
-    {
-      message:
-        "Additional fields are required for NODE_ENV other than 'client'",
-      path: [
-        "DATABASE_URL",
-        "SMTP_HOST",
-        "SMTP_PORT",
-        "SMTP_USER",
-        "SMTP_PASSWORD",
-        "SMTP_FROM",
-      ],
-    }
-  )
+  // TODO: fix this - when you have the Muse
+  // .refine(
+  //   (env) => {
+  //     if (env.NODE_ENV === "client") {
+  //       return (
+  //         !("DATABASE_URL" in env) &&
+  //         !("SMTP_HOST" in env) &&
+  //         !("SMTP_PORT" in env) &&
+  //         !("SMTP_USER" in env) &&
+  //         !("SMTP_PASSWORD" in env) &&
+  //         !("SMTP_FROM" in env)
+  //       );
+  //     }
+  //     return true;
+  //   },
+  //   {
+  //     message:
+  //       "Additional fields are required for NODE_ENV other than 'client'",
+  //     path: [
+  //       "DATABASE_URL",
+  //       "SMTP_HOST",
+  //       "SMTP_PORT",
+  //       "SMTP_USER",
+  //       "SMTP_PASSWORD",
+  //       "SMTP_FROM",
+  //     ],
+  //   }
+  // )
   .safeParse(process.env);
 
 if (!validatedEnv.success) {
