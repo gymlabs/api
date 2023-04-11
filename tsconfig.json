@@ -17,15 +17,12 @@
     "noUnusedLocals": true,
 
     // Paths
-    "outDir": "build"
+    "outDir": "build",
+    "baseUrl": "."
 
     // SWC related
     // "verbatimModuleSyntax": true // ensure that TypeScript properly marks all type imports during type checking as type, thus removing them accurately in SWC
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "build", "/prisma/dbml"],
-
-  "ts-node": {
-    "require": ["tsconfig-paths/register"]
-  }
+  "exclude": ["node_modules", "build", "/prisma/dbml"]
 }

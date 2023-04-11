@@ -31,7 +31,7 @@
     "start:migrate": "prisma migrate deploy && node ./build/main.js",
     "prisma:seed": "prisma db seed",
     "prepare": "husky install",
-    "codegen:pre": "NODE_ENV=client ts-node ./node_modules/.bin/graphql-codegen --config ./codegen/pregen.ts",
+    "codegen:pre": "NODE_ENV=client graphql-codegen --config ./codegen/pregen.ts",
     "codegen:operations": "gqlg --schemaFilePath ./codegen/gql/schema.graphql --destDirPath ./codegen/gql/operations --depthLimit 5",
     "codegen:post": "graphql-codegen --config ./codegen/degen.ts",
     "codegen:build": "tsup --config ./codegen/tsup.config.ts",

@@ -1,4 +1,3 @@
-import { ForbiddenError } from "@pothos/plugin-scope-auth";
 import { addMilliseconds } from "date-fns";
 import { ZodError } from "zod";
 
@@ -13,7 +12,7 @@ import {
 } from "./types";
 import { config } from "../../config";
 import { db } from "../../db";
-import { NotFoundError } from "../../errors";
+import { ForbiddenError, NotFoundError } from "../../errors";
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
 import {
   comparePassword,

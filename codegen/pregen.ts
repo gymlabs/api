@@ -5,7 +5,6 @@ import { schema } from "../src/schema";
 
 const config: CodegenConfig = {
   schema: printSchema(schema),
-  require: ["ts-node/register", "tsconfig-paths/register"],
   generates: {
     "./codegen/gql/schema.graphql": {
       plugins: ["schema-ast"],
