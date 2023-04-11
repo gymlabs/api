@@ -1,2 +1,4 @@
 build
+dist
+./codegen/gql/
 node_modules

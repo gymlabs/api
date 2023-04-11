@@ -1,7 +1,12 @@
 node_modules
 build
+dist
 
 .env*
 !.env.example
 
 **/dbml/*
+
+# Codegen
+/codegen/gql
+/codegen/dist
