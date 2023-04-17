@@ -1,71 +1,34 @@
+import { faker } from "@faker-js/faker";
 import { AccessToken, PrismaClient, User } from "@prisma/client";
 import { hash } from "bcrypt";
 
 const prisma = new PrismaClient();
 
-const firstNames = [
-  "Lukas",
-  "Maximilian",
-  "Johannes",
-  "Benjamin",
-  "Leon",
-  "Finn",
-  "Niklas",
-  "David",
-  "Paul",
-  "Jan",
-  "Sophie",
-  "Maria",
-  "Anna",
-  "Emma",
-  "Lena",
-  "Laura",
-  "Julia",
-  "Lisa",
-  "Hannah",
-  "Sarah",
-];
-
-const lastNames = [
-  "Müller",
-  "Schmidt",
-  "Schneider",
-  "Fischer",
-  "Weber",
-  "Meyer",
-  "Wagner",
-  "Becker",
-  "Hoffmann",
-  "Schulz",
-  "Koch",
-  "Bauer",
-  "Sauer",
-  "Krause",
-  "Huber",
-  "Berger",
-  "Kaiser",
-  "Schreiber",
-  "Bader",
-  "Bender",
-];
-
 async function main() {
-  // Seed Users
+  const USER_COUNT = 1000;
+
   const users: Array<User> = [];
-  for (let i = 0; i < firstNames.length; i++) {
+  for (let i = 0; i < USER_COUNT; i++) {
+    const firstName = faker.name.firstName();
+    const lastName = faker.name.lastName();
+    const email = faker.internet.email(firstName, lastName);
+
     const user = await prisma.user.upsert({
-      where: { email: `${firstNames[i]}@${lastNames[i]}.de` },
+      where: { email: email },
       update: {},
       create: {
-        firstName: firstNames[i],
-        lastName: lastNames[i],
-        email: `${firstNames[i]}@${lastNames[i]}.de`.toLowerCase(),
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
         isEmailVerified: true,
-        password: await hash(`${firstNames[i]}${lastNames[i]}`, 10),
+        password: await hash(`${firstName}-${lastName}`, 10),
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     });
+    console.log(
+      `Created user ${i + 1}/${USER_COUNT} with email: (${user.email})`
+    );
     users.push(user);
   }
 
@@ -87,6 +50,11 @@ async function main() {
         updatedAt: new Date(),
       },
     });
+    console.log(
+      `Created access token ${i + 1}/${users.length} for user: ${
+        users[i].email
+      }`
+    );
     accessTokens.push(accessToken);
   }
 }
