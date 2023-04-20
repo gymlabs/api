@@ -12,7 +12,7 @@ const validatedEnv = z
     SMTP_USER: z.string().optional(),
     SMTP_PASSWORD: z.string().optional(),
     SMTP_FROM: z.string().optional(),
-    PORT: z.number().default(8000),
+    PORT: z.preprocess(Number, z.number().int()).default(8000),
     DEBUG: z
       .enum(["true", "false"])
       .default("false")
