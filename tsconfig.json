@@ -11,6 +11,7 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "noUncheckedIndexedAccess": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "alwaysStrict": true,
@@ -23,6 +24,5 @@
     // SWC related
     // "verbatimModuleSyntax": true // ensure that TypeScript properly marks all type imports during type checking as type, thus removing them accurately in SWC
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "build", "/prisma/dbml"]
+  "exclude": ["node_modules"]
 }

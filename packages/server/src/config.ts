@@ -13,6 +13,7 @@ const validatedEnv = z
     SMTP_PASSWORD: z.string().optional(),
     SMTP_FROM: z.string().optional(),
     PORT: z.preprocess(Number, z.number().int()).default(8000),
+    GRPC_PORT: z.preprocess(Number, z.number().int()).default(8001),
     DEBUG: z
       .enum(["true", "false"])
       .default("false")
@@ -65,6 +66,7 @@ export const config = {
   server: {
     host: env.HOST,
     port: env.PORT,
+    grpcPort: env.GRPC_PORT,
   },
   logging: {
     level: env.DEBUG ? "debug" : "info",

@@ -2,11 +2,18 @@ node_modules
 build
 dist
 
+lerna-debug.log
+npm-debug.log
+
 .env*
 !.env.example
 
-**/dbml/*
+*.dbml
 
 # Codegen
 /codegen/gql
 /codegen/dist
+
+# GRPC
+src/grpc/types
+src/grpc/*.bin

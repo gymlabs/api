@@ -1,12 +1,13 @@
 import type { CodegenConfig } from "@graphql-codegen/cli";
 import { printSchema } from "graphql";
 
-import { schema } from "../src/schema";
+// TODO: fix this import 🤮
+import { schema } from "../../server/src/schema";
 
 const config: CodegenConfig = {
   schema: printSchema(schema),
   generates: {
-    "./codegen/gql/schema.graphql": {
+    "src/gql/schema.graphql": {
       plugins: ["schema-ast"],
     },
   },

@@ -13,3 +13,8 @@
 ![Schema](images/db-schema.png)
 
 You can paste the generated `.dbml` into [here](https://dbdiagram.io/d) to create an image.
+
+## Release Packages
+- `npx changeset add`: create a new changeset for modified packages
+- `npx changeset version`: bump the version of packages that have changesets
+- now the `release` workflow should recognize the bumped packages and create a new release

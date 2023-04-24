@@ -1,0 +1,26 @@
+{
+  "name": "@gymlabs/core.db",
+  "version": "0.0.0",
+  "private": true,
+  "main": "dist/client/index.js",
+  "types": "dist/client/index.d.ts",
+  "browser": "dist/client/index-browser.js",
+  "scripts": {
+    "build": "prisma generate",
+    "dbml": "prisma generate --schema=prisma/schema.prisma --generator=dbml",
+    "prisma:studio": "prisma studio",
+    "start:migrate": "prisma migrate deploy && node ./build/main.js",
+    "prisma:seed": "prisma db seed"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
+  "peerDependencies": {
+    "@prisma/client": "^4.12.0"
+  },
+  "devDependencies": {
+    "prisma": "^4.12.0",
+    "prisma-dbml-generator": "^0.10.0",
+    "@faker-js/faker": "^7.6.0"
+  }
+}

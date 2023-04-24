@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package core;
+
+service CoreService {
+  // Read Operations
+  rpc GetUserById(GetUserByIdInput) returns (User) {};
+}
+
+message GetUserByIdInput {
+  string id = 1;
+}
+
+message User {
+  string id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string email = 4;
+}

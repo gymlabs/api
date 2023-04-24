@@ -1,0 +1,21 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+      - preview
+  pull_request:
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm ci
+
+      # clean this up
+      - run: npx lerna run build
+      - run: npm i
+
+      - run: npx lerna run lint
+      - run: npx lerna run format

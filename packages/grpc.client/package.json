@@ -1,0 +1,19 @@
+{
+  "name": "@gymlabs/core.grpc.client",
+  "version": "0.0.0",
+  "description": "Core API gRPC client",
+  "author": "GymLabs",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "@gymlabs:registry": "https://npm.pkg.github.com/"
+  },
+  "scripts": {
+    "lint": "eslint --ext .ts src/",
+    "build": "tsup src/"
+  },
+  "dependencies": {
+    "@gymlabs/core.grpc.definition": "^0.0.0"
+  }
+}
