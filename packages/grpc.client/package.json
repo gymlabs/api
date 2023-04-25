@@ -14,6 +14,7 @@
     "build": "tsup src/"
   },
   "peerDependencies": {
-    "@gymlabs/core.grpc.definition": "^0.0.0"
+    "@gymlabs/core.grpc.definition": "^0.0.0",
+    "zod": "^3.21.4"
   }
 }
