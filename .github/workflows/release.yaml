@@ -1,7 +1,8 @@
 name: Release
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - preview
 
@@ -36,7 +37,7 @@ jobs:
         run: npm ci
 
       - name: Build packages
-        run: lerna run build
+        run: npm run build
 
       - name: Publish package
         run: lerna publish from-package --yes --no-private --conventional-commits --no-verify-access

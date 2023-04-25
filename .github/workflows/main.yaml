@@ -1,9 +1,6 @@
-name: CI
+name: Check
+
 on:
-  push:
-    branches:
-      - main
-      - preview
   pull_request:
 
 jobs:
@@ -11,11 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
       # clean this up
-      - run: npx lerna run build
-      - run: npm i
+      - name: Build & install packages
+        run: |
+          npm run build
+          npm i
 
-      - run: npx lerna run lint
-      - run: npx lerna run format
+      - name: Lint & check Formatting
+        run: |
+          npm run lint
+          npm run format:check
