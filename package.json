@@ -1,14 +1,23 @@
 {
   "name": "@gymlabs/core.api",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "author": "GymLabs",
-  "description": "Core module for GymLabs architecture",
+  "description": "Core API module for GymLabs",
   "scripts": {
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "dev": "lerna run dev",
+    "build": "lerna run build",
+    "lint": "lerna run lint",
+    "lint:fix": "lerna run \"lint:fix\"",
+    "format": "lerna run format",
+    "format:check": "lerna run \"format:check\""
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "lint-staged": {
+    "src/**/*.ts": [
+      "lerna run \"lint:fix\"",
+      "lerna run format"
+    ]
+  },
   "devDependencies": {
     "@types/node": "^18.16.0",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
@@ -23,13 +32,10 @@
     "tsup": "^6.7.0",
     "typescript": "^5.0.4"
   },
-  "lint-staged": {
-    "src/**/*.ts": [
-      "lerna run lint:fix",
-      "lerna run format"
-    ]
-  },
   "dependencies": {
     "@changesets/cli": "^2.26.1"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

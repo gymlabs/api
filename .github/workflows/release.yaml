@@ -1,4 +1,3 @@
-# only trigger this workflow on changeset changes
 name: Release
 
 on:

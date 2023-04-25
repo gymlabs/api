@@ -1,5 +1,5 @@
 {
-  "name": "@gymlabs/core.api.server",
+  "name": "@gymlabs/core.api",
   "version": "0.0.0",
   "description": "Core module for GymLabs architecture",
   "author": "GymLabs",
@@ -17,15 +17,15 @@
     "@gymlabs:registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
-    "dev": "dotenv -e .env -- concurrently \"npm run watch-compile\" \"npm run watch-dev\"",
+    "dev": "NODE_ENV=development dotenv -e .env -- concurrently \"npm run watch-compile\" \"npm run watch-dev\"",
     "watch-compile": "swc src -w -d build",
     "watch-dev": "nodemon --watch \"build/**/*\" -e js ./build/main.js | pino-pretty",
     "build": "swc src -d build",
     "start": "NODE_ENV=production node ./build/main.js",
     "lint": "eslint --ext .ts src",
     "lint:fix": "npm run lint -- --fix",
-    "format": "prettier --ignore-unknown \"src/**/*\"",
-    "format:fix": "npm run format -- --write"
+    "format:check": "prettier --ignore-unknown \"src/**/*\"",
+    "format": "npm run format -- --write"
   },
   "devDependencies": {
     "@swc/cli": "^0.1.62",
@@ -53,7 +53,6 @@
     "@pothos/plugin-simple-objects": "^3.6.7",
     "@pothos/plugin-validation": "^3.9.0",
     "@pothos/plugin-with-input": "^3.10.0",
-    "@prisma/client": "^4.12.0",
     "bcrypt": "^5.1.0",
     "cookie": "^0.5.0",
     "graphql": "^16.6.0",

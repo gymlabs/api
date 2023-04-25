@@ -9,6 +9,7 @@
   "scripts": {
     "pretypes": "rm -rf src/types",
     "types": "proto-loader-gen-types --outDir=src/types/ --grpcLib=@grpc/grpc-js --defaults src/service.proto",
+    "prebuild": "npm run types",
     "build": "tsup src"
   },
   "peerDependencies": {

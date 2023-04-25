@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from "node:http";
 
-import { AccessToken, User } from "@prisma/client";
+import { AccessToken, User } from "@gymlabs/core.db";
 import { parse } from "cookie";
 import { YogaInitialContext } from "graphql-yoga";
 import { SetNonNullable } from "type-fest";
