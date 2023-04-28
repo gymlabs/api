@@ -9,7 +9,9 @@ generator dbml {
 }
 
 generator pothos {
-  provider = "prisma-pothos-types"
+  provider     = "prisma-pothos-types"
+  clientOutput = "../dist/client/"
+  output       = "../dist/photos-types.ts"
 }
 
 generator client {
