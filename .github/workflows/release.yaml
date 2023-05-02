@@ -1,9 +1,6 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - preview
   pull_request:
     types: [closed]
     branches:
