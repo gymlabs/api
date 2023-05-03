@@ -55,8 +55,6 @@ builder.mutationFields((t) => ({
 
       const verificationToken = randomToken();
 
-      // TODO
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const user = await db.user.create({
         data: {
           ...input,
