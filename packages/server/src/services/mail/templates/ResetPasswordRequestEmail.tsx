@@ -20,9 +20,7 @@ export class ResetPasswordRequestEmail extends Email {
       <>
         <Greeting name={this.customerName} />
         <p>
-          <a
-            href={`http://localhost:3000/reset-password?token={${this.token}}`}
-          >
+          <a href={`http://localhost:3000/reset-password?token=${this.token}`}>
             Passwort zurücksetzen
           </a>
         </p>
