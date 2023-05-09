@@ -73,6 +73,7 @@ export const config = {
   },
   security: {
     passwordResetRequestLifetime: ms("1d"),
+    changeMailRequestLifetime: ms("1d"),
     accessTokenLifetime: ms("1y"),
     bcryptSaltRounds: 10,
   },

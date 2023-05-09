@@ -113,3 +113,27 @@ builder.objectType(ResetPasswordTokenAlreadyUsedError, {
   name: "ResetPasswordTokenAlreadyUsedError",
   interfaces: [ErrorInterface],
 });
+
+export class ChangeMailTokenExpiredError extends Error {
+  constructor() {
+    super("Change mail token expired.");
+    this.name = "ChangeMailTokenExpiredError";
+  }
+}
+
+builder.objectType(ChangeMailTokenExpiredError, {
+  name: "ChangeMailTokenExpiredError",
+  interfaces: [ErrorInterface],
+});
+
+export class ChangeMailTokenAlreadyUsedError extends Error {
+  constructor() {
+    super("Change mail token already used.");
+    this.name = "ChangeMailTokenAlreadyUsedError";
+  }
+}
+
+builder.objectType(ChangeMailTokenAlreadyUsedError, {
+  name: "ChangeMailTokenAlreadyUsedError",
+  interfaces: [ErrorInterface],
+});

@@ -39,9 +39,14 @@ model User {
 
   accessTokens         AccessToken[]
   passwordResetRequest PasswordResetRequest[]
+  changeMailRequests    ChangeMailRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // sha256 hash of token
+  reactivationToken String? @unique
 }
 
 model AccessToken {
@@ -76,4 +81,24 @@ model PasswordResetRequest {
   updatedAt DateTime @updatedAt
 
   @@map("password_reset_request")
+}
+
+model ChangeMailRequest {
+  id String @id @default(uuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  // sha256 hash of the token
+  token     String   @unique
+  expiresAt DateTime
+
+  newMail String @unique
+
+  usedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("change_mail_request")
 }
