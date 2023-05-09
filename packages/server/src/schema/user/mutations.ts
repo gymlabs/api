@@ -275,7 +275,7 @@ builder.mutationFields((t) => ({
       }
 
       const token = randomToken();
-      const tokenHash = await hashToken(token);
+      const tokenHash = hashToken(token);
 
       const expiresAt = addMilliseconds(
         new Date(),
@@ -320,7 +320,7 @@ builder.mutationFields((t) => ({
     resolve: async (parent, { input }, context) => {
       const resetPasswordRequest = await db.passwordResetRequest.findUnique({
         where: {
-          token: await hashToken(input.token),
+          token: hashToken(input.token),
         },
       });
 
