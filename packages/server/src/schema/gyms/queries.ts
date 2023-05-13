@@ -2,11 +2,12 @@ import client from "@gymlabs/admin.grpc.client";
 import { Gym__Output, Gyms__Output } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
-import { builder } from "packages/server/src/schema/builder";
+import { builder } from "../builder";
+import { Gym, Gyms } from "../gyms/types";
 
 builder.queryFields((t) => ({
   gyms: t.fieldWithInput({
-    type: "Gyms",
+    type: Gyms,
     input: {
       organizationId: t.input.string(),
     },
@@ -21,11 +22,17 @@ builder.queryFields((t) => ({
           }
         });
       });
-      return gyms;
+      return {
+        gyms: gyms.gyms.map((gym) => ({
+          ...gym,
+          createdAt: new Date(gym.createdAt),
+          updatedAt: new Date(gym.updatedAt),
+        })),
+      };
     },
   }),
   gym: t.fieldWithInput({
-    type: "Gym",
+    type: Gym,
     input: {
       id: t.input.string(),
     },
@@ -40,7 +47,11 @@ builder.queryFields((t) => ({
           }
         });
       });
-      return gym;
+      return {
+        ...gym,
+        createdAt: new Date(gym.createdAt),
+        updatedAt: new Date(gym.updatedAt),
+      };
     },
   }),
 }));

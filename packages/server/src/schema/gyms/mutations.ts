@@ -2,12 +2,13 @@ import client from "@gymlabs/admin.grpc.client";
 import { Gym__Output } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
-import { mapNullToUndefined } from "packages/server/src/lib/mapNullToUndefined";
-import { builder } from "packages/server/src/schema/builder";
+import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
+import { builder } from "../builder";
+import { Gym } from "../gyms/types";
 
 builder.mutationFields((t) => ({
   createGym: t.fieldWithInput({
-    type: "Gym",
+    type: Gym,
     input: {
       name: t.input.string(),
       organizationId: t.input.string(),
@@ -28,11 +29,15 @@ builder.mutationFields((t) => ({
           }
         });
       });
-      return gym;
+      return {
+        ...gym,
+        createdAt: new Date(gym.createdAt),
+        updatedAt: new Date(gym.updatedAt),
+      };
     },
   }),
   updateGym: t.fieldWithInput({
-    type: "Gym",
+    type: Gym,
     input: {
       id: t.input.string(),
       name: t.input.string({ required: false }),
@@ -54,7 +59,11 @@ builder.mutationFields((t) => ({
           }
         });
       });
-      return gym;
+      return {
+        ...gym,
+        createdAt: new Date(gym.createdAt),
+        updatedAt: new Date(gym.updatedAt),
+      };
     },
   }),
 }));

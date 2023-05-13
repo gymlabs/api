@@ -1,5 +1,11 @@
 # @gymlabs/core.gql.client
 
+## 0.1.4
+
+### Patch Changes
+
+- workout, exercise crud - fix types
+
 ## 0.1.3
 
 ### Patch Changes

@@ -1,4 +1,3 @@
-import { Gym__Output, Gyms__Output } from "@gymlabs/admin.grpc.definition";
 import type PrismaTypes from "@gymlabs/core.db/dist/photos-types";
 import SchemaBuilder from "@pothos/core";
 import ErrorsPlugin from "@pothos/plugin-errors";
@@ -22,14 +21,6 @@ export const builder = new SchemaBuilder<{
     Date: {
       Input: Date;
       Output: Date;
-    };
-    Gyms: {
-      Input: Gyms__Output;
-      Output: Gyms__Output;
-    };
-    Gym: {
-      Input: Gym__Output;
-      Output: Gym__Output;
     };
   };
   AuthScopes: {
