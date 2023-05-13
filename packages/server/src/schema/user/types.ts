@@ -137,3 +137,39 @@ builder.objectType(ChangeMailTokenAlreadyUsedError, {
   name: "ChangeMailTokenAlreadyUsedError",
   interfaces: [ErrorInterface],
 });
+
+export class UserHasMembershipsOrEmploymentsError extends Error {
+  constructor() {
+    super("User has memberships or employments.");
+    this.name = "UserHasMembershipsOrEmploymentsError";
+  }
+}
+
+builder.objectType(UserHasMembershipsOrEmploymentsError, {
+  name: "UserHasMembershipsOrEmploymentsError",
+  interfaces: [ErrorInterface],
+});
+
+export class InvalidReactivationTokenError extends Error {
+  constructor() {
+    super("Invalid reactivation token.");
+    this.name = "InvalidReactivationTokenError";
+  }
+}
+
+builder.objectType(InvalidReactivationTokenError, {
+  name: "InvalidReactivationTokenError",
+  interfaces: [ErrorInterface],
+});
+
+export class ReactivationTokenExpiredError extends Error {
+  constructor() {
+    super("Reactivation token expired.");
+    this.name = "ReactivationTokenExpiredError";
+  }
+}
+
+builder.objectType(ReactivationTokenExpiredError, {
+  name: "ReactivationTokenExpiredError",
+  interfaces: [ErrorInterface],
+});

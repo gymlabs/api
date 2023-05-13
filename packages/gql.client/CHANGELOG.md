@@ -1,5 +1,11 @@
 # @gymlabs/core.gql.client
 
+## 0.1.2
+
+### Patch Changes
+
+- only delete user when it has no memberships or employments and reactivate account
+
 ## 0.1.1
 
 ### Patch Changes
