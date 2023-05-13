@@ -16,6 +16,7 @@ import {
   InvalidCredentialsError,
   InvalidEmailVerificationTokenError,
   InvalidReactivationTokenError,
+  InvalidResetPasswordTokenError,
   ReactivationTokenExpiredError,
   ResetPasswordTokenAlreadyUsedError,
   ResetPasswordTokenExpiredError,
@@ -229,7 +230,7 @@ builder.mutationFields((t) => ({
     errors: {
       types: [
         ZodError,
-        InvalidReactivationTokenError,
+        InvalidResetPasswordTokenError,
         ResetPasswordTokenAlreadyUsedError,
         ResetPasswordTokenExpiredError,
       ],
@@ -251,7 +252,7 @@ builder.mutationFields((t) => ({
       });
 
       if (!resetPasswordRequest) {
-        throw new InvalidReactivationTokenError();
+        throw new InvalidResetPasswordTokenError();
       }
 
       if (resetPasswordRequest.usedAt) {
