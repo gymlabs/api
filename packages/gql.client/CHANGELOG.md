@@ -1,5 +1,11 @@
 # @gymlabs/core.gql.client
 
+## 0.1.3
+
+### Patch Changes
+
+- add create, update, read for gyms
+
 ## 0.1.2
 
 ### Patch Changes
