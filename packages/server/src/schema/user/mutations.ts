@@ -509,7 +509,7 @@ builder.mutationFields((t) => ({
         data: { email: changeMailRequest.newMail },
       });
 
-      await db.passwordResetRequest.update({
+      await db.changeMailRequest.update({
         where: { id: changeMailRequest.id },
         data: { usedAt: new Date() },
       });
