@@ -17,5 +17,3 @@ npm-debug.log
 # GRPC
 src/grpc/types
 src/grpc/*.bin
-
-.npmrc

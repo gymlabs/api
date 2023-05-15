@@ -1,3 +1,10 @@
+import client from "@gymlabs/admin.grpc.client";
+import {
+  Employments__Output,
+  Gyms__Output,
+  Memberships__Output,
+  Organizations__Output,
+} from "@gymlabs/admin.grpc.definition";
 import { addMilliseconds } from "date-fns";
 import { ZodError } from "zod";
 
@@ -8,9 +15,12 @@ import {
   EmailAlreadyInUseError,
   InvalidCredentialsError,
   InvalidEmailVerificationTokenError,
+  InvalidReactivationTokenError,
   InvalidResetPasswordTokenError,
+  ReactivationTokenExpiredError,
   ResetPasswordTokenAlreadyUsedError,
   ResetPasswordTokenExpiredError,
+  UserHasMembershipsOrEmploymentsError,
 } from "./types";
 import { config } from "../../config";
 import { db } from "../../db";
@@ -116,89 +126,6 @@ builder.mutationFields((t) => ({
       };
     },
   }),
-
-  // updateUser: t.withAuth({ authenticated: true }).prismaFieldWithInput({
-  //   type: "User",
-  //   errors: { types: [ZodError] },
-  //   input: {
-  //     id: t.input.id(),
-  //     firstName: t.input.string({ required: false }),
-  //     lastName: t.input.string({ required: false }),
-  //     email: t.input.string({
-  //       required: false,
-  //       validate: {
-  //         email: true,
-  //       },
-  //     }),
-  //     password: t.input.string({
-  //       required: false,
-  //       validate: {
-  //         minLength: 10,
-  //         maxLength: 128,
-  //       },
-  //     }),
-  //   },
-  //   resolve: async (query, parent, { input: { id, ...input } }, context) => {
-  //     const user = await db.user.findUnique({
-  //       where: { id: context.viewer.user.id },
-  //     });
-
-  //     if (!user) {
-  //       throw new NotFoundError("User");
-  //     }
-
-  //     if (context.viewer.user.id !== id) {
-  //       throw new ForbiddenError("Cannot update another user.");
-  //     }
-
-  //     let password = input.password;
-  //     if (password) {
-  //       password = await hashPassword(password);
-  //     }
-
-  //     let emailData:
-  //       | {
-  //           emailVerificationToken: string;
-  //           isEmailVerified: true;
-  //         }
-  //       | undefined = undefined;
-
-  //     if (input.email) {
-  //       const emailVerificationToken = randomToken();
-  //       const emailVerificationTokenHash = await hashToken(
-  //         emailVerificationToken
-  //       );
-  //       emailData = {
-  //         emailVerificationToken: emailVerificationTokenHash,
-  //         isEmailVerified: true,
-  //       };
-  //     }
-
-  //     const updatedUser = await db.user.update({
-  //       ...query,
-  //       where: { id: String(id) },
-  //       data: mapNullToUndefined({
-  //         ...input,
-  //         password,
-  //         ...emailData,
-  //       }),
-  //     });
-
-  //     if (emailData) {
-  //       await sendMail(
-  //         new EmailUpdatedEmail(
-  //           updatedUser.firstName,
-  //           emailData.emailVerificationToken
-  //         ),
-  //         {
-  //           to: updatedUser.email,
-  //         }
-  //       );
-  //     }
-
-  //     return updatedUser;
-  //   },
-  // }),
 
   verifyEmail: t.fieldWithInput({
     type: "Boolean",
@@ -361,11 +288,81 @@ builder.mutationFields((t) => ({
   deleteAccount: t.withAuth({ authenticated: true }).field({
     type: "Boolean",
     description: "Delete the current user account.",
+    errors: { types: [UserHasMembershipsOrEmploymentsError] },
     resolve: async (parent, { input }, context) => {
       const token = randomToken();
       const tokenHash = hashToken(token);
       // delete after 30 days
       const deleteAt: Date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
+
+      // check if user has memberships or employments
+      const organizations: Organizations__Output = await new Promise(
+        (resolve, reject) => {
+          client.GetOrganizations({}, (err, res) => {
+            if (err || !res) {
+              reject(err);
+            } else {
+              resolve(res);
+            }
+          });
+        }
+      );
+
+      if (organizations.organizations.length) {
+        for (const organization of organizations.organizations) {
+          const gyms: Gyms__Output = await new Promise((resolve, reject) => {
+            client.GetGyms({ organizationId: organization.id }, (err, res) => {
+              if (err || !res) {
+                reject(err);
+              } else {
+                resolve(res);
+              }
+            });
+          });
+          if (gyms.gyms.length) {
+            for (const gym of gyms.gyms) {
+              const memberships: Memberships__Output = await new Promise(
+                (resolve, reject) => {
+                  client.GetMemberships({ gymId: gym.id }, (err, res) => {
+                    if (err || !res) {
+                      reject(err);
+                    } else {
+                      resolve(res);
+                    }
+                  });
+                }
+              );
+              if (memberships.memberships.length) {
+                const userMemberships = memberships.memberships.filter(
+                  (membership) => membership.userId === context.viewer.user.id
+                );
+                if (userMemberships.length) {
+                  throw new UserHasMembershipsOrEmploymentsError();
+                }
+              }
+              const employments: Employments__Output = await new Promise(
+                (resolve, reject) => {
+                  client.GetEmployments({ gymId: gym.id }, (err, res) => {
+                    if (err || !res) {
+                      reject(err);
+                    } else {
+                      resolve(res);
+                    }
+                  });
+                }
+              );
+              if (employments.employments.length) {
+                const userEmployments = employments.employments.filter(
+                  (employment) => employment.userId === context.viewer.user.id
+                );
+                if (userEmployments.length) {
+                  throw new UserHasMembershipsOrEmploymentsError();
+                }
+              }
+            }
+          }
+        }
+      }
 
       const user = await db.user.update({
         where: { id: context.viewer.user.id },
@@ -377,6 +374,46 @@ builder.mutationFields((t) => ({
 
       await sendMail(new ReactivationEmail(user.firstName, token, deleteAt), {
         to: user.email,
+      });
+
+      return true;
+    },
+  }),
+
+  reactivateAccount: t.fieldWithInput({
+    type: "Boolean",
+    errors: {
+      types: [
+        ZodError,
+        InvalidReactivationTokenError,
+        ReactivationTokenExpiredError,
+      ],
+    },
+    input: {
+      token: t.input.string(),
+    },
+    resolve: async (parent, { input }, context) => {
+      const user = await db.user.findUnique({
+        where: {
+          reactivationToken: hashToken(input.token),
+        },
+      });
+
+      if (!user) {
+        throw new InvalidReactivationTokenError();
+      }
+
+      const now = new Date();
+      if (user.deletedAt && user.deletedAt < now) {
+        throw new ReactivationTokenExpiredError();
+      }
+
+      await db.user.update({
+        where: { id: user.id },
+        data: {
+          deletedAt: null,
+          reactivationToken: null,
+        },
       });
 
       return true;
@@ -472,7 +509,7 @@ builder.mutationFields((t) => ({
         data: { email: changeMailRequest.newMail },
       });
 
-      await db.passwordResetRequest.update({
+      await db.changeMailRequest.update({
         where: { id: changeMailRequest.id },
         data: { usedAt: new Date() },
       });
