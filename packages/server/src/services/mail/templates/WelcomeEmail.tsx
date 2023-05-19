@@ -25,7 +25,7 @@ export class WelcomeEmail extends Email {
           Bitte bestätige deine Email über den folgenden Link:
           <p>
             <a
-              href={`http://localhost:3000/verify-email?token={${this.emailVerificationToken}}`}
+              href={`http://localhost:3000/verify-email?token=${this.emailVerificationToken}`}
             >
               Email jetzt bestätigen
             </a>
