@@ -39,10 +39,10 @@ model User {
 
   accessTokens         AccessToken[]
   passwordResetRequest PasswordResetRequest[]
-  changeMailRequests    ChangeMailRequest[]
+  changeMailRequests   ChangeMailRequest[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   // sha256 hash of token

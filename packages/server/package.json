@@ -25,7 +25,7 @@
     "lint": "eslint --ext .ts src",
     "lint:fix": "npm run lint -- --fix",
     "format:check": "prettier --ignore-unknown \"src/**/*\"",
-    "format": "npm run format -- --write"
+    "format": "npm run format:check -- --write"
   },
   "devDependencies": {
     "@swc/cli": "^0.1.62",
@@ -46,7 +46,7 @@
     "@gymlabs/core.db": "^0.0.0",
     "@gymlabs/core.grpc.definition": "^0.0.0",
     "@gymlabs/admin.grpc.client": "^0.1.1",
-    "@gymlabs/admin.grpc.definition": "^0.1.1",
+    "@gymlabs/admin.grpc.definition": "^0.1.2",
     "@pothos/core": "^3.29.0",
     "@pothos/plugin-errors": "^3.11.0",
     "@pothos/plugin-prisma": "^3.47.1",
