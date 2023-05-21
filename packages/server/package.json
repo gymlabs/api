@@ -25,7 +25,7 @@
     "lint": "eslint --ext .ts src",
     "lint:fix": "npm run lint -- --fix",
     "format:check": "prettier --ignore-unknown \"src/**/*\"",
-    "format": "npm run format -- --write"
+    "format": "npm run format:check -- --write"
   },
   "devDependencies": {
     "@swc/cli": "^0.1.62",
