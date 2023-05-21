@@ -71,7 +71,7 @@ builder.mutationFields((t) => ({
         data: {
           ...input,
           password: await hashPassword(input.password),
-          emailVerificationToken: await hashToken(verificationToken),
+          emailVerificationToken: hashToken(verificationToken),
         },
       });
 
@@ -138,7 +138,7 @@ builder.mutationFields((t) => ({
 
       const user = await db.user.findUnique({
         where: {
-          emailVerificationToken: await hashToken(input.token),
+          emailVerificationToken: hashToken(input.token),
         },
       });
 
