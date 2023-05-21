@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Authenticate with GitHub Package Registry
+        run: echo -e "@gymlabs:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
       - name: Install dependencies
         run: NPM_TOKEN=${{ secrets.GITHUB_TOKEN }} npm ci
 
