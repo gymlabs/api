@@ -1,7 +1,8 @@
-import "./user";
-import "./gyms";
-import "./workouts";
 import "./exercises";
+import "./gyms";
+import "./membership";
+import "./user";
+import "./workouts";
 import "./scalars";
 import { builder } from "./builder";
 
