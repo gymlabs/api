@@ -1,3 +1,4 @@
+import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
 import {
   BooleanType,
@@ -7,6 +8,13 @@ import { ZodError } from "zod";
 
 import { Membership } from "./types";
 import { builder } from "../builder";
+import {
+  InternalServerError,
+  InvalidArgumentError,
+  NotFoundError,
+  UnauthenticatedError,
+  UnauthorizedError,
+} from "../errors";
 
 builder.mutationFields((t) => ({
   createMembership: t.fieldWithInput({
@@ -16,25 +24,45 @@ builder.mutationFields((t) => ({
       userId: t.input.string(),
       contractId: t.input.string(),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      // TODO: check access rights
-      const membership: Membership__Output = await new Promise(
-        (resolve, reject) => {
-          client.createMembership(input, (err, res) => {
-            if (err || !res) {
-              reject(err);
-            } else {
-              resolve(res);
-            }
-          });
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const membership: Membership__Output = await new Promise(
+          (resolve, reject) => {
+            client.createMembership(input, (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            });
+          }
+        );
+        return {
+          ...membership,
+          createdAt: new Date(membership.createdAt),
+          updatedAt: new Date(membership.updatedAt),
+        };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
         }
-      );
-      return {
-        ...membership,
-        createdAt: new Date(membership.createdAt),
-        updatedAt: new Date(membership.updatedAt),
-      };
+      }
     },
   }),
 
@@ -43,19 +71,42 @@ builder.mutationFields((t) => ({
     input: {
       membershipId: t.input.string(),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        NotFoundError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      // TODO: check access rights
-      const success: BooleanType = await new Promise((resolve, reject) => {
-        client.activateMembership(input, (err, res) => {
-          if (err || !res) {
-            reject(err);
-          } else {
-            resolve(res);
-          }
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const success: BooleanType = await new Promise((resolve, reject) => {
+          client.activateMembership(input, (err, res) => {
+            if (err) {
+              reject(err);
+            } else if (res) {
+              resolve(res);
+            }
+          });
         });
-      });
-      return success.value ?? false;
+        return success.value ?? false;
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
+        }
+      }
     },
   }),
 
@@ -65,19 +116,42 @@ builder.mutationFields((t) => ({
       gymId: t.input.string(),
       userId: t.input.string(),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        NotFoundError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      // TODO: check access rights
-      const success: BooleanType = await new Promise((resolve, reject) => {
-        client.deleteMembership(input, (err, res) => {
-          if (err || !res) {
-            reject(err);
-          } else {
-            resolve(res);
-          }
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const success: BooleanType = await new Promise((resolve, reject) => {
+          client.deleteMembership(input, (err, res) => {
+            if (err) {
+              reject(err);
+            } else if (res) {
+              resolve(res);
+            }
+          });
         });
-      });
-      return success.value ?? false;
+        return success.value ?? false;
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
+        }
+      }
     },
   }),
 }));

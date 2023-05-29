@@ -1,6 +1,6 @@
 {
   "name": "@gymlabs/core.gql.client",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "dist/graphql.js",
   "types": "dist/graphql.d.ts",
   "module": "dist/graphql.mjs",

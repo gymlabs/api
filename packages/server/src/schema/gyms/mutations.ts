@@ -1,9 +1,17 @@
+import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
 import { Gym__Output } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
 import { builder } from "../builder";
+import {
+  InternalServerError,
+  InvalidArgumentError,
+  NotFoundError,
+  UnauthenticatedError,
+  UnauthorizedError,
+} from "../errors";
 import { Gym } from "../gyms/types";
 
 builder.mutationFields((t) => ({
@@ -18,22 +26,43 @@ builder.mutationFields((t) => ({
       postalCode: t.input.string(),
       street: t.input.string(),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      const gym: Gym__Output = await new Promise((resolve, reject) => {
-        client.createGym(input, (err, res) => {
-          if (err || !res) {
-            reject(err);
-          } else {
-            resolve(res);
-          }
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const gym: Gym__Output = await new Promise((resolve, reject) => {
+          client.createGym(input, (err, res) => {
+            if (err) {
+              reject(err);
+            } else if (res) {
+              resolve(res);
+            }
+          });
         });
-      });
-      return {
-        ...gym,
-        createdAt: new Date(gym.createdAt),
-        updatedAt: new Date(gym.updatedAt),
-      };
+        return {
+          ...gym,
+          createdAt: new Date(gym.createdAt),
+          updatedAt: new Date(gym.updatedAt),
+        };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
+        }
+      }
     },
   }),
   updateGym: t.fieldWithInput({
@@ -48,22 +77,46 @@ builder.mutationFields((t) => ({
       postalCode: t.input.string({ required: false }),
       street: t.input.string({ required: false }),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        NotFoundError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      const gym: Gym__Output = await new Promise((resolve, reject) => {
-        client.updateGym(mapNullToUndefined(input), (err, res) => {
-          if (err || !res) {
-            reject(err);
-          } else {
-            resolve(res);
-          }
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const gym: Gym__Output = await new Promise((resolve, reject) => {
+          client.updateGym(mapNullToUndefined(input), (err, res) => {
+            if (err) {
+              reject(err);
+            } else if (res) {
+              resolve(res);
+            }
+          });
         });
-      });
-      return {
-        ...gym,
-        createdAt: new Date(gym.createdAt),
-        updatedAt: new Date(gym.updatedAt),
-      };
+        return {
+          ...gym,
+          createdAt: new Date(gym.createdAt),
+          updatedAt: new Date(gym.updatedAt),
+        };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
+        }
+      }
     },
   }),
 }));

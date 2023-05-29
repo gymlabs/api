@@ -1,3 +1,4 @@
+import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
 import {
   Membership__Output,
@@ -7,6 +8,13 @@ import { ZodError } from "zod";
 
 import { Membership, Memberships } from "./types";
 import { builder } from "../builder";
+import {
+  InternalServerError,
+  InvalidArgumentError,
+  NotFoundError,
+  UnauthenticatedError,
+  UnauthorizedError,
+} from "../errors";
 
 builder.queryFields((t) => ({
   memberships: t.fieldWithInput({
@@ -14,26 +22,47 @@ builder.queryFields((t) => ({
     input: {
       gymId: t.input.string(),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      const memberships: Memberships__Output = await new Promise(
-        (resolve, reject) => {
-          client.getMemberships(input, (err, res) => {
-            if (err || !res) {
-              reject(err);
-            } else {
-              resolve(res);
-            }
-          });
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const memberships: Memberships__Output = await new Promise(
+          (resolve, reject) => {
+            client.getMemberships(input, (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            });
+          }
+        );
+        return {
+          memberships: memberships.memberships.map((membership) => ({
+            ...membership,
+            createdAt: new Date(membership.createdAt),
+            updatedAt: new Date(membership.updatedAt),
+          })),
+        };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
         }
-      );
-      return {
-        memberships: memberships.memberships.map((membership) => ({
-          ...membership,
-          createdAt: new Date(membership.createdAt),
-          updatedAt: new Date(membership.updatedAt),
-        })),
-      };
+      }
     },
   }),
 
@@ -43,24 +72,48 @@ builder.queryFields((t) => ({
       gymId: t.input.string(),
       userId: t.input.string(),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        NotFoundError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      const membership: Membership__Output = await new Promise(
-        (resolve, reject) => {
-          client.getMembership(input, (err, res) => {
-            if (err || !res) {
-              reject(err);
-            } else {
-              resolve(res);
-            }
-          });
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const membership: Membership__Output = await new Promise(
+          (resolve, reject) => {
+            client.getMembership(input, (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            });
+          }
+        );
+        return {
+          ...membership,
+          createdAt: new Date(membership.createdAt),
+          updatedAt: new Date(membership.updatedAt),
+        };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
         }
-      );
-      return {
-        ...membership,
-        createdAt: new Date(membership.createdAt),
-        updatedAt: new Date(membership.updatedAt),
-      };
+      }
     },
   }),
 }));

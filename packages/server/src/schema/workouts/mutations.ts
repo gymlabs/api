@@ -1,3 +1,4 @@
+import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
 import {
   BooleanType__Output,
@@ -8,6 +9,13 @@ import { ZodError } from "zod";
 
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
 import { builder } from "../builder";
+import {
+  InternalServerError,
+  InvalidArgumentError,
+  NotFoundError,
+  UnauthenticatedError,
+  UnauthorizedError,
+} from "../errors";
 import { Workout, WorkoutPlanItem } from "../workouts/types";
 
 builder.mutationFields((t) => ({
@@ -18,27 +26,50 @@ builder.mutationFields((t) => ({
       name: t.input.string(),
       description: t.input.string(),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      const workout: Workout__Output = await new Promise((resolve, reject) => {
-        client.createWorkout(input, (err, res) => {
-          if (err || !res) {
-            reject(err);
-          } else {
-            resolve(res);
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const workout: Workout__Output = await new Promise(
+          (resolve, reject) => {
+            client.createWorkout(input, (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            });
           }
-        });
-      });
-      return {
-        ...workout,
-        items: workout.items.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt),
-          updatedAt: new Date(item.updatedAt),
-        })),
-        createdAt: new Date(workout.createdAt),
-        updatedAt: new Date(workout.updatedAt),
-      };
+        );
+        return {
+          ...workout,
+          items: workout.items.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt),
+            updatedAt: new Date(item.updatedAt),
+          })),
+          createdAt: new Date(workout.createdAt),
+          updatedAt: new Date(workout.updatedAt),
+        };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
+        }
+      }
     },
   }),
   updateWorkout: t.fieldWithInput({
@@ -48,27 +79,53 @@ builder.mutationFields((t) => ({
       name: t.input.string({ required: false }),
       description: t.input.string({ required: false }),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        NotFoundError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      const workout: Workout__Output = await new Promise((resolve, reject) => {
-        client.updateWorkout(mapNullToUndefined(input), (err, res) => {
-          if (err || !res) {
-            reject(err);
-          } else {
-            resolve(res);
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const workout: Workout__Output = await new Promise(
+          (resolve, reject) => {
+            client.updateWorkout(mapNullToUndefined(input), (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            });
           }
-        });
-      });
-      return {
-        ...workout,
-        items: workout.items.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt),
-          updatedAt: new Date(item.updatedAt),
-        })),
-        createdAt: new Date(workout.createdAt),
-        updatedAt: new Date(workout.updatedAt),
-      };
+        );
+        return {
+          ...workout,
+          items: workout.items.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt),
+            updatedAt: new Date(item.updatedAt),
+          })),
+          createdAt: new Date(workout.createdAt),
+          updatedAt: new Date(workout.updatedAt),
+        };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
+        }
+      }
     },
   }),
   deleteWorkout: t.fieldWithInput({
@@ -76,20 +133,44 @@ builder.mutationFields((t) => ({
     input: {
       id: t.input.string(),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        NotFoundError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      const workout: BooleanType__Output = await new Promise(
-        (resolve, reject) => {
-          client.deleteWorkout(input, (err, res) => {
-            if (err || !res) {
-              reject(err);
-            } else {
-              resolve(res);
-            }
-          });
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const workout: BooleanType__Output = await new Promise(
+          (resolve, reject) => {
+            client.deleteWorkout(input, (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            });
+          }
+        );
+        return workout.value;
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
         }
-      );
-      return workout.value;
+      }
     },
   }),
   createWorkoutPlanItem: t.fieldWithInput({
@@ -101,24 +182,45 @@ builder.mutationFields((t) => ({
       weights: t.input.intList(),
       index: t.input.int(),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      const workoutPlanItem: WorkoutPlanItem__Output = await new Promise(
-        (resolve, reject) => {
-          client.createWorkoutPlanItem(input, (err, res) => {
-            if (err || !res) {
-              reject(err);
-            } else {
-              resolve(res);
-            }
-          });
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const workoutPlanItem: WorkoutPlanItem__Output = await new Promise(
+          (resolve, reject) => {
+            client.createWorkoutPlanItem(input, (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            });
+          }
+        );
+        return {
+          ...workoutPlanItem,
+          createdAt: new Date(workoutPlanItem.createdAt),
+          updatedAt: new Date(workoutPlanItem.updatedAt),
+        };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
         }
-      );
-      return {
-        ...workoutPlanItem,
-        createdAt: new Date(workoutPlanItem.createdAt),
-        updatedAt: new Date(workoutPlanItem.updatedAt),
-      };
+      }
     },
   }),
   updateWorkoutPlanItem: t.fieldWithInput({
@@ -129,27 +231,51 @@ builder.mutationFields((t) => ({
       weights: t.input.intList({ required: false }),
       index: t.input.int({ required: false }),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        NotFoundError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      const workoutPlanItem: WorkoutPlanItem__Output = await new Promise(
-        (resolve, reject) => {
-          client.updateWorkoutPlanItem(
-            mapNullToUndefined(input),
-            (err, res) => {
-              if (err || !res) {
-                reject(err);
-              } else {
-                resolve(res);
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const workoutPlanItem: WorkoutPlanItem__Output = await new Promise(
+          (resolve, reject) => {
+            client.updateWorkoutPlanItem(
+              mapNullToUndefined(input),
+              (err, res) => {
+                if (err) {
+                  reject(err);
+                } else if (res) {
+                  resolve(res);
+                }
               }
-            }
-          );
+            );
+          }
+        );
+        return {
+          ...workoutPlanItem,
+          createdAt: new Date(workoutPlanItem.createdAt),
+          updatedAt: new Date(workoutPlanItem.updatedAt),
+        };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
         }
-      );
-      return {
-        ...workoutPlanItem,
-        createdAt: new Date(workoutPlanItem.createdAt),
-        updatedAt: new Date(workoutPlanItem.updatedAt),
-      };
+      }
     },
   }),
   deleteWorkoutPlanItem: t.fieldWithInput({
@@ -157,20 +283,44 @@ builder.mutationFields((t) => ({
     input: {
       id: t.input.string(),
     },
-    errors: { types: [ZodError] },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        NotFoundError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
     resolve: async (query, { input }, args, context) => {
-      const workoutPlanItem: BooleanType__Output = await new Promise(
-        (resolve, reject) => {
-          client.deleteWorkoutPlanItem(input, (err, res) => {
-            if (err || !res) {
-              reject(err);
-            } else {
-              resolve(res);
-            }
-          });
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const workoutPlanItem: BooleanType__Output = await new Promise(
+          (resolve, reject) => {
+            client.deleteWorkoutPlanItem(input, (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            });
+          }
+        );
+        return workoutPlanItem.value;
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
         }
-      );
-      return workoutPlanItem.value;
+      }
     },
   }),
 }));

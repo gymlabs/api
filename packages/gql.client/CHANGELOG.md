@@ -1,5 +1,11 @@
 # @gymlabs/core.gql.client
 
+## 0.1.5
+
+### Patch Changes
+
+- error handling
+
 ## 0.1.4
 
 ### Patch Changes
