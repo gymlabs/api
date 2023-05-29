@@ -18,7 +18,6 @@ import {
   hashToken,
   randomToken,
 } from "../../lib/security";
-import { logger } from "../../logger";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -81,8 +80,6 @@ builder.mutationFields((t) => ({
             },
             (err, res) => {
               if (err) {
-                console.log(err);
-                logger.warn("register mutation failed");
                 reject(err);
               } else if (res) {
                 resolve(res);
