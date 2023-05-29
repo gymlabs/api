@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
-import { AccessToken, PrismaClient, User } from "@prisma/client";
 import { hash } from "bcrypt";
+
+import { AccessToken, PrismaClient, User } from "@gymlabs/core.db";
 
 const prisma = new PrismaClient();
 
@@ -43,7 +44,7 @@ async function main() {
       where: { token: hashedToken },
       update: {},
       create: {
-        userId: users[i].id,
+        userId: users[i]!.id,
         token: hashedToken,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
         createdAt: new Date(),
@@ -52,7 +53,7 @@ async function main() {
     });
     console.log(
       `Created access token ${i + 1}/${users.length} for user: ${
-        users[i].email
+        users[i]!.email
       }`
     );
     accessTokens.push(accessToken);
