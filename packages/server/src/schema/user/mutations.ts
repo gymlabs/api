@@ -1,10 +1,11 @@
-import client from "@gymlabs/admin.grpc.client";
+import adminClient from "@gymlabs/admin.grpc.client";
 import {
   Employments__Output,
   Gyms__Output,
   Memberships__Output,
   Organizations__Output,
 } from "@gymlabs/admin.grpc.definition";
+import communicationClient from "@gymlabs/communication.grpc.client";
 import { addMilliseconds } from "date-fns";
 import { ZodError } from "zod";
 
@@ -17,11 +18,6 @@ import {
   hashToken,
   randomToken,
 } from "../../lib/security";
-import { sendMail } from "../../services/mail/sendMail";
-import { EmailUpdatedEmail } from "../../services/mail/templates/EmailUpdatedEmail";
-import { ReactivationEmail } from "../../services/mail/templates/ReactivationEmail";
-import { ResetPasswordRequestEmail } from "../../services/mail/templates/ResetPasswordRequestEmail";
-import { WelcomeEmail } from "../../services/mail/templates/WelcomeEmail";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -75,8 +71,21 @@ builder.mutationFields((t) => ({
           },
         });
 
-        await sendMail(new WelcomeEmail(user.firstName, verificationToken), {
-          to: user.email,
+        await new Promise((resolve, reject) => {
+          communicationClient.SendWelcomeEmail(
+            {
+              to: user.email,
+              name: user.firstName,
+              token: verificationToken,
+            },
+            (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            }
+          );
         });
 
         return true;
@@ -235,8 +244,21 @@ builder.mutationFields((t) => ({
           },
         });
 
-        await sendMail(new ResetPasswordRequestEmail(user.firstName, token), {
-          to: user.email,
+        await new Promise((resolve, reject) => {
+          communicationClient.SendResetPasswordRequestEmail(
+            {
+              to: user.email,
+              name: user.firstName,
+              token,
+            },
+            (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            }
+          );
         });
 
         return true;
@@ -333,7 +355,7 @@ builder.mutationFields((t) => ({
         // check if user has memberships or employments
         const organizations: Organizations__Output = await new Promise(
           (resolve, reject) => {
-            client.GetOrganizations({}, (err, res) => {
+            adminClient.GetOrganizations({}, (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -346,7 +368,7 @@ builder.mutationFields((t) => ({
         if (organizations.organizations.length) {
           for (const organization of organizations.organizations) {
             const gyms: Gyms__Output = await new Promise((resolve, reject) => {
-              client.GetGyms(
+              adminClient.GetGyms(
                 { organizationId: organization.id },
                 (err, res) => {
                   if (err) {
@@ -361,13 +383,16 @@ builder.mutationFields((t) => ({
               for (const gym of gyms.gyms) {
                 const memberships: Memberships__Output = await new Promise(
                   (resolve, reject) => {
-                    client.GetMemberships({ gymId: gym.id }, (err, res) => {
-                      if (err) {
-                        reject(err);
-                      } else if (res) {
-                        resolve(res);
+                    adminClient.GetMemberships(
+                      { gymId: gym.id },
+                      (err, res) => {
+                        if (err) {
+                          reject(err);
+                        } else if (res) {
+                          resolve(res);
+                        }
                       }
-                    });
+                    );
                   }
                 );
                 if (memberships.memberships.length) {
@@ -380,13 +405,16 @@ builder.mutationFields((t) => ({
                 }
                 const employments: Employments__Output = await new Promise(
                   (resolve, reject) => {
-                    client.GetEmployments({ gymId: gym.id }, (err, res) => {
-                      if (err) {
-                        reject(err);
-                      } else if (res) {
-                        resolve(res);
+                    adminClient.GetEmployments(
+                      { gymId: gym.id },
+                      (err, res) => {
+                        if (err) {
+                          reject(err);
+                        } else if (res) {
+                          resolve(res);
+                        }
                       }
-                    });
+                    );
                   }
                 );
                 if (employments.employments.length) {
@@ -410,8 +438,22 @@ builder.mutationFields((t) => ({
           },
         });
 
-        await sendMail(new ReactivationEmail(user.firstName, token, deleteAt), {
-          to: user.email,
+        await new Promise((resolve, reject) => {
+          communicationClient.SendReactivationEmail(
+            {
+              to: user.email,
+              name: user.firstName,
+              token,
+              deleteAt: deleteAt.toDateString(),
+            },
+            (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            }
+          );
         });
 
         return true;
@@ -517,8 +559,21 @@ builder.mutationFields((t) => ({
           },
         });
 
-        await sendMail(new EmailUpdatedEmail(user.firstName, token), {
-          to: user.email,
+        await new Promise((resolve, reject) => {
+          communicationClient.SendEmailUpdateEmail(
+            {
+              to: user.email,
+              name: user.firstName,
+              token,
+            },
+            (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            }
+          );
         });
 
         return true;

@@ -14,39 +14,18 @@ const validatedEnv = z
     SMTP_FROM: z.string().optional(),
     PORT: z.preprocess(Number, z.number().int()).default(8000),
     GRPC_PORT: z.preprocess(Number, z.number().int()).default(8001),
+    ADMIN_GRPC_HOST: z.string().default("localhost"),
+    ADMIN_GRPC_PORT: z.preprocess(Number, z.number().int()).default(8002),
+    COMMUNICATION_GRPC_HOST: z.string().default("localhost"),
+    COMMUNICATION_GRPC_PORT: z
+      .preprocess(Number, z.number().int())
+      .default(8003),
     DEBUG: z
       .enum(["true", "false"])
       .default("false")
       .transform((v) => v === "true"),
   })
-  // TODO: fix this - when you have the Muse
-  // .refine(
-  //   (env) => {
-  //     if (env.NODE_ENV === "client") {
-  //       return (
-  //         !("DATABASE_URL" in env) &&
-  //         !("SMTP_HOST" in env) &&
-  //         !("SMTP_PORT" in env) &&
-  //         !("SMTP_USER" in env) &&
-  //         !("SMTP_PASSWORD" in env) &&
-  //         !("SMTP_FROM" in env)
-  //       );
-  //     }
-  //     return true;
-  //   },
-  //   {
-  //     message:
-  //       "Additional fields are required for NODE_ENV other than 'client'",
-  //     path: [
-  //       "DATABASE_URL",
-  //       "SMTP_HOST",
-  //       "SMTP_PORT",
-  //       "SMTP_USER",
-  //       "SMTP_PASSWORD",
-  //       "SMTP_FROM",
-  //     ],
-  //   }
-  // )
+
   .safeParse(process.env);
 
 if (!validatedEnv.success) {
@@ -67,6 +46,16 @@ export const config = {
     host: env.HOST,
     port: env.PORT,
     grpcPort: env.GRPC_PORT,
+  },
+  client: {
+    admin: {
+      host: env.ADMIN_GRPC_HOST,
+      port: env.ADMIN_GRPC_PORT,
+    },
+    communication: {
+      host: env.COMMUNICATION_GRPC_HOST,
+      port: env.COMMUNICATION_GRPC_PORT,
+    },
   },
   logging: {
     level: env.DEBUG ? "debug" : "info",
