@@ -23,7 +23,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ github.token }}
 
-      # clean this up
       - name: Build & install packages
         run: |
           npm run build
