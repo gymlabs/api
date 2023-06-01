@@ -42,8 +42,8 @@
     "ts-node": "^10.9.1"
   },
   "dependencies": {
-    "@gymlabs/admin.grpc.client": "^0.1.1",
-    "@gymlabs/admin.grpc.definition": "^0.1.3",
+    "@gymlabs/admin.grpc.client": "^1.0.1",
+    "@gymlabs/admin.grpc.definition": "^0.2.2",
     "@gymlabs/communication.grpc.client": "^0.0.4",
     "@gymlabs/communication.grpc.definition": "^0.0.2",
     "@gymlabs/core.db": "^0.0.0",

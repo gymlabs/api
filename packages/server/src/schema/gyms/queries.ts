@@ -63,6 +63,51 @@ builder.queryFields((t) => ({
       }
     },
   }),
+  gymsWhereEmployed: t.field({
+    type: Gyms,
+    errors: {
+      types: [
+        InvalidArgumentError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
+    resolve: async (query, { input }, args, context) => {
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const gyms: Gyms__Output = await new Promise((resolve, reject) => {
+          client.getGymsWhereEmployed(
+            { userId: args.viewer.user?.id },
+            (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            }
+          );
+        });
+        return {
+          gyms: gyms.gyms.map((gym) => ({
+            ...gym,
+            createdAt: new Date(gym.createdAt),
+            updatedAt: new Date(gym.updatedAt),
+          })),
+        };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
+        }
+      }
+    },
+  }),
   gym: t.fieldWithInput({
     type: Gym,
     input: {
