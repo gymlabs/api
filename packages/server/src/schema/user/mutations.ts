@@ -6,6 +6,7 @@ import {
   Organizations__Output,
 } from "@gymlabs/admin.grpc.definition";
 import communicationClient from "@gymlabs/communication.grpc.client";
+import { ResetType } from "@gymlabs/core.db";
 import { addMilliseconds } from "date-fns";
 import { ZodError } from "zod";
 
@@ -106,7 +107,7 @@ builder.mutationFields((t) => ({
       }),
       password: t.input.string(),
     },
-    resolve: async (parent, { input }, { res }) => {
+    resolve: async (parent, { input }) => {
       try {
         const user = await db.user.findUnique({
           where: { email: input.email },
@@ -236,10 +237,11 @@ builder.mutationFields((t) => ({
           config.security.passwordResetRequestLifetime
         );
 
-        await db.passwordResetRequest.create({
+        await db.resetRequest.create({
           data: {
             userId: user.id,
             token: tokenHash,
+            type: ResetType.PASSWORD,
             expiresAt,
           },
         });
@@ -290,7 +292,7 @@ builder.mutationFields((t) => ({
     },
     resolve: async (parent, { input }, context) => {
       try {
-        const resetPasswordRequest = await db.passwordResetRequest.findUnique({
+        const resetPasswordRequest = await db.resetRequest.findUnique({
           where: {
             token: hashToken(input.token),
           },
@@ -312,7 +314,7 @@ builder.mutationFields((t) => ({
           data: { password },
         });
 
-        await db.passwordResetRequest.update({
+        await db.resetRequest.update({
           where: { id: resetPasswordRequest.id },
           data: { usedAt: new Date() },
         });
@@ -476,7 +478,7 @@ builder.mutationFields((t) => ({
     input: {
       token: t.input.string(),
     },
-    resolve: async (parent, { input }, context) => {
+    resolve: async (parent, { input }) => {
       try {
         const user = await db.user.findUnique({
           where: {
@@ -521,7 +523,7 @@ builder.mutationFields((t) => ({
           email: true,
         },
       }),
-      newMail: t.input.string({
+      newValue: t.input.string({
         validate: {
           email: true,
         },
@@ -533,14 +535,17 @@ builder.mutationFields((t) => ({
           where: { email: input.email },
         });
 
-        if (!user) throw new NotFoundError("User not found");
+        if (!user) {
+          throw new NotFoundError("User not found");
+        }
 
         const newMailUser = await db.user.findUnique({
-          where: { email: input.newMail },
+          where: { email: input.newValue },
         });
 
-        if (newMailUser)
+        if (newMailUser) {
           throw new EmailAlreadyInUseError("New Email already in use");
+        }
 
         const token = randomToken();
         const tokenHash = hashToken(token);
@@ -550,11 +555,12 @@ builder.mutationFields((t) => ({
           config.security.changeMailRequestLifetime
         );
 
-        await db.changeMailRequest.create({
+        await db.resetRequest.create({
           data: {
             userId: user.id,
             token: tokenHash,
-            newMail: input.newMail,
+            type: ResetType.EMAIL,
+            newValue: input.newValue,
             expiresAt,
           },
         });
@@ -597,7 +603,7 @@ builder.mutationFields((t) => ({
     input: { token: t.input.string() },
     resolve: async (parent, { input }, context) => {
       try {
-        const changeMailRequest = await db.changeMailRequest.findUnique({
+        const changeMailRequest = await db.resetRequest.findUnique({
           where: {
             token: hashToken(input.token),
           },
@@ -614,10 +620,10 @@ builder.mutationFields((t) => ({
 
         await db.user.update({
           where: { id: changeMailRequest.userId },
-          data: { email: changeMailRequest.newMail },
+          data: { email: changeMailRequest.newValue as string },
         });
 
-        await db.changeMailRequest.update({
+        await db.resetRequest.update({
           where: { id: changeMailRequest.id },
           data: { usedAt: new Date() },
         });
