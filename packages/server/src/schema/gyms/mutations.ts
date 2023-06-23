@@ -4,6 +4,7 @@ import { Gym__Output } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -39,7 +40,7 @@ builder.mutationFields((t) => ({
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const gym: Gym__Output = await new Promise((resolve, reject) => {
-          client.createGym(input, (err, res) => {
+          client.createGym(input, meta(args.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {
@@ -91,13 +92,17 @@ builder.mutationFields((t) => ({
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const gym: Gym__Output = await new Promise((resolve, reject) => {
-          client.updateGym(mapNullToUndefined(input), (err, res) => {
-            if (err) {
-              reject(err);
-            } else if (res) {
-              resolve(res);
+          client.updateGym(
+            mapNullToUndefined(input),
+            meta(args.viewer),
+            (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
             }
-          });
+          );
         });
         return {
           ...gym,

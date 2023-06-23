@@ -13,6 +13,7 @@ import { ZodError } from "zod";
 import { AccessTokenResponse } from "./types";
 import { config } from "../../config";
 import { db } from "../../db";
+import { meta } from "../../lib/metadata";
 import {
   comparePassword,
   hashPassword,
@@ -357,13 +358,17 @@ builder.mutationFields((t) => ({
         // check if user has memberships or employments
         const organizations: Organizations__Output = await new Promise(
           (resolve, reject) => {
-            adminClient.GetOrganizations({}, (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
+            adminClient.GetOrganizations(
+              {},
+              meta(context.viewer),
+              (err, res) => {
+                if (err) {
+                  reject(err);
+                } else if (res) {
+                  resolve(res);
+                }
               }
-            });
+            );
           }
         );
 
@@ -372,6 +377,7 @@ builder.mutationFields((t) => ({
             const gyms: Gyms__Output = await new Promise((resolve, reject) => {
               adminClient.GetGyms(
                 { organizationId: organization.id },
+                meta(context.viewer),
                 (err, res) => {
                   if (err) {
                     reject(err);
@@ -387,6 +393,7 @@ builder.mutationFields((t) => ({
                   (resolve, reject) => {
                     adminClient.GetMemberships(
                       { gymId: gym.id },
+                      meta(context.viewer),
                       (err, res) => {
                         if (err) {
                           reject(err);
@@ -409,6 +416,7 @@ builder.mutationFields((t) => ({
                   (resolve, reject) => {
                     adminClient.GetEmployments(
                       { gymId: gym.id },
+                      meta(context.viewer),
                       (err, res) => {
                         if (err) {
                           reject(err);

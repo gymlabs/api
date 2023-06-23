@@ -7,6 +7,7 @@ import {
 import { ZodError } from "zod";
 
 import { Membership, Memberships } from "./types";
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -36,7 +37,7 @@ builder.queryFields((t) => ({
       try {
         const memberships: Memberships__Output = await new Promise(
           (resolve, reject) => {
-            client.getMemberships(input, (err, res) => {
+            client.getMemberships(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -87,7 +88,7 @@ builder.queryFields((t) => ({
       try {
         const membership: Membership__Output = await new Promise(
           (resolve, reject) => {
-            client.getMembership(input, (err, res) => {
+            client.getMembership(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {

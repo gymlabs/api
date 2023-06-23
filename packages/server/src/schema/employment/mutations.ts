@@ -7,6 +7,7 @@ import {
 import { ZodError } from "zod";
 
 import { Employment } from "./types";
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -22,7 +23,7 @@ builder.mutationFields((t) => ({
     input: {
       gymId: t.input.string(),
       userId: t.input.string(),
-      role: t.input.string(),
+      roleId: t.input.string(),
     },
     errors: {
       types: [
@@ -38,7 +39,7 @@ builder.mutationFields((t) => ({
       try {
         const employment: Employment__Output = await new Promise(
           (resolve, reject) => {
-            client.createEmployment(input, (err, res) => {
+            client.createEmployment(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -86,7 +87,7 @@ builder.mutationFields((t) => ({
       try {
         const success: BooleanType__Output = await new Promise(
           (resolve, reject) => {
-            client.activateEmployment(input, (err, res) => {
+            client.activateEmployment(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -133,7 +134,7 @@ builder.mutationFields((t) => ({
       try {
         const success: BooleanType__Output = await new Promise(
           (resolve, reject) => {
-            client.deleteEmployment(input, (err, res) => {
+            client.deleteEmployment(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {

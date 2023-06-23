@@ -8,6 +8,7 @@ import {
 import { ZodError } from "zod";
 
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -40,7 +41,7 @@ builder.mutationFields((t) => ({
       try {
         const exercise: Exercise__Output = await new Promise(
           (resolve, reject) => {
-            client.createExercise(input, (err, res) => {
+            client.createExercise(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -94,13 +95,17 @@ builder.mutationFields((t) => ({
       try {
         const exercise: Exercise__Output = await new Promise(
           (resolve, reject) => {
-            client.updateExercise(mapNullToUndefined(input), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
+            client.updateExercise(
+              mapNullToUndefined(input),
+              meta(args.viewer),
+              (err, res) => {
+                if (err) {
+                  reject(err);
+                } else if (res) {
+                  resolve(res);
+                }
               }
-            });
+            );
           }
         );
         return {
@@ -148,7 +153,7 @@ builder.mutationFields((t) => ({
       try {
         const exercise: BooleanType__Output = await new Promise(
           (resolve, reject) => {
-            client.deleteExercise(input, (err, res) => {
+            client.deleteExercise(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -195,7 +200,7 @@ builder.mutationFields((t) => ({
       try {
         const exerciseStep: ExerciseStep__Output = await new Promise(
           (resolve, reject) => {
-            client.createExerciseStep(input, (err, res) => {
+            client.createExerciseStep(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -245,13 +250,17 @@ builder.mutationFields((t) => ({
       try {
         const exerciseStep: ExerciseStep__Output = await new Promise(
           (resolve, reject) => {
-            client.updateExerciseStep(mapNullToUndefined(input), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
+            client.updateExerciseStep(
+              mapNullToUndefined(input),
+              meta(args.viewer),
+              (err, res) => {
+                if (err) {
+                  reject(err);
+                } else if (res) {
+                  resolve(res);
+                }
               }
-            });
+            );
           }
         );
         return {
@@ -294,7 +303,7 @@ builder.mutationFields((t) => ({
       try {
         const exerciseStep: BooleanType__Output = await new Promise(
           (resolve, reject) => {
-            client.deleteExerciseStep(input, (err, res) => {
+            client.deleteExerciseStep(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {

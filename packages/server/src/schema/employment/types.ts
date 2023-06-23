@@ -5,7 +5,7 @@ export const Employment = builder.simpleObject("Employment", {
     id: t.id(),
     gymId: t.string(),
     userId: t.string(),
-    role: t.string(),
+    roleId: t.string(),
     createdAt: t.field({ type: "Date" }),
     updatedAt: t.field({ type: "Date" }),
   }),

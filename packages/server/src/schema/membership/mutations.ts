@@ -7,6 +7,7 @@ import {
 import { ZodError } from "zod";
 
 import { Membership } from "./types";
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -38,7 +39,7 @@ builder.mutationFields((t) => ({
       try {
         const membership: Membership__Output = await new Promise(
           (resolve, reject) => {
-            client.createMembership(input, (err, res) => {
+            client.createMembership(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -85,7 +86,7 @@ builder.mutationFields((t) => ({
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const success: BooleanType = await new Promise((resolve, reject) => {
-          client.activateMembership(input, (err, res) => {
+          client.activateMembership(input, meta(args.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {
@@ -130,7 +131,7 @@ builder.mutationFields((t) => ({
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const success: BooleanType = await new Promise((resolve, reject) => {
-          client.deleteMembership(input, (err, res) => {
+          client.deleteMembership(input, meta(args.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {

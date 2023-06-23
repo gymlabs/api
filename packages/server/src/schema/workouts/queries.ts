@@ -6,6 +6,7 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -37,7 +38,7 @@ builder.queryFields((t) => ({
       try {
         const workout: Workout__Output = await new Promise(
           (resolve, reject) => {
-            client.getWorkout({ id: input.id }, (err, res) => {
+            client.getWorkout(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -90,16 +91,13 @@ builder.queryFields((t) => ({
       try {
         const workouts: Workouts__Output = await new Promise(
           (resolve, reject) => {
-            client.getWorkouts(
-              { organizationId: input.organizationId },
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
+            client.getWorkouts(input, meta(args.viewer), (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
               }
-            );
+            });
           }
         );
         return {

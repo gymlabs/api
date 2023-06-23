@@ -8,6 +8,7 @@ import {
 import { ZodError } from "zod";
 
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -40,7 +41,7 @@ builder.mutationFields((t) => ({
       try {
         const workout: Workout__Output = await new Promise(
           (resolve, reject) => {
-            client.createWorkout(input, (err, res) => {
+            client.createWorkout(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -94,13 +95,17 @@ builder.mutationFields((t) => ({
       try {
         const workout: Workout__Output = await new Promise(
           (resolve, reject) => {
-            client.updateWorkout(mapNullToUndefined(input), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
+            client.updateWorkout(
+              mapNullToUndefined(input),
+              meta(args.viewer),
+              (err, res) => {
+                if (err) {
+                  reject(err);
+                } else if (res) {
+                  resolve(res);
+                }
               }
-            });
+            );
           }
         );
         return {
@@ -148,7 +153,7 @@ builder.mutationFields((t) => ({
       try {
         const workout: BooleanType__Output = await new Promise(
           (resolve, reject) => {
-            client.deleteWorkout(input, (err, res) => {
+            client.deleteWorkout(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -196,13 +201,17 @@ builder.mutationFields((t) => ({
       try {
         const workoutPlanItem: WorkoutPlanItem__Output = await new Promise(
           (resolve, reject) => {
-            client.createWorkoutPlanItem(input, (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
+            client.createWorkoutPlanItem(
+              input,
+              meta(args.viewer),
+              (err, res) => {
+                if (err) {
+                  reject(err);
+                } else if (res) {
+                  resolve(res);
+                }
               }
-            });
+            );
           }
         );
         return {
@@ -248,6 +257,7 @@ builder.mutationFields((t) => ({
           (resolve, reject) => {
             client.updateWorkoutPlanItem(
               mapNullToUndefined(input),
+              meta(args.viewer),
               (err, res) => {
                 if (err) {
                   reject(err);
@@ -298,13 +308,17 @@ builder.mutationFields((t) => ({
       try {
         const workoutPlanItem: BooleanType__Output = await new Promise(
           (resolve, reject) => {
-            client.deleteWorkoutPlanItem(input, (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
+            client.deleteWorkoutPlanItem(
+              input,
+              meta(args.viewer),
+              (err, res) => {
+                if (err) {
+                  reject(err);
+                } else if (res) {
+                  resolve(res);
+                }
               }
-            });
+            );
           }
         );
         return workoutPlanItem.value;

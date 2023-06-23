@@ -3,6 +3,7 @@ import client from "@gymlabs/admin.grpc.client";
 import { Gym__Output, Gyms__Output } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -32,16 +33,13 @@ builder.queryFields((t) => ({
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const gyms: Gyms__Output = await new Promise((resolve, reject) => {
-          client.getGyms(
-            { organizationId: input.organizationId },
-            (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
+          client.getGyms(input, meta(args.viewer), (err, res) => {
+            if (err) {
+              reject(err);
+            } else if (res) {
+              resolve(res);
             }
-          );
+          });
         });
         return {
           gyms: gyms.gyms.map((gym) => ({
@@ -79,6 +77,7 @@ builder.queryFields((t) => ({
         const gyms: Gyms__Output = await new Promise((resolve, reject) => {
           client.getGymsWhereEmployed(
             { userId: args.viewer.user?.id },
+            meta(args.viewer),
             (err, res) => {
               if (err) {
                 reject(err);
@@ -127,7 +126,7 @@ builder.queryFields((t) => ({
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const gym: Gym__Output = await new Promise((resolve, reject) => {
-          client.getGym({ id: input.id }, (err, res) => {
+          client.getGym(input, meta(args.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {
