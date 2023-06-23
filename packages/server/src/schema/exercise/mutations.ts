@@ -2,8 +2,8 @@ import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
 import {
   BooleanType__Output,
-  WorkoutPlanItem__Output,
-  Workout__Output,
+  ExerciseStep__Output,
+  Exercise__Output,
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
@@ -16,11 +16,11 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Workout, WorkoutPlanItem } from "../workouts/types";
+import { Exercise, ExerciseStep } from "./types";
 
 builder.mutationFields((t) => ({
-  createWorkout: t.fieldWithInput({
-    type: Workout,
+  createExercise: t.fieldWithInput({
+    type: Exercise,
     input: {
       organizationId: t.input.string(),
       name: t.input.string(),
@@ -38,9 +38,9 @@ builder.mutationFields((t) => ({
     resolve: async (query, { input }, args, context) => {
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const workout: Workout__Output = await new Promise(
+        const exercise: Exercise__Output = await new Promise(
           (resolve, reject) => {
-            client.createWorkout(input, (err, res) => {
+            client.createExercise(input, (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -50,14 +50,14 @@ builder.mutationFields((t) => ({
           }
         );
         return {
-          ...workout,
-          items: workout.items.map((item) => ({
-            ...item,
-            createdAt: new Date(item.createdAt),
-            updatedAt: new Date(item.updatedAt),
+          ...exercise,
+          steps: exercise.steps.map((step) => ({
+            ...step,
+            createdAt: new Date(step.createdAt),
+            updatedAt: new Date(step.updatedAt),
           })),
-          createdAt: new Date(workout.createdAt),
-          updatedAt: new Date(workout.updatedAt),
+          createdAt: new Date(exercise.createdAt),
+          updatedAt: new Date(exercise.updatedAt),
         };
       } catch (err) {
         const error = err as grpc.ServiceError;
@@ -72,8 +72,8 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-  updateWorkout: t.fieldWithInput({
-    type: Workout,
+  updateExercise: t.fieldWithInput({
+    type: Exercise,
     input: {
       id: t.input.string(),
       name: t.input.string({ required: false }),
@@ -82,9 +82,9 @@ builder.mutationFields((t) => ({
     errors: {
       types: [
         ZodError,
+        InternalServerError,
         InvalidArgumentError,
         NotFoundError,
-        InternalServerError,
         UnauthenticatedError,
         UnauthorizedError,
       ],
@@ -92,9 +92,9 @@ builder.mutationFields((t) => ({
     resolve: async (query, { input }, args, context) => {
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const workout: Workout__Output = await new Promise(
+        const exercise: Exercise__Output = await new Promise(
           (resolve, reject) => {
-            client.updateWorkout(mapNullToUndefined(input), (err, res) => {
+            client.updateExercise(mapNullToUndefined(input), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -104,22 +104,22 @@ builder.mutationFields((t) => ({
           }
         );
         return {
-          ...workout,
-          items: workout.items.map((item) => ({
-            ...item,
-            createdAt: new Date(item.createdAt),
-            updatedAt: new Date(item.updatedAt),
+          ...exercise,
+          steps: exercise.steps.map((step) => ({
+            ...step,
+            createdAt: new Date(step.createdAt),
+            updatedAt: new Date(step.updatedAt),
           })),
-          createdAt: new Date(workout.createdAt),
-          updatedAt: new Date(workout.updatedAt),
+          createdAt: new Date(exercise.createdAt),
+          updatedAt: new Date(exercise.updatedAt),
         };
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
           case grpc.status.INVALID_ARGUMENT:
             throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
           case grpc.status.PERMISSION_DENIED:
             throw new UnauthorizedError();
           default:
@@ -128,7 +128,7 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-  deleteWorkout: t.fieldWithInput({
+  deleteExercise: t.fieldWithInput({
     type: "Boolean",
     input: {
       id: t.input.string(),
@@ -146,9 +146,9 @@ builder.mutationFields((t) => ({
     resolve: async (query, { input }, args, context) => {
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const workout: BooleanType__Output = await new Promise(
+        const exercise: BooleanType__Output = await new Promise(
           (resolve, reject) => {
-            client.deleteWorkout(input, (err, res) => {
+            client.deleteExercise(input, (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -157,14 +157,14 @@ builder.mutationFields((t) => ({
             });
           }
         );
-        return workout.value;
+        return exercise.value;
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
           case grpc.status.INVALID_ARGUMENT:
             throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
           case grpc.status.PERMISSION_DENIED:
             throw new UnauthorizedError();
           default:
@@ -173,20 +173,19 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-  createWorkoutPlanItem: t.fieldWithInput({
-    type: WorkoutPlanItem,
+  createExerciseStep: t.fieldWithInput({
+    type: ExerciseStep,
     input: {
-      workoutId: t.input.string(),
       exerciseId: t.input.string(),
-      repititions: t.input.intList(),
-      weights: t.input.intList(),
       index: t.input.int(),
+      name: t.input.string(),
+      description: t.input.string(),
     },
     errors: {
       types: [
         ZodError,
-        InvalidArgumentError,
         InternalServerError,
+        InvalidArgumentError,
         UnauthenticatedError,
         UnauthorizedError,
       ],
@@ -194,9 +193,9 @@ builder.mutationFields((t) => ({
     resolve: async (query, { input }, args, context) => {
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const workoutPlanItem: WorkoutPlanItem__Output = await new Promise(
+        const exerciseStep: ExerciseStep__Output = await new Promise(
           (resolve, reject) => {
-            client.createWorkoutPlanItem(input, (err, res) => {
+            client.createExerciseStep(input, (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -206,9 +205,9 @@ builder.mutationFields((t) => ({
           }
         );
         return {
-          ...workoutPlanItem,
-          createdAt: new Date(workoutPlanItem.createdAt),
-          updatedAt: new Date(workoutPlanItem.updatedAt),
+          ...exerciseStep,
+          createdAt: new Date(exerciseStep.createdAt),
+          updatedAt: new Date(exerciseStep.updatedAt),
         };
       } catch (err) {
         const error = err as grpc.ServiceError;
@@ -223,20 +222,20 @@ builder.mutationFields((t) => ({
       }
     },
   }),
-  updateWorkoutPlanItem: t.fieldWithInput({
-    type: WorkoutPlanItem,
+  updateExerciseStep: t.fieldWithInput({
+    type: ExerciseStep,
     input: {
       id: t.input.string(),
-      repititions: t.input.intList({ required: false }),
-      weights: t.input.intList({ required: false }),
+      name: t.input.string({ required: false }),
+      description: t.input.string({ required: false }),
       index: t.input.int({ required: false }),
     },
     errors: {
       types: [
         ZodError,
+        InternalServerError,
         InvalidArgumentError,
         NotFoundError,
-        InternalServerError,
         UnauthenticatedError,
         UnauthorizedError,
       ],
@@ -244,61 +243,9 @@ builder.mutationFields((t) => ({
     resolve: async (query, { input }, args, context) => {
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const workoutPlanItem: WorkoutPlanItem__Output = await new Promise(
+        const exerciseStep: ExerciseStep__Output = await new Promise(
           (resolve, reject) => {
-            client.updateWorkoutPlanItem(
-              mapNullToUndefined(input),
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
-              }
-            );
-          }
-        );
-        return {
-          ...workoutPlanItem,
-          createdAt: new Date(workoutPlanItem.createdAt),
-          updatedAt: new Date(workoutPlanItem.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
-      }
-    },
-  }),
-  deleteWorkoutPlanItem: t.fieldWithInput({
-    type: "Boolean",
-    input: {
-      id: t.input.string(),
-    },
-    errors: {
-      types: [
-        ZodError,
-        InvalidArgumentError,
-        NotFoundError,
-        InternalServerError,
-        UnauthenticatedError,
-        UnauthorizedError,
-      ],
-    },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const workoutPlanItem: BooleanType__Output = await new Promise(
-          (resolve, reject) => {
-            client.deleteWorkoutPlanItem(input, (err, res) => {
+            client.updateExerciseStep(mapNullToUndefined(input), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -307,14 +254,63 @@ builder.mutationFields((t) => ({
             });
           }
         );
-        return workoutPlanItem.value;
+        return {
+          ...exerciseStep,
+          createdAt: new Date(exerciseStep.createdAt),
+          updatedAt: new Date(exerciseStep.updatedAt),
+        };
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
           case grpc.status.INVALID_ARGUMENT:
             throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
+        }
+      }
+    },
+  }),
+  deleteExerciseStep: t.fieldWithInput({
+    type: "Boolean",
+    input: {
+      id: t.input.string(),
+    },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        InternalServerError,
+        NotFoundError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
+    resolve: async (query, { input }, args, context) => {
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const exerciseStep: BooleanType__Output = await new Promise(
+          (resolve, reject) => {
+            client.deleteExerciseStep(input, (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
+              }
+            });
+          }
+        );
+        return exerciseStep.value;
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
           case grpc.status.PERMISSION_DENIED:
             throw new UnauthorizedError();
           default:

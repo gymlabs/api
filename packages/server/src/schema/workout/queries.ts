@@ -1,8 +1,8 @@
 import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
 import {
-  Exercise__Output,
-  Exercises__Output,
+  Workout__Output,
+  Workouts__Output,
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
@@ -14,20 +14,20 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Exercise, Exercises } from "../exercises/types";
+import { Workout, Workouts } from "./types";
 
 builder.queryFields((t) => ({
-  exercise: t.fieldWithInput({
-    type: Exercise,
+  workout: t.fieldWithInput({
+    type: Workout,
     input: {
       id: t.input.string(),
     },
     errors: {
       types: [
         ZodError,
+        InvalidArgumentError,
         NotFoundError,
         InternalServerError,
-        InvalidArgumentError,
         UnauthenticatedError,
         UnauthorizedError,
       ],
@@ -35,9 +35,9 @@ builder.queryFields((t) => ({
     resolve: async (query, { input }, args, context) => {
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const exercise: Exercise__Output = await new Promise(
+        const workout: Workout__Output = await new Promise(
           (resolve, reject) => {
-            client.getExercise({ id: input.id }, (err, res) => {
+            client.getWorkout({ id: input.id }, (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -47,14 +47,14 @@ builder.queryFields((t) => ({
           }
         );
         return {
-          ...exercise,
-          steps: exercise.steps.map((step) => ({
-            ...step,
-            createdAt: new Date(step.createdAt),
-            updatedAt: new Date(step.updatedAt),
+          ...workout,
+          items: workout.items.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt),
+            updatedAt: new Date(item.updatedAt),
           })),
-          createdAt: new Date(exercise.createdAt),
-          updatedAt: new Date(exercise.updatedAt),
+          createdAt: new Date(workout.createdAt),
+          updatedAt: new Date(workout.updatedAt),
         };
       } catch (err) {
         const error = err as grpc.ServiceError;
@@ -71,16 +71,16 @@ builder.queryFields((t) => ({
       }
     },
   }),
-  exercises: t.fieldWithInput({
-    type: Exercises,
+  workouts: t.fieldWithInput({
+    type: Workouts,
     input: {
       organizationId: t.input.string(),
     },
     errors: {
       types: [
         ZodError,
-        InternalServerError,
         InvalidArgumentError,
+        InternalServerError,
         UnauthenticatedError,
         UnauthorizedError,
       ],
@@ -88,9 +88,9 @@ builder.queryFields((t) => ({
     resolve: async (query, { input }, args, context) => {
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const exercises: Exercises__Output = await new Promise(
+        const workouts: Workouts__Output = await new Promise(
           (resolve, reject) => {
-            client.getExercises(
+            client.getWorkouts(
               { organizationId: input.organizationId },
               (err, res) => {
                 if (err) {
@@ -103,15 +103,15 @@ builder.queryFields((t) => ({
           }
         );
         return {
-          exercises: exercises.exercises.map((exercise) => ({
-            ...exercise,
-            steps: exercise.steps.map((step) => ({
-              ...step,
-              createdAt: new Date(step.createdAt),
-              updatedAt: new Date(step.updatedAt),
+          workouts: workouts.workouts.map((workout) => ({
+            ...workout,
+            items: workout.items.map((item) => ({
+              ...item,
+              createdAt: new Date(item.createdAt),
+              updatedAt: new Date(item.updatedAt),
             })),
-            createdAt: new Date(exercise.createdAt),
-            updatedAt: new Date(exercise.updatedAt),
+            createdAt: new Date(workout.createdAt),
+            updatedAt: new Date(workout.updatedAt),
           })),
         };
       } catch (err) {

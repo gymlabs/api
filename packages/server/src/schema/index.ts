@@ -1,9 +1,9 @@
 import "./employment";
-import "./exercises";
-import "./gyms";
+import "./exercise";
+import "./gym";
 import "./membership";
 import "./user";
-import "./workouts";
+import "./workout";
 import "./scalars";
 import { builder } from "./builder";
 

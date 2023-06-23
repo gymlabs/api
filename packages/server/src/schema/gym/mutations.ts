@@ -12,7 +12,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Gym } from "../gyms/types";
+import { Gym } from "./types";
 
 builder.mutationFields((t) => ({
   createGym: t.fieldWithInput({

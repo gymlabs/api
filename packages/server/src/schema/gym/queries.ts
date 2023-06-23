@@ -11,7 +11,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Gym, Gyms } from "../gyms/types";
+import { Gym, Gyms } from "./types";
 
 builder.queryFields((t) => ({
   gyms: t.fieldWithInput({
