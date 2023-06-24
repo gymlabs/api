@@ -29,11 +29,11 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const gyms: Gyms__Output = await new Promise((resolve, reject) => {
-          client.getGyms(input, meta(args.viewer), (err, res) => {
+          client.getGyms(input, meta(ctx.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {
@@ -69,13 +69,13 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const gyms: Gyms__Output = await new Promise((resolve, reject) => {
           client.getGymsWhereEmployed(
-            { userId: args.viewer.user?.id },
-            meta(args.viewer),
+            { userId: ctx.viewer.user?.id },
+            meta(ctx.viewer),
             (err, res) => {
               if (err) {
                 reject(err);
@@ -118,11 +118,11 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const gym: Gym__Output = await new Promise((resolve, reject) => {
-          client.getGym(input, meta(args.viewer), (err, res) => {
+          client.getGym(input, meta(ctx.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {

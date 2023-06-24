@@ -34,12 +34,12 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const membership: Membership__Output = await new Promise(
           (resolve, reject) => {
-            client.createMembership(input, meta(args.viewer), (err, res) => {
+            client.createMembership(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -82,11 +82,11 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const success: BooleanType = await new Promise((resolve, reject) => {
-          client.activateMembership(input, meta(args.viewer), (err, res) => {
+          client.activateMembership(input, meta(ctx.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {
@@ -127,11 +127,11 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const success: BooleanType = await new Promise((resolve, reject) => {
-          client.deleteMembership(input, meta(args.viewer), (err, res) => {
+          client.deleteMembership(input, meta(ctx.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {

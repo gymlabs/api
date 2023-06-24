@@ -34,12 +34,12 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const employment: Employment__Output = await new Promise(
           (resolve, reject) => {
-            client.createEmployment(input, meta(args.viewer), (err, res) => {
+            client.createEmployment(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -82,12 +82,12 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const success: BooleanType__Output = await new Promise(
           (resolve, reject) => {
-            client.activateEmployment(input, meta(args.viewer), (err, res) => {
+            client.activateEmployment(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -129,12 +129,12 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const success: BooleanType__Output = await new Promise(
           (resolve, reject) => {
-            client.deleteEmployment(input, meta(args.viewer), (err, res) => {
+            client.deleteEmployment(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {

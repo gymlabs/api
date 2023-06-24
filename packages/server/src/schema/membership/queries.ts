@@ -7,7 +7,6 @@ import {
 import { ZodError } from "zod";
 
 import { MembershipWithUser } from "./types";
-import { db } from "../../db";
 import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
@@ -33,7 +32,7 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
+    resolve: async (query, { input }, args) => {
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const memberships: Memberships__Output = await new Promise(
@@ -49,7 +48,7 @@ builder.queryFields((t) => ({
         );
 
         const result = memberships.memberships.map(async (membership) => {
-          const user = await db.user.findUnique({
+          const user = await args.prisma.user.findUnique({
             where: {
               id: membership.userId,
             },
@@ -103,7 +102,7 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
+    resolve: async (query, { input }, args) => {
       if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const membership: Membership__Output = await new Promise(
@@ -118,7 +117,7 @@ builder.queryFields((t) => ({
           }
         );
 
-        const user = await db.user.findUnique({
+        const user = await args.prisma.user.findUnique({
           where: {
             id: membership.userId,
           },

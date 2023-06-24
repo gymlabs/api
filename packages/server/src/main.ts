@@ -1,14 +1,14 @@
-import { once } from "events";
-import { createServer } from "node:http";
-
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
 import * as grpc from "@grpc/grpc-js";
 import { CoreServiceHandlers, core } from "@gymlabs/core.grpc.definition";
 
 import { config } from "./config";
+import { Context, getContext } from "./context";
 import { db } from "./db";
 import { logger } from "./logger";
+import { schema } from "./schema";
 import { getUserById } from "./services/grpc/user";
-import { yoga } from "./yoga";
 
 async function main() {
   logger.info(`Log-Level: "${config.logging.level}"`);
@@ -17,22 +17,28 @@ async function main() {
   await db.$connect();
   logger.debug("Connected to database ✅");
 
-  const server = createServer(yoga);
-
   logger.info("Starting server.. 🚀");
 
   const { host, port } = config.server;
-  server.listen(port, host);
-  await once(server, "listening");
 
-  logger.info(`Server ready at http://${host}:${port}`);
+  const apolloServer = new ApolloServer<Context>({
+    schema,
+    logger,
+    stopOnTerminationSignals: false, // we handle that ourselves
+  });
 
-  // handle graceful shutdown
+  const { url } = await startStandaloneServer(apolloServer, {
+    context: getContext,
+    listen: { host, port },
+  });
+
+  logger.info(`Server ready at ${url}`);
+
+  // handle graceful shutdown ourselves to also disconnect from database
   ["SIGINT", "SIGTERM"].forEach((signal) => {
     process.on(signal, async () => {
       logger.info(`Closing http server due to received ${signal}..`);
-      server.close();
-      await once(server, "close");
+      apolloServer.stop();
       logger.info("Http server closed ✅");
       logger.info("Disconnecting from database..");
       await db.$disconnect();

@@ -12,7 +12,6 @@ import { ZodError } from "zod";
 
 import { AccessTokenResponse } from "./types";
 import { config } from "../../config";
-import { db } from "../../db";
 import { meta } from "../../lib/metadata";
 import {
   comparePassword,
@@ -56,16 +55,16 @@ builder.mutationFields((t) => ({
         },
       }),
     },
-    resolve: async (parent, { input }) => {
+    resolve: async (parent, { input }, ctx) => {
       try {
-        const userExists = await db.user.findFirst({
+        const userExists = await ctx.prisma.user.findFirst({
           where: { email: input.email },
         });
         if (userExists) throw new EmailAlreadyInUseError(input.email);
 
         const verificationToken = randomToken();
 
-        const user = await db.user.create({
+        const user = await ctx.prisma.user.create({
           data: {
             ...input,
             password: await hashPassword(input.password),
@@ -108,9 +107,9 @@ builder.mutationFields((t) => ({
       }),
       password: t.input.string(),
     },
-    resolve: async (parent, { input }) => {
+    resolve: async (parent, { input }, ctx) => {
       try {
-        const user = await db.user.findUnique({
+        const user = await ctx.prisma.user.findUnique({
           where: { email: input.email },
         });
 
@@ -125,7 +124,7 @@ builder.mutationFields((t) => ({
           config.security.accessTokenLifetime
         );
 
-        await db.accessToken.create({
+        await ctx.prisma.accessToken.create({
           data: {
             userId: user.id,
             token: tokenHash,
@@ -156,9 +155,9 @@ builder.mutationFields((t) => ({
     input: {
       token: t.input.string(),
     },
-    resolve: async (parent, { input }) => {
+    resolve: async (parent, { input }, ctx) => {
       try {
-        const user = await db.user.findUnique({
+        const user = await ctx.prisma.user.findUnique({
           where: {
             emailVerificationToken: hashToken(input.token),
           },
@@ -166,7 +165,7 @@ builder.mutationFields((t) => ({
 
         if (!user) throw new InvalidEmailVerificationTokenError();
 
-        await db.user.update({
+        await ctx.prisma.user.update({
           where: { id: user.id },
           data: {
             isEmailVerified: true,
@@ -193,15 +192,15 @@ builder.mutationFields((t) => ({
     errors: {
       types: [ZodError, InternalServerError],
     },
-    resolve: async (parent, args, context) => {
+    resolve: async (parent, args, ctx) => {
       try {
         if (args.all) {
-          await db.accessToken.deleteMany({
-            where: { userId: context.viewer.user.id },
+          await ctx.prisma.accessToken.deleteMany({
+            where: { userId: ctx.viewer.user.id },
           });
         } else {
-          await db.accessToken.delete({
-            where: { token: hashToken(context.viewer.accessToken.token) },
+          await ctx.prisma.accessToken.delete({
+            where: { token: hashToken(ctx.viewer.accessToken.token) },
           });
         }
 
@@ -222,9 +221,9 @@ builder.mutationFields((t) => ({
         },
       }),
     },
-    resolve: async (parent, { input }) => {
+    resolve: async (parent, { input }, ctx) => {
       try {
-        const user = await db.user.findUnique({
+        const user = await ctx.prisma.user.findUnique({
           where: { email: input.email },
         });
 
@@ -238,7 +237,7 @@ builder.mutationFields((t) => ({
           config.security.passwordResetRequestLifetime
         );
 
-        await db.resetRequest.create({
+        await ctx.prisma.resetRequest.create({
           data: {
             userId: user.id,
             token: tokenHash,
@@ -291,9 +290,9 @@ builder.mutationFields((t) => ({
         },
       }),
     },
-    resolve: async (parent, { input }, context) => {
+    resolve: async (parent, { input }, ctx) => {
       try {
-        const resetPasswordRequest = await db.resetRequest.findUnique({
+        const resetPasswordRequest = await ctx.prisma.resetRequest.findUnique({
           where: {
             token: hashToken(input.token),
           },
@@ -310,18 +309,18 @@ builder.mutationFields((t) => ({
 
         const password = await hashPassword(input.password);
 
-        await db.user.update({
+        await ctx.prisma.user.update({
           where: { id: resetPasswordRequest.userId },
           data: { password },
         });
 
-        await db.resetRequest.update({
+        await ctx.prisma.resetRequest.update({
           where: { id: resetPasswordRequest.id },
           data: { usedAt: new Date() },
         });
 
         //sign out all
-        await db.accessToken.deleteMany({
+        await ctx.prisma.accessToken.deleteMany({
           where: { userId: resetPasswordRequest.userId },
         });
 
@@ -342,10 +341,10 @@ builder.mutationFields((t) => ({
         NotFoundError,
       ],
     },
-    resolve: async (parent, { input }, context) => {
+    resolve: async (parent, { input }, ctx) => {
       try {
-        const userExists = await db.user.findUnique({
-          where: { id: context.viewer.user.id },
+        const userExists = await ctx.prisma.user.findUnique({
+          where: { id: ctx.viewer.user.id },
         });
 
         if (!userExists) throw new NotFoundError("User not found.");
@@ -358,17 +357,13 @@ builder.mutationFields((t) => ({
         // check if user has memberships or employments
         const organizations: Organizations__Output = await new Promise(
           (resolve, reject) => {
-            adminClient.GetOrganizations(
-              {},
-              meta(context.viewer),
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
+            adminClient.GetOrganizations({}, meta(ctx.viewer), (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
               }
-            );
+            });
           }
         );
 
@@ -377,7 +372,7 @@ builder.mutationFields((t) => ({
             const gyms: Gyms__Output = await new Promise((resolve, reject) => {
               adminClient.GetGyms(
                 { organizationId: organization.id },
-                meta(context.viewer),
+                meta(ctx.viewer),
                 (err, res) => {
                   if (err) {
                     reject(err);
@@ -393,7 +388,7 @@ builder.mutationFields((t) => ({
                   (resolve, reject) => {
                     adminClient.GetMemberships(
                       { gymId: gym.id },
-                      meta(context.viewer),
+                      meta(ctx.viewer),
                       (err, res) => {
                         if (err) {
                           reject(err);
@@ -406,7 +401,7 @@ builder.mutationFields((t) => ({
                 );
                 if (memberships.memberships.length) {
                   const userMemberships = memberships.memberships.filter(
-                    (membership) => membership.userId === context.viewer.user.id
+                    (membership) => membership.userId === ctx.viewer.user.id
                   );
                   if (userMemberships.length) {
                     throw new UserHasMembershipsOrEmploymentsError();
@@ -416,7 +411,7 @@ builder.mutationFields((t) => ({
                   (resolve, reject) => {
                     adminClient.GetEmployments(
                       { gymId: gym.id },
-                      meta(context.viewer),
+                      meta(ctx.viewer),
                       (err, res) => {
                         if (err) {
                           reject(err);
@@ -429,7 +424,7 @@ builder.mutationFields((t) => ({
                 );
                 if (employments.employments.length) {
                   const userEmployments = employments.employments.filter(
-                    (employment) => employment.userId === context.viewer.user.id
+                    (employment) => employment.userId === ctx.viewer.user.id
                   );
                   if (userEmployments.length) {
                     throw new UserHasMembershipsOrEmploymentsError();
@@ -440,8 +435,8 @@ builder.mutationFields((t) => ({
           }
         }
 
-        const user = await db.user.update({
-          where: { id: context.viewer.user.id },
+        const user = await ctx.prisma.user.update({
+          where: { id: ctx.viewer.user.id },
           data: {
             deletedAt: deleteAt,
             reactivationToken: tokenHash,
@@ -486,9 +481,9 @@ builder.mutationFields((t) => ({
     input: {
       token: t.input.string(),
     },
-    resolve: async (parent, { input }) => {
+    resolve: async (parent, { input }, ctx) => {
       try {
-        const user = await db.user.findUnique({
+        const user = await ctx.prisma.user.findUnique({
           where: {
             reactivationToken: hashToken(input.token),
           },
@@ -500,7 +495,7 @@ builder.mutationFields((t) => ({
         if (user.deletedAt && user.deletedAt < now)
           throw new ReactivationTokenExpiredError();
 
-        await db.user.update({
+        await ctx.prisma.user.update({
           where: { id: user.id },
           data: {
             deletedAt: null,
@@ -537,9 +532,9 @@ builder.mutationFields((t) => ({
         },
       }),
     },
-    resolve: async (parent, { input }) => {
+    resolve: async (parent, { input }, ctx) => {
       try {
-        const user = await db.user.findUnique({
+        const user = await ctx.prisma.user.findUnique({
           where: { email: input.email },
         });
 
@@ -547,7 +542,7 @@ builder.mutationFields((t) => ({
           throw new NotFoundError("User not found");
         }
 
-        const newMailUser = await db.user.findUnique({
+        const newMailUser = await ctx.prisma.user.findUnique({
           where: { email: input.newValue },
         });
 
@@ -563,7 +558,7 @@ builder.mutationFields((t) => ({
           config.security.changeMailRequestLifetime
         );
 
-        await db.resetRequest.create({
+        await ctx.prisma.resetRequest.create({
           data: {
             userId: user.id,
             token: tokenHash,
@@ -609,9 +604,9 @@ builder.mutationFields((t) => ({
       ],
     },
     input: { token: t.input.string() },
-    resolve: async (parent, { input }, context) => {
+    resolve: async (parent, { input }, ctx) => {
       try {
-        const changeMailRequest = await db.resetRequest.findUnique({
+        const changeMailRequest = await ctx.prisma.resetRequest.findUnique({
           where: {
             token: hashToken(input.token),
           },
@@ -626,18 +621,18 @@ builder.mutationFields((t) => ({
         if (changeMailRequest.expiresAt < now)
           throw new ChangeMailTokenExpiredError();
 
-        await db.user.update({
+        await ctx.prisma.user.update({
           where: { id: changeMailRequest.userId },
           data: { email: changeMailRequest.newValue as string },
         });
 
-        await db.resetRequest.update({
+        await ctx.prisma.resetRequest.update({
           where: { id: changeMailRequest.id },
           data: { usedAt: new Date() },
         });
 
         //sign out all
-        await db.accessToken.deleteMany({
+        await ctx.prisma.accessToken.deleteMany({
           where: { userId: changeMailRequest.userId },
         });
 

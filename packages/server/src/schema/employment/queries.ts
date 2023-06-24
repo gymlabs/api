@@ -6,7 +6,6 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
-import { db } from "../../db";
 import { builder } from "../builder";
 import { EmploymentWithUser } from "../employment/types";
 import {
@@ -32,8 +31,8 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const employment: Employments__Output = await new Promise(
           (resolve, reject) => {
@@ -48,7 +47,7 @@ builder.queryFields((t) => ({
         );
 
         const result = employment.employments.map(async (employment) => {
-          const user = await db.user.findUnique({
+          const user = await ctx.prisma.user.findUnique({
             where: {
               id: employment.userId,
             },
@@ -102,8 +101,8 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const employment: Employment__Output = await new Promise(
           (resolve, reject) => {
@@ -117,7 +116,7 @@ builder.queryFields((t) => ({
           }
         );
 
-        const user = await db.user.findUnique({
+        const user = await ctx.prisma.user.findUnique({
           where: {
             id: employment.userId,
           },
