@@ -33,3 +33,12 @@ export const AccessTokenResponse = builder.simpleObject("AccessTokenResponse", {
     expiresAt: t.string(),
   }),
 });
+
+export const UserInfo = builder.simpleObject("UserInfo", {
+  fields: (t) => ({
+    id: t.id(),
+    firstName: t.string(),
+    lastName: t.string(),
+    email: t.string(),
+  }),
+});

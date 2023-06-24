@@ -6,7 +6,8 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
-import { Membership, Memberships } from "./types";
+import { MembershipWithUser } from "./types";
+import { db } from "../../db";
 import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
@@ -18,8 +19,8 @@ import {
 } from "../errors";
 
 builder.queryFields((t) => ({
-  memberships: t.fieldWithInput({
-    type: Memberships,
+  membershipsWithUser: t.fieldWithInput({
+    type: [MembershipWithUser],
     input: {
       gymId: t.input.string(),
     },
@@ -46,13 +47,32 @@ builder.queryFields((t) => ({
             });
           }
         );
-        return {
-          memberships: memberships.memberships.map((membership) => ({
-            ...membership,
+
+        const result = memberships.memberships.map(async (membership) => {
+          const user = await db.user.findUnique({
+            where: {
+              id: membership.userId,
+            },
+          });
+
+          if (!user) throw new NotFoundError("User not found");
+
+          const { userId, ...rest } = membership;
+
+          return {
+            ...rest,
+            user: {
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+            },
             createdAt: new Date(membership.createdAt),
             updatedAt: new Date(membership.updatedAt),
-          })),
-        };
+          };
+        });
+
+        return result;
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
@@ -67,8 +87,8 @@ builder.queryFields((t) => ({
     },
   }),
 
-  membership: t.fieldWithInput({
-    type: Membership,
+  membershipWithUser: t.fieldWithInput({
+    type: MembershipWithUser,
     input: {
       gymId: t.input.string(),
       userId: t.input.string(),
@@ -97,8 +117,25 @@ builder.queryFields((t) => ({
             });
           }
         );
+
+        const user = await db.user.findUnique({
+          where: {
+            id: membership.userId,
+          },
+        });
+
+        if (!user) throw new NotFoundError("User not found");
+
+        const { userId, ...rest } = membership;
+
         return {
-          ...membership,
+          ...rest,
+          user: {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+          },
           createdAt: new Date(membership.createdAt),
           updatedAt: new Date(membership.updatedAt),
         };
