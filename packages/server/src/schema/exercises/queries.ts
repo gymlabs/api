@@ -15,7 +15,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Exercise, Exercises } from "../exercises/types";
+import { Exercise } from "../exercises/types";
 
 builder.queryFields((t) => ({
   exercise: t.fieldWithInput({
@@ -73,7 +73,7 @@ builder.queryFields((t) => ({
     },
   }),
   exercises: t.fieldWithInput({
-    type: Exercises,
+    type: [Exercise],
     input: {
       organizationId: t.input.string(),
     },
@@ -100,18 +100,16 @@ builder.queryFields((t) => ({
             });
           }
         );
-        return {
-          exercises: exercises.exercises.map((exercise) => ({
-            ...exercise,
-            steps: exercise.steps.map((step) => ({
-              ...step,
-              createdAt: new Date(step.createdAt),
-              updatedAt: new Date(step.updatedAt),
-            })),
-            createdAt: new Date(exercise.createdAt),
-            updatedAt: new Date(exercise.updatedAt),
+        return exercises.exercises.map((exercise) => ({
+          ...exercise,
+          steps: exercise.steps.map((step) => ({
+            ...step,
+            createdAt: new Date(step.createdAt),
+            updatedAt: new Date(step.updatedAt),
           })),
-        };
+          createdAt: new Date(exercise.createdAt),
+          updatedAt: new Date(exercise.updatedAt),
+        }));
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {

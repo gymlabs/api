@@ -24,11 +24,3 @@ export const Exercise = builder.simpleObject("Exercise", {
     updatedAt: t.field({ type: "Date" }),
   }),
 });
-
-export const Exercises = builder.simpleObject("Exercises", {
-  fields: (t) => ({
-    exercises: t.field({
-      type: [Exercise],
-    }),
-  }),
-});

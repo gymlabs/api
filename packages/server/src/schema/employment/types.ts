@@ -12,14 +12,6 @@ export const Employment = builder.simpleObject("Employment", {
   }),
 });
 
-export const Employments = builder.simpleObject("Employments", {
-  fields: (t) => ({
-    employments: t.field({
-      type: [Employment],
-    }),
-  }),
-});
-
 export const EmploymentWithUser = builder.simpleObject("EmploymentWithUser", {
   fields: (t) => ({
     id: t.id(),

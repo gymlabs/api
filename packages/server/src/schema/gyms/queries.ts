@@ -12,11 +12,11 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Gym, Gyms } from "../gyms/types";
+import { Gym } from "../gyms/types";
 
 builder.queryFields((t) => ({
   gyms: t.fieldWithInput({
-    type: Gyms,
+    type: [Gym],
     input: {
       organizationId: t.input.string(),
     },
@@ -41,13 +41,11 @@ builder.queryFields((t) => ({
             }
           });
         });
-        return {
-          gyms: gyms.gyms.map((gym) => ({
-            ...gym,
-            createdAt: new Date(gym.createdAt),
-            updatedAt: new Date(gym.updatedAt),
-          })),
-        };
+        return gyms.gyms.map((gym) => ({
+          ...gym,
+          createdAt: new Date(gym.createdAt),
+          updatedAt: new Date(gym.updatedAt),
+        }));
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
@@ -62,7 +60,7 @@ builder.queryFields((t) => ({
     },
   }),
   gymsWhereEmployed: t.field({
-    type: Gyms,
+    type: [Gym],
     errors: {
       types: [
         InvalidArgumentError,
@@ -87,13 +85,11 @@ builder.queryFields((t) => ({
             }
           );
         });
-        return {
-          gyms: gyms.gyms.map((gym) => ({
-            ...gym,
-            createdAt: new Date(gym.createdAt),
-            updatedAt: new Date(gym.updatedAt),
-          })),
-        };
+        return gyms.gyms.map((gym) => ({
+          ...gym,
+          createdAt: new Date(gym.createdAt),
+          updatedAt: new Date(gym.updatedAt),
+        }));
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
