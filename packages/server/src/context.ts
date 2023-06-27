@@ -1,27 +1,22 @@
-import { IncomingMessage, ServerResponse } from "node:http";
-
+import { BaseContext } from "@apollo/server";
+import { StandaloneServerContextFunctionArgument } from "@apollo/server/dist/esm/standalone";
 import { AccessToken, User } from "@gymlabs/core.db";
 import { parse } from "cookie";
-import { YogaInitialContext } from "graphql-yoga";
 import { SetNonNullable } from "type-fest";
 
 import { db } from "./db";
 import { InvalidAccessTokenError } from "./errors";
 import { extractBearerToken, hashToken } from "./lib/security";
 
-export async function getContext({
-  request,
+export const getContext = async ({
   req,
   res,
-}: YogaInitialContext & {
-  req: IncomingMessage;
-  res: ServerResponse;
-}) {
-  const authorizationHeader = request.headers.get("Authorization");
-  const cookieHeader = request.headers.get("Cookie");
+}: BaseContext & StandaloneServerContextFunctionArgument) => {
+  const prisma = db;
+  const authorizationHeader = req.headers.authorization;
+  const cookieHeader = req.headers.cookie;
 
   let bearerToken: string | null = null;
-  // prefer authorization header and fallback to "bearerToken" cookie
   if (authorizationHeader) {
     bearerToken = extractBearerToken(authorizationHeader);
   } else if (cookieHeader) {
@@ -42,24 +37,21 @@ export async function getContext({
       throw new InvalidAccessTokenError();
     }
 
-    // check token expiration
     const now = new Date();
     if (accessToken.expiresAt < now) {
       throw new InvalidAccessTokenError();
     }
 
-    // authenicated viewer
     viewer = new Viewer({
       user: accessToken.user,
       accessToken,
     });
   } else {
-    // anonymous viewer
     viewer = new Viewer();
   }
 
-  return { request, viewer, accessToken: bearerToken, req, res };
-}
+  return { prisma, viewer, accessToken: bearerToken, req, res };
+};
 
 export type Context = Awaited<ReturnType<typeof getContext>>;
 

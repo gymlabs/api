@@ -1,4 +1,5 @@
 import { builder } from "../builder";
+import { UserInfo } from "../user/types";
 
 export const Membership = builder.simpleObject("Membership", {
   fields: (t) => ({
@@ -11,10 +12,15 @@ export const Membership = builder.simpleObject("Membership", {
   }),
 });
 
-export const Memberships = builder.simpleObject("Memberships", {
+export const MembershipWithUser = builder.simpleObject("MembershipWithUser", {
   fields: (t) => ({
-    memberships: t.field({
-      type: [Membership],
+    id: t.id(),
+    gymId: t.string(),
+    user: t.field({
+      type: UserInfo,
     }),
+    contractId: t.string(),
+    createdAt: t.field({ type: "Date" }),
+    updatedAt: t.field({ type: "Date" }),
   }),
 });

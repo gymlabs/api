@@ -33,6 +33,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@apollo/server": "^4.7.4",
     "@changesets/cli": "^2.26.1"
   },
   "workspaces": [
