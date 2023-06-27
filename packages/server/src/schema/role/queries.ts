@@ -1,0 +1,81 @@
+import * as grpc from "@grpc/grpc-js";
+import client from "@gymlabs/admin.grpc.client";
+import {
+  Category,
+  Category__Output,
+  Role__Output,
+} from "@gymlabs/admin.grpc.definition";
+import { ZodError } from "zod";
+
+import { builder } from "../builder";
+import {
+  InternalServerError,
+  InvalidArgumentError,
+  NotFoundError,
+  UnauthenticatedError,
+  UnauthorizedError,
+} from "../errors";
+import { Role } from "../role/types";
+
+builder.queryFields((t) => ({
+  role: t.fieldWithInput({
+    type: Role,
+    input: {
+      id: t.input.string(),
+    },
+    errors: {
+      types: [
+        InvalidArgumentError,
+        InternalServerError,
+        NotFoundError,
+        UnauthenticatedError,
+        UnauthorizedError,
+        ZodError,
+      ],
+    },
+    resolve: async (query, { input }, args, context) => {
+      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const role: Role__Output = await new Promise((resolve, reject) => {
+          client.getRole(input, (err, res) => {
+            if (err) {
+              reject(err);
+            } else if (res) {
+              resolve(res);
+            }
+          });
+        });
+
+        const { accessRights, ...rest } = role;
+
+        const roleAccessRights =
+          accessRights?.accessRights.map((accessRight) => {
+            const { category, ...rest } = accessRight;
+            return {
+              ...rest,
+              category: Category,
+            };
+          }) || [];
+
+        return {
+          ...rest,
+          accessRights: roleAccessRights,
+          createdAt: new Date(role.createdAt),
+          updatedAt: new Date(role.updatedAt),
+        };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
+        }
+      }
+    },
+  }),
+}));

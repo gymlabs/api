@@ -6,6 +6,7 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { Exercise, Exercises } from "./types";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -14,7 +15,6 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Exercise, Exercises } from "./types";
 
 builder.queryFields((t) => ({
   exercise: t.fieldWithInput({
