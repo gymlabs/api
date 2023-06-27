@@ -13,3 +13,10 @@ export const Gym = builder.simpleObject("Gym", {
     updatedAt: t.field({ type: "Date" }),
   }),
 });
+
+export const GymWhereEmployed = builder.simpleObject("GymWhereEmployed", {
+  fields: (t) => ({
+    id: t.id(),
+    name: t.string(),
+  }),
+});

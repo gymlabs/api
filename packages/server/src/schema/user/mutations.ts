@@ -1,10 +1,5 @@
 import adminClient from "@gymlabs/admin.grpc.client";
-import {
-  Employments__Output,
-  Gyms__Output,
-  Memberships__Output,
-  Organizations__Output,
-} from "@gymlabs/admin.grpc.definition";
+import { BooleanType__Output } from "@gymlabs/admin.grpc.definition";
 import communicationClient from "@gymlabs/communication.grpc.client";
 import { ResetType } from "@gymlabs/core.db";
 import { addMilliseconds } from "date-fns";
@@ -355,85 +350,40 @@ builder.mutationFields((t) => ({
         const deleteAt: Date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
 
         // check if user has memberships or employments
-        const organizations: Organizations__Output = await new Promise(
+        const hasMemberships: BooleanType__Output = await new Promise(
           (resolve, reject) => {
-            adminClient.GetOrganizations({}, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
+            adminClient.HasMemberships(
+              { userId: ctx.viewer.user.id },
+              meta(ctx.viewer),
+              (err, res) => {
+                if (err) {
+                  reject(err);
+                } else if (res) {
+                  resolve(res);
+                }
               }
-            });
+            );
           }
         );
 
-        if (organizations.organizations.length) {
-          for (const organization of organizations.organizations) {
-            const gyms: Gyms__Output = await new Promise((resolve, reject) => {
-              adminClient.GetGyms(
-                { organizationId: organization.id },
-                meta(ctx.viewer),
-                (err, res) => {
-                  if (err) {
-                    reject(err);
-                  } else if (res) {
-                    resolve(res);
-                  }
-                }
-              );
-            });
-            if (gyms.gyms.length) {
-              for (const gym of gyms.gyms) {
-                const memberships: Memberships__Output = await new Promise(
-                  (resolve, reject) => {
-                    adminClient.GetMemberships(
-                      { gymId: gym.id },
-                      meta(ctx.viewer),
-                      (err, res) => {
-                        if (err) {
-                          reject(err);
-                        } else if (res) {
-                          resolve(res);
-                        }
-                      }
-                    );
-                  }
-                );
-                if (memberships.memberships.length) {
-                  const userMemberships = memberships.memberships.filter(
-                    (membership) => membership.userId === ctx.viewer.user.id
-                  );
-                  if (userMemberships.length) {
-                    throw new UserHasMembershipsOrEmploymentsError();
-                  }
-                }
-                const employments: Employments__Output = await new Promise(
-                  (resolve, reject) => {
-                    adminClient.GetEmployments(
-                      { gymId: gym.id },
-                      meta(ctx.viewer),
-                      (err, res) => {
-                        if (err) {
-                          reject(err);
-                        } else if (res) {
-                          resolve(res);
-                        }
-                      }
-                    );
-                  }
-                );
-                if (employments.employments.length) {
-                  const userEmployments = employments.employments.filter(
-                    (employment) => employment.userId === ctx.viewer.user.id
-                  );
-                  if (userEmployments.length) {
-                    throw new UserHasMembershipsOrEmploymentsError();
-                  }
+        const hasEmployments: BooleanType__Output = await new Promise(
+          (resolve, reject) => {
+            adminClient.HasEmployments(
+              { userId: ctx.viewer.user.id },
+              meta(ctx.viewer),
+              (err, res) => {
+                if (err) {
+                  reject(err);
+                } else if (res) {
+                  resolve(res);
                 }
               }
-            }
+            );
           }
-        }
+        );
+
+        if (hasMemberships.value || hasEmployments.value)
+          throw new UserHasMembershipsOrEmploymentsError();
 
         const user = await ctx.prisma.user.update({
           where: { id: ctx.viewer.user.id },

@@ -1,5 +1,13 @@
 # @gymlabs/core.gql.client
 
+## 0.1.7
+
+### Patch Changes
+
+- use new gymswhereemployed endpoint from admin
+- use hasemployments and hasmemberships endpoint from admin api to avoid permission errors
+- add contract endpoints
+
 ## 0.1.6
 
 ### Patch Changes

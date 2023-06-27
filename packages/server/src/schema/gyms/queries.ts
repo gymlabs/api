@@ -1,6 +1,10 @@
 import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
-import { Gym__Output, Gyms__Output } from "@gymlabs/admin.grpc.definition";
+import {
+  Gym__Output,
+  GymsWhereEmployed__Output,
+  Gyms__Output,
+} from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
 import { meta } from "../../lib/metadata";
@@ -12,7 +16,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Gym } from "../gyms/types";
+import { Gym, GymWhereEmployed } from "../gyms/types";
 
 builder.queryFields((t) => ({
   gyms: t.fieldWithInput({
@@ -60,7 +64,7 @@ builder.queryFields((t) => ({
     },
   }),
   gymsWhereEmployed: t.field({
-    type: [Gym],
+    type: [GymWhereEmployed],
     errors: {
       types: [
         InvalidArgumentError,
@@ -72,24 +76,22 @@ builder.queryFields((t) => ({
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const gyms: Gyms__Output = await new Promise((resolve, reject) => {
-          client.getGymsWhereEmployed(
-            { userId: ctx.viewer.user?.id },
-            meta(ctx.viewer),
-            (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
+        const gyms: GymsWhereEmployed__Output = await new Promise(
+          (resolve, reject) => {
+            client.getGymsWhereEmployed(
+              { userId: ctx.viewer.user?.id },
+              meta(ctx.viewer),
+              (err, res) => {
+                if (err) {
+                  reject(err);
+                } else if (res) {
+                  resolve(res);
+                }
               }
-            }
-          );
-        });
-        return gyms.gyms.map((gym) => ({
-          ...gym,
-          createdAt: new Date(gym.createdAt),
-          updatedAt: new Date(gym.updatedAt),
-        }));
+            );
+          }
+        );
+        return gyms.gyms;
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
