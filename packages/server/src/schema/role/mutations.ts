@@ -8,6 +8,7 @@ import {
 import { ZodError } from "zod";
 
 import { Role } from "./types";
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -41,7 +42,7 @@ builder.mutationFields((t) => ({
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const role: Role__Output = await new Promise((resolve, reject) => {
-          client.createRole(input, (err, res) => {
+          client.createRole(input, meta(ctx.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {
@@ -105,7 +106,7 @@ builder.mutationFields((t) => ({
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const role: Role__Output = await new Promise((resolve, reject) => {
-          client.updateRole(input, (err, res) => {
+          client.updateRole(input, meta(ctx.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {
@@ -166,7 +167,7 @@ builder.mutationFields((t) => ({
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const success: BooleanType = await new Promise((resolve, reject) => {
-          client.deleteRole(input, (err, res) => {
+          client.deleteRole(input, meta(ctx.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {

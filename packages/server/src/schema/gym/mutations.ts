@@ -3,6 +3,7 @@ import client from "@gymlabs/admin.grpc.client";
 import { Gym__Output } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { Gym } from "./types";
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
 import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
@@ -13,7 +14,6 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Gym } from "./types";
 
 builder.mutationFields((t) => ({
   createGym: t.fieldWithInput({

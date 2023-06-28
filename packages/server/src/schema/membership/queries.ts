@@ -32,12 +32,12 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const memberships: Memberships__Output = await new Promise(
           (resolve, reject) => {
-            client.getMemberships(input, meta(args.viewer), (err, res) => {
+            client.getMemberships(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -48,7 +48,7 @@ builder.queryFields((t) => ({
         );
 
         const result = memberships.memberships.map(async (membership) => {
-          const user = await args.prisma.user.findUnique({
+          const user = await ctx.prisma.user.findUnique({
             where: {
               id: membership.userId,
             },
@@ -102,12 +102,12 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const membership: Membership__Output = await new Promise(
           (resolve, reject) => {
-            client.getMembership(input, meta(args.viewer), (err, res) => {
+            client.getMembership(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -117,7 +117,7 @@ builder.queryFields((t) => ({
           }
         );
 
-        const user = await args.prisma.user.findUnique({
+        const user = await ctx.prisma.user.findUnique({
           where: {
             id: membership.userId,
           },

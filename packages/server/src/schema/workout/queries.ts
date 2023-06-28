@@ -33,12 +33,12 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const workout: Workout__Output = await new Promise(
           (resolve, reject) => {
-            client.getWorkout(input, meta(args.viewer), (err, res) => {
+            client.getWorkout(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -86,12 +86,12 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const workouts: Workouts__Output = await new Promise(
           (resolve, reject) => {
-            client.getWorkouts(input, meta(args.viewer), (err, res) => {
+            client.getWorkouts(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {

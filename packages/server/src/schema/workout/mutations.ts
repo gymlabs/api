@@ -7,6 +7,7 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { Workout, WorkoutPlanItem } from "./types";
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
 import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
@@ -17,7 +18,6 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Workout, WorkoutPlanItem } from "./types";
 
 builder.mutationFields((t) => ({
   createWorkout: t.fieldWithInput({
@@ -36,12 +36,12 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const workout: Workout__Output = await new Promise(
           (resolve, reject) => {
-            client.createWorkout(input, meta(args.viewer), (err, res) => {
+            client.createWorkout(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -90,14 +90,14 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const workout: Workout__Output = await new Promise(
           (resolve, reject) => {
             client.updateWorkout(
               mapNullToUndefined(input),
-              meta(args.viewer),
+              meta(ctx.viewer),
               (err, res) => {
                 if (err) {
                   reject(err);
@@ -148,12 +148,12 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const workout: BooleanType__Output = await new Promise(
           (resolve, reject) => {
-            client.deleteWorkout(input, meta(args.viewer), (err, res) => {
+            client.deleteWorkout(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -196,14 +196,14 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const workoutPlanItem: WorkoutPlanItem__Output = await new Promise(
           (resolve, reject) => {
             client.createWorkoutPlanItem(
               input,
-              meta(args.viewer),
+              meta(ctx.viewer),
               (err, res) => {
                 if (err) {
                   reject(err);
@@ -250,14 +250,14 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const workoutPlanItem: WorkoutPlanItem__Output = await new Promise(
           (resolve, reject) => {
             client.updateWorkoutPlanItem(
               mapNullToUndefined(input),
-              meta(args.viewer),
+              meta(ctx.viewer),
               (err, res) => {
                 if (err) {
                   reject(err);
@@ -303,14 +303,14 @@ builder.mutationFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const workoutPlanItem: BooleanType__Output = await new Promise(
           (resolve, reject) => {
             client.deleteWorkoutPlanItem(
               input,
-              meta(args.viewer),
+              meta(ctx.viewer),
               (err, res) => {
                 if (err) {
                   reject(err);

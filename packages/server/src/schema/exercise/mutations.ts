@@ -7,6 +7,7 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { Exercise, ExerciseStep } from "./types";
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
 import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
@@ -17,7 +18,6 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Exercise, ExerciseStep } from "./types";
 
 builder.mutationFields((t) => ({
   createExercise: t.fieldWithInput({

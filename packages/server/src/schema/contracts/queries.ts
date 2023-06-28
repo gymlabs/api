@@ -4,6 +4,7 @@ import { Contracts__Output } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
 import { Contract } from "./types";
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -32,7 +33,7 @@ builder.queryFields((t) => ({
       try {
         const contracts: Contracts__Output = await new Promise(
           (resolve, reject) => {
-            client.getContracts(input, (err, res) => {
+            client.getContracts(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -78,7 +79,7 @@ builder.queryFields((t) => ({
       try {
         const myContracts: Contracts__Output = await new Promise(
           (resolve, reject) => {
-            client.GetMyContracts(input, (err, res) => {
+            client.GetMyContracts(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {

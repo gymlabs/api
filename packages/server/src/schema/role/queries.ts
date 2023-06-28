@@ -3,6 +3,7 @@ import client from "@gymlabs/admin.grpc.client";
 import { Category, Role__Output } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -33,7 +34,7 @@ builder.queryFields((t) => ({
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const role: Role__Output = await new Promise((resolve, reject) => {
-          client.getRole(input, (err, res) => {
+          client.getRole(input, meta(ctx.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {
@@ -93,7 +94,7 @@ builder.queryFields((t) => ({
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const roles: Role__Output[] = await new Promise((resolve, reject) => {
-          client.getRoles(input, (err, res) => {
+          client.getRoles(input, meta(ctx.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {
