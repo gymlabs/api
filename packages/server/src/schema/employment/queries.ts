@@ -6,6 +6,7 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import { EmploymentWithUser } from "../employment/types";
 import {
@@ -36,7 +37,7 @@ builder.queryFields((t) => ({
       try {
         const employment: Employments__Output = await new Promise(
           (resolve, reject) => {
-            client.getEmployments(input, (err, res) => {
+            client.getEmployments(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -106,7 +107,7 @@ builder.queryFields((t) => ({
       try {
         const employment: Employment__Output = await new Promise(
           (resolve, reject) => {
-            client.getEmployment(input, (err, res) => {
+            client.getEmployment(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {

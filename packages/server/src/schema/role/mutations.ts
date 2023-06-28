@@ -1,12 +1,13 @@
 import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
 import {
-  Gym__Output,
-  GymsWhereEmployed__Output,
-  Gyms__Output,
+  BooleanType,
+  Category,
+  Role__Output,
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { Role } from "./types";
 import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
@@ -16,28 +17,32 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Gym, GymWhereEmployed } from "../gyms/types";
 
-builder.queryFields((t) => ({
-  gyms: t.fieldWithInput({
-    type: [Gym],
+builder.mutationFields((t) => ({
+  createRole: t.fieldWithInput({
+    type: Role,
     input: {
-      organizationId: t.input.string(),
+      name: t.input.string(),
+      gymId: t.input.string(),
+      accessRightIds: t.input.field({
+        type: ["String"],
+      }),
     },
     errors: {
       types: [
-        ZodError,
         InvalidArgumentError,
         InternalServerError,
+        NotFoundError,
         UnauthenticatedError,
         UnauthorizedError,
+        ZodError,
       ],
     },
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const gyms: Gyms__Output = await new Promise((resolve, reject) => {
-          client.getGyms(input, meta(ctx.viewer), (err, res) => {
+        const role: Role__Output = await new Promise((resolve, reject) => {
+          client.createRole(input, meta(ctx.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {
@@ -45,16 +50,31 @@ builder.queryFields((t) => ({
             }
           });
         });
-        return gyms.gyms.map((gym) => ({
-          ...gym,
-          createdAt: new Date(gym.createdAt),
-          updatedAt: new Date(gym.updatedAt),
-        }));
+
+        const { accessRights, ...rest } = role;
+
+        const roleAccessRights =
+          accessRights?.accessRights.map((accessRight) => {
+            const { category, ...rest } = accessRight;
+            return {
+              ...rest,
+              category: category.toString() as keyof typeof Category,
+            };
+          }) || [];
+
+        return {
+          ...rest,
+          accessRights: roleAccessRights,
+          createdAt: new Date(role.createdAt),
+          updatedAt: new Date(role.updatedAt),
+        };
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
           case grpc.status.INVALID_ARGUMENT:
             throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
           case grpc.status.PERMISSION_DENIED:
             throw new UnauthorizedError();
           default:
@@ -63,40 +83,62 @@ builder.queryFields((t) => ({
       }
     },
   }),
-  gymsWhereEmployed: t.field({
-    type: [GymWhereEmployed],
+  updateRole: t.fieldWithInput({
+    type: Role,
+    input: {
+      id: t.input.string(),
+      name: t.input.string(),
+      accessRightIds: t.input.field({
+        type: ["String"],
+      }),
+    },
     errors: {
       types: [
         InvalidArgumentError,
         InternalServerError,
+        NotFoundError,
         UnauthenticatedError,
         UnauthorizedError,
+        ZodError,
       ],
     },
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const gyms: GymsWhereEmployed__Output = await new Promise(
-          (resolve, reject) => {
-            client.getGymsWhereEmployed(
-              { userId: ctx.viewer.user?.id },
-              meta(ctx.viewer),
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
-              }
-            );
-          }
-        );
-        return gyms.gyms;
+        const role: Role__Output = await new Promise((resolve, reject) => {
+          client.updateRole(input, meta(ctx.viewer), (err, res) => {
+            if (err) {
+              reject(err);
+            } else if (res) {
+              resolve(res);
+            }
+          });
+        });
+
+        const { accessRights, ...rest } = role;
+
+        const roleAccessRights =
+          accessRights?.accessRights.map((accessRight) => {
+            const { category, ...rest } = accessRight;
+            return {
+              ...rest,
+              category: category.toString() as keyof typeof Category,
+            };
+          }) || [];
+
+        return {
+          ...rest,
+          accessRights: roleAccessRights,
+          createdAt: new Date(role.createdAt),
+          updatedAt: new Date(role.updatedAt),
+        };
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
           case grpc.status.INVALID_ARGUMENT:
             throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
           case grpc.status.PERMISSION_DENIED:
             throw new UnauthorizedError();
           default:
@@ -105,26 +147,27 @@ builder.queryFields((t) => ({
       }
     },
   }),
-  gym: t.fieldWithInput({
-    type: Gym,
+
+  deleteRole: t.fieldWithInput({
+    type: "Boolean",
     input: {
       id: t.input.string(),
     },
     errors: {
       types: [
-        ZodError,
         InvalidArgumentError,
-        NotFoundError,
         InternalServerError,
+        NotFoundError,
         UnauthenticatedError,
         UnauthorizedError,
+        ZodError,
       ],
     },
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const gym: Gym__Output = await new Promise((resolve, reject) => {
-          client.getGym(input, meta(ctx.viewer), (err, res) => {
+        const success: BooleanType = await new Promise((resolve, reject) => {
+          client.deleteRole(input, meta(ctx.viewer), (err, res) => {
             if (err) {
               reject(err);
             } else if (res) {
@@ -132,11 +175,7 @@ builder.queryFields((t) => ({
             }
           });
         });
-        return {
-          ...gym,
-          createdAt: new Date(gym.createdAt),
-          updatedAt: new Date(gym.updatedAt),
-        };
+        return success.value ?? false;
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
