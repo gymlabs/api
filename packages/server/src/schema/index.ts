@@ -1,3 +1,4 @@
+import "./contracts";
 import "./employment";
 import "./exercise";
 import "./gym";

@@ -42,8 +42,8 @@
     "ts-node": "^10.9.1"
   },
   "dependencies": {
-    "@gymlabs/admin.grpc.client": "^4.0.0",
-    "@gymlabs/admin.grpc.definition": "^0.5.0",
+    "@gymlabs/admin.grpc.client": "^4.0.1",
+    "@gymlabs/admin.grpc.definition": "^0.5.1",
     "@gymlabs/communication.grpc.client": "^0.0.4",
     "@gymlabs/communication.grpc.definition": "^0.0.2",
     "@gymlabs/core.db": "^0.0.0",
@@ -60,7 +60,6 @@
     "cookie": "^0.5.0",
     "graphql": "^16.6.0",
     "graphql-scalars": "^1.21.3",
-    "graphql-yoga": "^3.8.0",
     "html-to-text": "^9.0.5",
     "nodemailer": "^6.9.1",
     "pino": "^8.11.0",

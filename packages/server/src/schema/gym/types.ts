@@ -14,10 +14,9 @@ export const Gym = builder.simpleObject("Gym", {
   }),
 });
 
-export const Gyms = builder.simpleObject("Gyms", {
+export const GymWhereEmployed = builder.simpleObject("GymWhereEmployed", {
   fields: (t) => ({
-    gyms: t.field({
-      type: [Gym],
-    }),
+    id: t.id(),
+    name: t.string(),
   }),
 });

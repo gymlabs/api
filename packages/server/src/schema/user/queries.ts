@@ -1,4 +1,3 @@
-import { db } from "../../db";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -12,12 +11,12 @@ builder.queryFields((t) => ({
     errors: {
       types: [UnauthenticatedError, NotFoundError, InternalServerError],
     },
-    resolve: async (query, parent, args, context) => {
-      if (!context.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, parent, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const user = await db.user.findUnique({
+        const user = await ctx.prisma.user.findUnique({
           ...query,
-          where: { id: context.viewer.user.id },
+          where: { id: ctx.viewer.user.id },
         });
 
         if (!user) throw new NotFoundError("User not found");

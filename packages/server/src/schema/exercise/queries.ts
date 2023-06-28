@@ -6,7 +6,7 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
-import { Exercise, Exercises } from "./types";
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -15,6 +15,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
+import { Exercise } from "../exercise/types";
 
 builder.queryFields((t) => ({
   exercise: t.fieldWithInput({
@@ -32,12 +33,12 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const exercise: Exercise__Output = await new Promise(
           (resolve, reject) => {
-            client.getExercise({ id: input.id }, (err, res) => {
+            client.getExercise(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -72,7 +73,7 @@ builder.queryFields((t) => ({
     },
   }),
   exercises: t.fieldWithInput({
-    type: Exercises,
+    type: [Exercise],
     input: {
       organizationId: t.input.string(),
     },
@@ -85,35 +86,30 @@ builder.queryFields((t) => ({
         UnauthorizedError,
       ],
     },
-    resolve: async (query, { input }, args, context) => {
-      if (!args.viewer.isAuthenticated()) throw new UnauthenticatedError();
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
         const exercises: Exercises__Output = await new Promise(
           (resolve, reject) => {
-            client.getExercises(
-              { organizationId: input.organizationId },
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
+            client.getExercises(input, meta(ctx.viewer), (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
               }
-            );
+            });
           }
         );
-        return {
-          exercises: exercises.exercises.map((exercise) => ({
-            ...exercise,
-            steps: exercise.steps.map((step) => ({
-              ...step,
-              createdAt: new Date(step.createdAt),
-              updatedAt: new Date(step.updatedAt),
-            })),
-            createdAt: new Date(exercise.createdAt),
-            updatedAt: new Date(exercise.updatedAt),
+        return exercises.exercises.map((exercise) => ({
+          ...exercise,
+          steps: exercise.steps.map((step) => ({
+            ...step,
+            createdAt: new Date(step.createdAt),
+            updatedAt: new Date(step.updatedAt),
           })),
-        };
+          createdAt: new Date(exercise.createdAt),
+          updatedAt: new Date(exercise.updatedAt),
+        }));
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {

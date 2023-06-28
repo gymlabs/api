@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "ResetType" AS ENUM ('PASSWORD', 'EMAIL');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -28,30 +31,18 @@ CREATE TABLE "access_token" (
 );
 
 -- CreateTable
-CREATE TABLE "password_reset_request" (
+CREATE TABLE "reset_request" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "type" "ResetType" NOT NULL,
     "token" TEXT NOT NULL,
     "expiresAt" TIMESTAMP(3) NOT NULL,
+    "newValue" TEXT,
     "usedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "password_reset_request_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "change_mail_request" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "token" TEXT NOT NULL,
-    "expiresAt" TIMESTAMP(3) NOT NULL,
-    "newMail" TEXT NOT NULL,
-    "usedAt" TIMESTAMP(3),
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "change_mail_request_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "reset_request_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -67,19 +58,13 @@ CREATE UNIQUE INDEX "User_reactivationToken_key" ON "User"("reactivationToken");
 CREATE UNIQUE INDEX "access_token_token_key" ON "access_token"("token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "password_reset_request_token_key" ON "password_reset_request"("token");
+CREATE UNIQUE INDEX "reset_request_token_key" ON "reset_request"("token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "change_mail_request_token_key" ON "change_mail_request"("token");
-
--- CreateIndex
-CREATE UNIQUE INDEX "change_mail_request_newMail_key" ON "change_mail_request"("newMail");
+CREATE UNIQUE INDEX "reset_request_newValue_key" ON "reset_request"("newValue");
 
 -- AddForeignKey
 ALTER TABLE "access_token" ADD CONSTRAINT "access_token_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "password_reset_request" ADD CONSTRAINT "password_reset_request_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "change_mail_request" ADD CONSTRAINT "change_mail_request_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "reset_request" ADD CONSTRAINT "reset_request_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -6,6 +6,7 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -14,7 +15,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Workout, Workouts } from "./types";
+import { Workout } from "../workout/types";
 
 builder.queryFields((t) => ({
   workout: t.fieldWithInput({
@@ -37,7 +38,7 @@ builder.queryFields((t) => ({
       try {
         const workout: Workout__Output = await new Promise(
           (resolve, reject) => {
-            client.getWorkout({ id: input.id }, (err, res) => {
+            client.getWorkout(input, meta(args.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -72,7 +73,7 @@ builder.queryFields((t) => ({
     },
   }),
   workouts: t.fieldWithInput({
-    type: Workouts,
+    type: [Workout],
     input: {
       organizationId: t.input.string(),
     },
@@ -90,30 +91,25 @@ builder.queryFields((t) => ({
       try {
         const workouts: Workouts__Output = await new Promise(
           (resolve, reject) => {
-            client.getWorkouts(
-              { organizationId: input.organizationId },
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
+            client.getWorkouts(input, meta(args.viewer), (err, res) => {
+              if (err) {
+                reject(err);
+              } else if (res) {
+                resolve(res);
               }
-            );
+            });
           }
         );
-        return {
-          workouts: workouts.workouts.map((workout) => ({
-            ...workout,
-            items: workout.items.map((item) => ({
-              ...item,
-              createdAt: new Date(item.createdAt),
-              updatedAt: new Date(item.updatedAt),
-            })),
-            createdAt: new Date(workout.createdAt),
-            updatedAt: new Date(workout.updatedAt),
+        return workouts.workouts.map((workout) => ({
+          ...workout,
+          items: workout.items.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt),
+            updatedAt: new Date(item.updatedAt),
           })),
-        };
+          createdAt: new Date(workout.createdAt),
+          updatedAt: new Date(workout.updatedAt),
+        }));
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
