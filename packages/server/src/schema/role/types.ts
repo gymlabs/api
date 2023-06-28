@@ -2,13 +2,13 @@ import { builder } from "../builder";
 
 export const Category = builder.enumType("Category", {
   values: [
-    "MEMBERSHIP",
-    "EMPLOYMENT",
-    "WORKOUT",
-    "EXERCISE",
-    "USER",
-    "ROLE",
+    "ORGANIZATION",
     "GYM",
+    "ROLE",
+    "EMPLOYMENT",
+    "CONTRACT",
+    "MEMBERSHIP",
+    "EXERCISE",
   ] as const,
 });
 
