@@ -9,6 +9,7 @@ export const Category = builder.enumType("Category", {
     "CONTRACT",
     "MEMBERSHIP",
     "EXERCISE",
+    "WORKOUT",
   ] as const,
 });
 
