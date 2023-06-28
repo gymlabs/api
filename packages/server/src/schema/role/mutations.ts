@@ -1,6 +1,10 @@
 import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
-import { Category, Role__Output } from "@gymlabs/admin.grpc.definition";
+import {
+  BooleanType,
+  Category,
+  Role__Output,
+} from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
 import { Role } from "./types";
@@ -127,6 +131,50 @@ builder.mutationFields((t) => ({
           createdAt: new Date(role.createdAt),
           updatedAt: new Date(role.updatedAt),
         };
+      } catch (err) {
+        const error = err as grpc.ServiceError;
+        switch (error.code) {
+          case grpc.status.INVALID_ARGUMENT:
+            throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
+          case grpc.status.PERMISSION_DENIED:
+            throw new UnauthorizedError();
+          default:
+            throw new InternalServerError();
+        }
+      }
+    },
+  }),
+
+  deleteRole: t.fieldWithInput({
+    type: "Boolean",
+    input: {
+      id: t.input.string(),
+    },
+    errors: {
+      types: [
+        InvalidArgumentError,
+        InternalServerError,
+        NotFoundError,
+        UnauthenticatedError,
+        UnauthorizedError,
+        ZodError,
+      ],
+    },
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      try {
+        const success: BooleanType = await new Promise((resolve, reject) => {
+          client.deleteRole(input, (err, res) => {
+            if (err) {
+              reject(err);
+            } else if (res) {
+              resolve(res);
+            }
+          });
+        });
+        return success.value ?? false;
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
