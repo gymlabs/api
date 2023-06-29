@@ -1,5 +1,11 @@
 # @gymlabs/core.gql.client
 
+## 0.1.8
+
+### Patch Changes
+
+- add organizationId to gymsWhereEmployed
+
 ## 0.1.7
 
 ### Patch Changes
