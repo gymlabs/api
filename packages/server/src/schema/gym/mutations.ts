@@ -1,11 +1,10 @@
 import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
-import {
-  Exercise__Output,
-  Exercises__Output,
-} from "@gymlabs/admin.grpc.definition";
+import { Gym__Output } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { Gym } from "./types";
+import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
 import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 import {
@@ -15,20 +14,24 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../errors";
-import { Exercise } from "../exercises/types";
 
-builder.queryFields((t) => ({
-  exercise: t.fieldWithInput({
-    type: Exercise,
+builder.mutationFields((t) => ({
+  createGym: t.fieldWithInput({
+    type: Gym,
     input: {
-      id: t.input.string(),
+      name: t.input.string(),
+      organizationId: t.input.string(),
+      city: t.input.string(),
+      country: t.input.string(),
+      description: t.input.string(),
+      postalCode: t.input.string(),
+      street: t.input.string(),
     },
     errors: {
       types: [
         ZodError,
-        NotFoundError,
-        InternalServerError,
         InvalidArgumentError,
+        InternalServerError,
         UnauthenticatedError,
         UnauthorizedError,
       ],
@@ -36,32 +39,23 @@ builder.queryFields((t) => ({
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const exercise: Exercise__Output = await new Promise(
-          (resolve, reject) => {
-            client.getExercise(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
+        const gym: Gym__Output = await new Promise((resolve, reject) => {
+          client.createGym(input, meta(ctx.viewer), (err, res) => {
+            if (err) {
+              reject(err);
+            } else if (res) {
+              resolve(res);
+            }
+          });
+        });
         return {
-          ...exercise,
-          steps: exercise.steps.map((step) => ({
-            ...step,
-            createdAt: new Date(step.createdAt),
-            updatedAt: new Date(step.updatedAt),
-          })),
-          createdAt: new Date(exercise.createdAt),
-          updatedAt: new Date(exercise.updatedAt),
+          ...gym,
+          createdAt: new Date(gym.createdAt),
+          updatedAt: new Date(gym.updatedAt),
         };
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
           case grpc.status.INVALID_ARGUMENT:
             throw new InvalidArgumentError(error.message);
           case grpc.status.PERMISSION_DENIED:
@@ -72,16 +66,24 @@ builder.queryFields((t) => ({
       }
     },
   }),
-  exercises: t.fieldWithInput({
-    type: [Exercise],
+  updateGym: t.fieldWithInput({
+    type: Gym,
     input: {
-      organizationId: t.input.string(),
+      id: t.input.string(),
+      name: t.input.string({ required: false }),
+      organizationId: t.input.string({ required: false }),
+      city: t.input.string({ required: false }),
+      country: t.input.string({ required: false }),
+      description: t.input.string({ required: false }),
+      postalCode: t.input.string({ required: false }),
+      street: t.input.string({ required: false }),
     },
     errors: {
       types: [
         ZodError,
-        InternalServerError,
         InvalidArgumentError,
+        NotFoundError,
+        InternalServerError,
         UnauthenticatedError,
         UnauthorizedError,
       ],
@@ -89,32 +91,31 @@ builder.queryFields((t) => ({
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const exercises: Exercises__Output = await new Promise(
-          (resolve, reject) => {
-            client.getExercises(input, meta(ctx.viewer), (err, res) => {
+        const gym: Gym__Output = await new Promise((resolve, reject) => {
+          client.updateGym(
+            mapNullToUndefined(input),
+            meta(ctx.viewer),
+            (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
                 resolve(res);
               }
-            });
-          }
-        );
-        return exercises.exercises.map((exercise) => ({
-          ...exercise,
-          steps: exercise.steps.map((step) => ({
-            ...step,
-            createdAt: new Date(step.createdAt),
-            updatedAt: new Date(step.updatedAt),
-          })),
-          createdAt: new Date(exercise.createdAt),
-          updatedAt: new Date(exercise.updatedAt),
-        }));
+            }
+          );
+        });
+        return {
+          ...gym,
+          createdAt: new Date(gym.createdAt),
+          updatedAt: new Date(gym.updatedAt),
+        };
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
           case grpc.status.INVALID_ARGUMENT:
             throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
           case grpc.status.PERMISSION_DENIED:
             throw new UnauthorizedError();
           default:

@@ -18,5 +18,6 @@ export const GymWhereEmployed = builder.simpleObject("GymWhereEmployed", {
   fields: (t) => ({
     id: t.id(),
     name: t.string(),
+    organizationId: t.string(),
   }),
 });

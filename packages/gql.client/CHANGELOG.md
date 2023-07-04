@@ -1,5 +1,17 @@
 # @gymlabs/core.gql.client
 
+## 1.0.0
+
+### Major Changes
+
+- now generating gql for react apollo client
+
+## 0.1.8
+
+### Patch Changes
+
+- add organizationId to gymsWhereEmployed
+
 ## 0.1.7
 
 ### Patch Changes
