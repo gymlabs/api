@@ -1,5 +1,11 @@
 # @gymlabs/core.gql.client
 
+## 1.0.1
+
+### Patch Changes
+
+- include roleName in employments type
+
 ## 1.0.0
 
 ### Major Changes
