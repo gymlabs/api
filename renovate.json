@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base", ":rebaseStalePrs"],
+  "extends": ["config:recommended", ":rebaseStalePrs"],
   "minimumReleaseAge": "3 days",
   "internalChecksFilter": "strict",
   "schedule": ["at 6am on tuesday"],
