@@ -11,11 +11,15 @@ npm-debug.log
 *.dbml
 
 # Codegen
-/codegen/gql
-/codegen/dist
+gql/
 
 # GRPC
 src/grpc/types
 src/grpc/*.bin
 
 .npmrc
+
+# macOS
+._*
+.DS_Store
+Thumbs.db
