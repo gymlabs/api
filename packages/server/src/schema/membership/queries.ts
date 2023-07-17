@@ -89,8 +89,7 @@ builder.queryFields((t) => ({
   membershipWithUser: t.fieldWithInput({
     type: MembershipWithUser,
     input: {
-      gymId: t.input.string(),
-      userId: t.input.string(),
+      id: t.input.string(),
     },
     errors: {
       types: [
