@@ -89,8 +89,7 @@ builder.queryFields((t) => ({
   employmentWithUser: t.fieldWithInput({
     type: EmploymentWithUser,
     input: {
-      gymId: t.input.string(),
-      userId: t.input.string(),
+      id: t.input.string(),
     },
     errors: {
       types: [

@@ -1,5 +1,11 @@
 # @gymlabs/core.gql.web.client
 
+## 0.0.3
+
+### Patch Changes
+
+- get employment by id
+
 ## 0.0.2
 
 ### Patch Changes
