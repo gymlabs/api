@@ -1,4 +1,5 @@
 import { builder } from "../builder";
+import { Role } from "../role/types";
 
 export const Gym = builder.simpleObject("Gym", {
   fields: (t) => ({
@@ -19,5 +20,6 @@ export const GymWhereEmployed = builder.simpleObject("GymWhereEmployed", {
     id: t.id(),
     name: t.string(),
     organizationId: t.string(),
+    role: t.field({ type: Role, nullable: true }),
   }),
 });

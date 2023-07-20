@@ -1,6 +1,7 @@
 import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
 import {
+  Category,
   Gym__Output,
   GymsWhereEmployed__Output,
   Gyms__Output,
@@ -91,7 +92,22 @@ builder.queryFields((t) => ({
             );
           }
         );
-        return gyms.gyms;
+
+        return gyms.gyms.map((gym) => ({
+          ...gym,
+          role: gym.role && {
+            ...gym.role,
+            accessRights: gym.role.accessRights
+              ? gym.role.accessRights.accessRights.map((accessRight) => ({
+                  ...accessRight,
+                  category:
+                    accessRight.category.toString() as keyof typeof Category,
+                }))
+              : [],
+            createdAt: new Date(gym.role.createdAt),
+            updatedAt: new Date(gym.role.updatedAt),
+          },
+        }));
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {

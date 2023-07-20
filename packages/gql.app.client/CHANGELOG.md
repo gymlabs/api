@@ -1,5 +1,11 @@
 # @gymlabs/core.gql.app.client
 
+## 0.0.4
+
+### Patch Changes
+
+- add role to gymswhereemployed
+
 ## 0.0.3
 
 ### Patch Changes
