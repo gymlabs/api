@@ -28,9 +28,7 @@
     {
       "matchHost": "https://npm.pkg.github.com/",
       "hostType": "npm",
-      "encrypted": {
-        "token": "wcFMA/xDdHCJBTolARAAjzsJn1YyGoGCiH9cXMviZ8ZYpz9s7AGd4AMg/RVpwiBnbPGU50ZMmRXq/eMcCqwv1b0NQ2NhEKAhbK4Rd3rvTAuvC45AOup+TeLRzRMdHio/qEBY8PTcEkPAA6yKi2q+gwvPxYn+VvKXFMpgaUGPQVe5QBfQK22r2BK4eotN9qhRTSbjjxeXp8aP2iFWzE+hyWunfrioy56dlvE/WCCuUiXkO4LnKagfBJYEEBl0Vl3all5aA+oDai9GY4pdCVyyAShxyt4KkNznvUbvBU/NsoZlokZfadHbt7DT/S1qVnQ8XhHqA1C/aKhZqU03GfqrU9+0aNbyqJdf7t4NHDmvYo+oR20om+nLCcmLFqD2Q5nQtoi9vhcUHx+WlhMpAmAz/c0An/9myDrcha8TfIOGmu0ms1qbrHm1cNmmm6ouJPShcV4X51NGc/Q6nDg/Gh4ySuT9oBQrNd+slNHpPmCpRQQCRgGkd8GHXBhqADhvZM1xf3qLoSNVs2zqLBygzl0qENdIx0+/+qMRmwA3GAPPfrblkzv/foIN5aryfeSjI9s32lfHUkRXGLfXdJbfYtdgC9Fi8KvGSwZjvKSFueOd/VPYCxg+4fDYmW8YZt+1noXcnbdevvXUIjisgzziNLhybbf6ylIDseGV+5cTAspPByzbv8HVlPpX7+Pekh+6zenSdgG4eHP0vER3uxE3O4yrPpXMOFZsfYS0n5RUUe1r/vjucBMW00KTK1lXdl63lYTwo5y5btXHKBnZuA2k4R4qwKS6V1rtf3gAjA73UiBdeb3TY7lgRmKPVQR2i24OzAWBntkL9aOIQhjgai0bnGgeilxFQjxkTU4"
-      },
+      "token": "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",
       "npmrc": "@gymlabs:registry=https://npm.pkg.github.com/"
     }
   ],
