@@ -4,6 +4,7 @@
   "main": "dist/graphql.js",
   "types": "dist/graphql.d.ts",
   "module": "dist/graphql.mjs",
+  "type": "commonjs",
   "publishConfig": {
     "@gymlabs:registry": "https://npm.pkg.github.com/"
   },

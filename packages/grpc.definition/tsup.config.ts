@@ -7,4 +7,5 @@ export default defineConfig({
   loader: {
     ".proto": "copy",
   },
+  tsconfig: "../../tsconfig.base.json",
 });

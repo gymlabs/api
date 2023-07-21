@@ -1,7 +1,13 @@
+import http from "http";
+
 import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import * as grpc from "@grpc/grpc-js";
 import { CoreServiceHandlers, core } from "@gymlabs/core.grpc.definition";
+import { json } from "body-parser";
+import cors from "cors";
+import express from "express";
 
 import { config } from "./config";
 import { Context, getContext } from "./context";
@@ -19,34 +25,35 @@ async function main() {
 
   logger.info("Starting server.. 🚀");
 
-  const { host, port } = config.server;
+  const app = express();
+  const httpServer = http.createServer(app);
 
   const apolloServer = new ApolloServer<Context>({
     schema,
     logger,
-    stopOnTerminationSignals: false, // we handle that ourselves
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
 
-  const { url } = await startStandaloneServer(apolloServer, {
-    context: getContext,
-    listen: { host, port },
-  });
+  await apolloServer.start();
 
-  logger.info(`Server ready at ${url}`);
+  app.use(
+    "/",
+    cors<cors.CorsRequest>({
+      origin: config.server.corsOrigion,
+      credentials: true,
+    }),
+    json(),
+    expressMiddleware(apolloServer, {
+      context: getContext,
+    })
+  );
 
-  // handle graceful shutdown ourselves to also disconnect from database
-  ["SIGINT", "SIGTERM"].forEach((signal) => {
-    process.on(signal, async () => {
-      logger.info(`Closing http server due to received ${signal}..`);
-      apolloServer.stop();
-      logger.info("Http server closed ✅");
-      logger.info("Disconnecting from database..");
-      await db.$disconnect();
-      logger.info("Disconnected from database ✅");
-      logger.info("Exiting process..");
-      process.exit(0);
-    });
-  });
+  const { host, port } = config.server;
+  await new Promise<void>((resolve) =>
+    httpServer.listen({ host, port }, resolve)
+  );
+
+  logger.info(`🚀 Server ready at http://${host}:${port}/graphql`);
 }
 
 async function grpcMain() {
@@ -54,7 +61,7 @@ async function grpcMain() {
 
   const server = new grpc.Server();
 
-  logger.debug("Setting up admin service..");
+  logger.debug("Setting up core service..");
   const coreServiceHandler: CoreServiceHandlers = {
     GetUserById: getUserById,
   };

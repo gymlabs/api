@@ -24,6 +24,7 @@ const validatedEnv = z
       .enum(["true", "false"])
       .default("false")
       .transform((v) => v === "true"),
+    CORS_ORIGN: z.string().url().default("http://localhost:3000"),
   })
 
   .safeParse(process.env);
@@ -46,6 +47,7 @@ export const config = {
     host: env.HOST,
     port: env.PORT,
     grpcPort: env.GRPC_PORT,
+    corsOrigion: env.CORS_ORIGN,
   },
   client: {
     admin: {
