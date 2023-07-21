@@ -29,8 +29,9 @@
       "matchHost": "https://npm.pkg.github.com/",
       "hostType": "npm",
       "encrypted": {
-        "npmrc": "wcFMA/xDdHCJBTolAQ/+JmSBMyosiolN117dAaixXlym0em+EfZb/6iJRHzgTq/IETRol5Q5yHRCxqAczhrbyysYB+3rLjTWSudQ/t6AkaShWgCDXeUndktwkdS+F1k1WzmKLAdbabTDgXSPbru61MHvnLEaZ5NV06P1j3gu44DstIDaXvGFa1KrlKwg5Kd4BRqjmjz0RGVksf7NtLLECrMDoq8A8JO+Yn9KaaOTLqKjbWF5jCjicl798Xa8RMlHOwn7PcYix13VyqEj4tOZksaU16sKo7A+FBjgtLWTFeQNZ/6kwfLg6ayZuzTNw7GlmktPd1zn1dkpB6Zth3sgJxuIfbs1uHpQu+RBVfHRBb3B3+sKpc6GJHpom48lXAw8oinczaue4E0fkdcxq6akTdVlm63c4PwQQums3iKSZcIvYApniXdPGjDsbVpckfWaZs0IpsivSFQYA6+T8lahAZ9HLJn/uMlSW3Citcq9nhiYONGW2Oe/FkzUdpnWaMHkOUBHkuq0wRPNAPVhyLk4YPH89LYEv0uPucNNo3m/R7Ds8XakG16g5FzYNPhvDtaeLxyJ312aXEK+Vakr23Yne42NJP/MQyUqjgaLKvzqEZI4X7hIPqky6qlpLXED0j9cxV+5phVNLlbOZjbAWe2XYXMkMQGQWj3txwQ0lmWz8WC4jv3JcukZpV7JHBzSNRjSwAYBiii6OwC3zZw765Bnl3N3oaIs00xpYAg2XVaXQYspTADKB1HtffVkfo/v/MDRa1hW78TG5/d/I3IWI+CngHdcQ+0XbWo17vwkUO1E4MM+q6enWWyHsY7meHlo1Qf8/MDtmTillZvuqkEwkXRkQQYtcpYwcfVOjr4PfEPAwNARxG5+A+LVJJ829vCJ6CFmu5Vcz50de+8pNHI71MfsSzCCfvVC/Gm5/8y1UriNZgU6R/bT5otT57ib3WhPUcdpJ+hNYYOO/xc"
-      }
+        "token": "wcFMA/xDdHCJBTolARAAjzsJn1YyGoGCiH9cXMviZ8ZYpz9s7AGd4AMg/RVpwiBnbPGU50ZMmRXq/eMcCqwv1b0NQ2NhEKAhbK4Rd3rvTAuvC45AOup+TeLRzRMdHio/qEBY8PTcEkPAA6yKi2q+gwvPxYn+VvKXFMpgaUGPQVe5QBfQK22r2BK4eotN9qhRTSbjjxeXp8aP2iFWzE+hyWunfrioy56dlvE/WCCuUiXkO4LnKagfBJYEEBl0Vl3all5aA+oDai9GY4pdCVyyAShxyt4KkNznvUbvBU/NsoZlokZfadHbt7DT/S1qVnQ8XhHqA1C/aKhZqU03GfqrU9+0aNbyqJdf7t4NHDmvYo+oR20om+nLCcmLFqD2Q5nQtoi9vhcUHx+WlhMpAmAz/c0An/9myDrcha8TfIOGmu0ms1qbrHm1cNmmm6ouJPShcV4X51NGc/Q6nDg/Gh4ySuT9oBQrNd+slNHpPmCpRQQCRgGkd8GHXBhqADhvZM1xf3qLoSNVs2zqLBygzl0qENdIx0+/+qMRmwA3GAPPfrblkzv/foIN5aryfeSjI9s32lfHUkRXGLfXdJbfYtdgC9Fi8KvGSwZjvKSFueOd/VPYCxg+4fDYmW8YZt+1noXcnbdevvXUIjisgzziNLhybbf6ylIDseGV+5cTAspPByzbv8HVlPpX7+Pekh+6zenSdgG4eHP0vER3uxE3O4yrPpXMOFZsfYS0n5RUUe1r/vjucBMW00KTK1lXdl63lYTwo5y5btXHKBnZuA2k4R4qwKS6V1rtf3gAjA73UiBdeb3TY7lgRmKPVQR2i24OzAWBntkL9aOIQhjgai0bnGgeilxFQjxkTU4"
+      },
+      "npmrc": "@gymlabs:registry=https://npm.pkg.github.com/"
     }
   ],
   "configMigration": true,
