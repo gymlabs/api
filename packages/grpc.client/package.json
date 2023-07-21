@@ -10,7 +10,7 @@
     "@gymlabs:registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
-    "lint": "eslint --ext .ts src/",
+    "lint": "eslint --cache --ext .ts src/",
     "build": "tsc"
   },
   "peerDependencies": {
