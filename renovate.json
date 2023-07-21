@@ -26,12 +26,11 @@
   },
   "hostRules": [
     {
-      "hostType": "npm",
       "matchHost": "https://npm.pkg.github.com/",
+      "hostType": "npm",
       "encrypted": {
-        "token": "wcFMA/xDdHCJBTolAQ/9HI3r3m29SbsDEKl6aTBax6BBxPLVKRi9fDFq4rbmLaOSpmcd1m6pyT4Y+Yl32/lXILk8ooVjGGQ80nf7rpRAZJ47Nf8kd413ZCvejrbzgPTdiqj5169yln7qHJcOhiPCVdoqPiVI7r8DrnqWT16g/sZSIpA+pJ4lYVoWlQz57u6ud5wXFmGy05PCQSqoRov/yk/la6Zj9er0KwtOZjzF+qTBE5kLEcTbwfn5NBPbQP7PUiHXPA8czr2pSpwsfbvHj0Q+FIu770/2NbOWuGP3XbAHd8sFBwSoulLnHMD28rJckjCPWdXG9bVPZs0J+zgSnMCBhEUJD18l0cgHLgAY3muRVM3YsWu3EEbD3vsPunFpqHKqjgMb0jMaXBQxzQdRgSHTyHZclaeOgthDU1ER0lEZ2LNEKH0y8vO3eMSYtEqjm6BjIHTirp+xP+sq1BqPFDKmN57hL14XRnziovXgKMvj5u3+6KFQqxGZqcmxcSGdDm0ZN5iUBQPmLztWg5vIkdW+Z4xImpq+b/BfN6RRa93VJrAUFauA4nEtLw+KQxqTHOkAWn+p45d0P3NYxZXVsTEKGT/Qw+37XTHcgjEp0xCdk/VIX6HLebz2CU57K6fKcxt9+UqMvg4VY9EDhkDZmmSvWtIQfburJX6h3FNMssQz256my5ys6CcE421mO33SdgEbC8D4Ez0SFk4ZeJoPsRNdWInoZlLf31UdDhHskJtUL6vvYwGXBaNOvoe9nrCP32bBk22Fpmhs3nAoDPR0byrnhdqmTHKi3DpZgdYiqcGNU1UMag93bcmLnQ585wiKYjoyKaAW1/qZOhusmaIMwzxEo+yctrY"
-      },
-      "npmrc": "@gymlabs:registry=https://npm.pkg.github.com/"
+        "npmrc": "wcFMA/xDdHCJBTolAQ/+JmSBMyosiolN117dAaixXlym0em+EfZb/6iJRHzgTq/IETRol5Q5yHRCxqAczhrbyysYB+3rLjTWSudQ/t6AkaShWgCDXeUndktwkdS+F1k1WzmKLAdbabTDgXSPbru61MHvnLEaZ5NV06P1j3gu44DstIDaXvGFa1KrlKwg5Kd4BRqjmjz0RGVksf7NtLLECrMDoq8A8JO+Yn9KaaOTLqKjbWF5jCjicl798Xa8RMlHOwn7PcYix13VyqEj4tOZksaU16sKo7A+FBjgtLWTFeQNZ/6kwfLg6ayZuzTNw7GlmktPd1zn1dkpB6Zth3sgJxuIfbs1uHpQu+RBVfHRBb3B3+sKpc6GJHpom48lXAw8oinczaue4E0fkdcxq6akTdVlm63c4PwQQums3iKSZcIvYApniXdPGjDsbVpckfWaZs0IpsivSFQYA6+T8lahAZ9HLJn/uMlSW3Citcq9nhiYONGW2Oe/FkzUdpnWaMHkOUBHkuq0wRPNAPVhyLk4YPH89LYEv0uPucNNo3m/R7Ds8XakG16g5FzYNPhvDtaeLxyJ312aXEK+Vakr23Yne42NJP/MQyUqjgaLKvzqEZI4X7hIPqky6qlpLXED0j9cxV+5phVNLlbOZjbAWe2XYXMkMQGQWj3txwQ0lmWz8WC4jv3JcukZpV7JHBzSNRjSwAYBiii6OwC3zZw765Bnl3N3oaIs00xpYAg2XVaXQYspTADKB1HtffVkfo/v/MDRa1hW78TG5/d/I3IWI+CngHdcQ+0XbWo17vwkUO1E4MM+q6enWWyHsY7meHlo1Qf8/MDtmTillZvuqkEwkXRkQQYtcpYwcfVOjr4PfEPAwNARxG5+A+LVJJ829vCJ6CFmu5Vcz50de+8pNHI71MfsSzCCfvVC/Gm5/8y1UriNZgU6R/bT5otT57ib3WhPUcdpJ+hNYYOO/xc"
+      }
     }
   ],
   "configMigration": true,
