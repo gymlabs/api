@@ -1,7 +1,7 @@
 import adminClient from "@gymlabs/admin.grpc.client";
 import { BooleanType__Output } from "@gymlabs/admin.grpc.definition";
 import communicationClient from "@gymlabs/communication.grpc.client";
-import { ResetType } from "@gymlabs/core.db";
+import { ResetType } from "@gymlabs/db";
 import { addMilliseconds } from "date-fns";
 import { ZodError } from "zod";
 

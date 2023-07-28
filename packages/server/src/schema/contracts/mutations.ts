@@ -1,10 +1,9 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import { Contract__Output } from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
 import { Contract } from "./types";
-import { meta } from "../../lib/metadata";
+import { db } from "../../db";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateOrganizationEntity } from "../../lib/authenticate";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -34,34 +33,42 @@ builder.mutationFields((t) => ({
     },
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const contract: Contract__Output = await new Promise(
-          (resolve, reject) => {
-            client.createContract(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return {
-          ...contract,
-          createdAt: new Date(contract.createdAt),
-          updatedAt: new Date(contract.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateOrganizationEntity(
+            "CONTRACT",
+            "create",
+            ctx.viewer.user?.id ?? "",
+            input.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
         }
-      }
+
+        return await db.contract.create({
+          data: {
+            ...input,
+            createdAt: new Date(),
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          name: z.string().min(1, "Name must be provided"),
+          description: z.string().min(1, "Description must be provided"),
+          monthlyCost: z
+            .number()
+            .min(0, "Monthly cost must be provided and >= 0"),
+          contractDuration: z
+            .number()
+            .min(1, "Contract duration must be provided and > 0"),
+          organizationId: z.string().uuid(),
+        }),
+        input
+      );
     },
   }),
 }));

@@ -1,10 +1,9 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import { Contracts__Output } from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
 import { Contract } from "./types";
-import { meta } from "../../lib/metadata";
+import { db } from "../../db";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateOrganizationEntity } from "../../lib/authenticate";
 import { builder } from "../builder";
 import {
   InternalServerError,
@@ -21,43 +20,41 @@ builder.queryFields((t) => ({
     },
     errors: {
       types: [
-        ZodError,
         InvalidArgumentError,
         InternalServerError,
         UnauthenticatedError,
-        UnauthorizedError,
+        ZodError,
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const contracts: Contracts__Output = await new Promise(
-          (resolve, reject) => {
-            client.getContracts(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return contracts.contracts.map((contract) => ({
-          ...contract,
-          createdAt: new Date(contract.createdAt),
-          updatedAt: new Date(contract.updatedAt),
-        }));
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateOrganizationEntity(
+            "CONTRACT",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            input.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.contract.findMany({
+          where: {
+            id: input.organizationId,
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({ organizationId: z.string().uuid() }),
+        input
+      );
     },
   }),
   myContracts: t.fieldWithInput({
@@ -71,39 +68,33 @@ builder.queryFields((t) => ({
         InvalidArgumentError,
         InternalServerError,
         UnauthenticatedError,
-        UnauthorizedError,
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const myContracts: Contracts__Output = await new Promise(
-          (resolve, reject) => {
-            client.GetMyContracts(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return myContracts.contracts.map((contract) => ({
-          ...contract,
-          createdAt: new Date(contract.createdAt),
-          updatedAt: new Date(contract.updatedAt),
-        }));
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        if (ctx.viewer.user?.id !== input.userId) {
+          throw new UnauthorizedError();
+        }
+
+        const memberships = await db.membership.findMany({
+          where: {
+            userId: input.userId,
+          },
+          include: { contract: true },
+        });
+
+        return memberships.map((membership) => membership.contract);
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({ userId: z.string().uuid() }),
+        input
+      );
     },
   }),
 }));

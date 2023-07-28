@@ -1,5 +1,5 @@
 {
-  "name": "@gymlabs/api",
+  "name": "@gymlabs/db",
   "version": "0.0.0",
   "private": true,
   "main": "dist/client/index.js",
