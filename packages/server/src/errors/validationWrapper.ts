@@ -1,6 +1,6 @@
 import { ZodError, ZodType } from "zod";
 
-import { InvalidArgumentError, InternalServerError } from "../schema/errors";
+import { InternalServerError, InvalidArgumentError } from ".";
 
 const validationWrapper = async <T, U>(
   toWrap: () => Promise<U>,

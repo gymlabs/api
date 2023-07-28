@@ -1,9 +1,9 @@
-import { builder } from "../builder";
 import {
   InternalServerError,
   NotFoundError,
   UnauthenticatedError,
-} from "../errors";
+} from "../../errors";
+import { builder } from "../builder";
 
 builder.queryFields((t) => ({
   me: t.prismaField({

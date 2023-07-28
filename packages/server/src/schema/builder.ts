@@ -10,9 +10,9 @@ import ValidationPlugin from "@pothos/plugin-validation";
 import WithInputPlugin from "@pothos/plugin-with-input";
 import { SetNonNullable } from "type-fest";
 
-import { ForbiddenError } from "./errors";
 import { Context, Viewer } from "../context";
 import { db } from "../db";
+import { ForbiddenError } from "../errors";
 
 export const builder = new SchemaBuilder<{
   Context: Context;

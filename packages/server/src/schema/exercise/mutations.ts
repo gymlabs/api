@@ -8,16 +8,16 @@ import {
 import { ZodError } from "zod";
 
 import { Exercise, ExerciseStep } from "./types";
-import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
-import { meta } from "../../lib/metadata";
-import { builder } from "../builder";
 import {
   InternalServerError,
   InvalidArgumentError,
   NotFoundError,
   UnauthenticatedError,
   UnauthorizedError,
-} from "../errors";
+} from "../../errors";
+import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
+import { meta } from "../../lib/metadata";
+import { builder } from "../builder";
 
 builder.mutationFields((t) => ({
   createExercise: t.fieldWithInput({

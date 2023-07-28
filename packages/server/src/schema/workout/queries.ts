@@ -6,15 +6,15 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
-import { meta } from "../../lib/metadata";
-import { builder } from "../builder";
 import {
   InternalServerError,
   InvalidArgumentError,
   NotFoundError,
   UnauthenticatedError,
   UnauthorizedError,
-} from "../errors";
+} from "../../errors";
+import { meta } from "../../lib/metadata";
+import { builder } from "../builder";
 import { Workout } from "../workout/types";
 
 builder.queryFields((t) => ({

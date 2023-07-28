@@ -1,7 +1,7 @@
 import { GraphQLError } from "graphql";
 import { ZodError, ZodFormattedError } from "zod";
 
-import { builder } from "./builder";
+import { builder } from "../schema/builder";
 
 // https://pothos-graphql.dev/docs/plugins/errors
 

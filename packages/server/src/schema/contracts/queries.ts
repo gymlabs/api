@@ -2,15 +2,15 @@ import { ZodError, z } from "zod";
 
 import { Contract } from "./types";
 import { db } from "../../db";
-import validationWrapper from "../../errors/validationWrapper";
-import { authenticateOrganizationEntity } from "../../lib/authenticate";
-import { builder } from "../builder";
 import {
   InternalServerError,
   InvalidArgumentError,
   UnauthenticatedError,
   UnauthorizedError,
-} from "../errors";
+} from "../../errors";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateOrganizationEntity } from "../../lib/authenticate";
+import { builder } from "../builder";
 
 builder.queryFields((t) => ({
   contracts: t.fieldWithInput({

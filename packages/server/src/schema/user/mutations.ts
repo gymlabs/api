@@ -7,14 +7,6 @@ import { ZodError } from "zod";
 
 import { AccessTokenResponse } from "./types";
 import { config } from "../../config";
-import { meta } from "../../lib/metadata";
-import {
-  comparePassword,
-  hashPassword,
-  hashToken,
-  randomToken,
-} from "../../lib/security";
-import { builder } from "../builder";
 import {
   InternalServerError,
   NotFoundError,
@@ -29,7 +21,15 @@ import {
   ResetPasswordTokenAlreadyUsedError,
   ResetPasswordTokenExpiredError,
   UserHasMembershipsOrEmploymentsError,
-} from "../errors";
+} from "../../errors";
+import { meta } from "../../lib/metadata";
+import {
+  comparePassword,
+  hashPassword,
+  hashToken,
+  randomToken,
+} from "../../lib/security";
+import { builder } from "../builder";
 
 builder.mutationFields((t) => ({
   register: t.fieldWithInput({

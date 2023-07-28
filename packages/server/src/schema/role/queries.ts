@@ -3,15 +3,15 @@ import client from "@gymlabs/admin.grpc.client";
 import { Category, Role__Output } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
-import { meta } from "../../lib/metadata";
-import { builder } from "../builder";
 import {
   InternalServerError,
   InvalidArgumentError,
   NotFoundError,
   UnauthenticatedError,
   UnauthorizedError,
-} from "../errors";
+} from "../../errors";
+import { meta } from "../../lib/metadata";
+import { builder } from "../builder";
 import { Role } from "../role/types";
 
 builder.queryFields((t) => ({

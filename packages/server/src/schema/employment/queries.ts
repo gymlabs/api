@@ -6,16 +6,16 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
-import { meta } from "../../lib/metadata";
-import { builder } from "../builder";
-import { EmploymentWithUser } from "../employment/types";
 import {
   InternalServerError,
   InvalidArgumentError,
   NotFoundError,
   UnauthenticatedError,
   UnauthorizedError,
-} from "../errors";
+} from "../../errors";
+import { meta } from "../../lib/metadata";
+import { builder } from "../builder";
+import { EmploymentWithUser } from "../employment/types";
 
 builder.queryFields((t) => ({
   employmentsWithUser: t.fieldWithInput({
