@@ -3,16 +3,14 @@ import { hash } from "bcrypt";
 
 import { AccessToken, PrismaClient, User } from "@gymlabs/core.db";
 
-const prisma = new PrismaClient();
-
-async function main() {
-  const USER_COUNT = 1000;
+export default async function seedUsers(prisma: PrismaClient) {
+  const USER_COUNT = 42;
 
   const users: Array<User> = [];
   for (let i = 0; i < USER_COUNT; i++) {
-    const firstName = faker.name.firstName();
-    const lastName = faker.name.lastName();
-    const email = faker.internet.email(firstName, lastName);
+    const firstName = faker.person.firstName();
+    const lastName = faker.person.lastName();
+    const email = faker.internet.email({ firstName, lastName });
 
     const user = await prisma.user.upsert({
       where: { email: email },
@@ -59,13 +57,3 @@ async function main() {
     accessTokens.push(accessToken);
   }
 }
-
-main()
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });

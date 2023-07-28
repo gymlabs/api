@@ -1,5 +1,5 @@
 {
-  "name": "@gymlabs/core.db",
+  "name": "@gymlabs/api",
   "version": "0.0.0",
   "private": true,
   "main": "dist/client/index.js",
@@ -15,7 +15,7 @@
     "prisma:seed": "prisma db seed"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed/index.ts"
   },
   "peerDependencies": {
     "@prisma/client": "^5.0.0"
