@@ -5,8 +5,8 @@ import { parse } from "cookie";
 import { SetNonNullable } from "type-fest";
 
 import { db } from "./db";
-import { InvalidAccessTokenError } from "./errors";
 import { extractBearerToken, hashToken } from "./lib/security";
+import { InvalidAccessTokenError } from "./schema/errors";
 
 export const getContext = async ({
   req,

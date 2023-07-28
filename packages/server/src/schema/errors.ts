@@ -144,6 +144,32 @@ builder.objectType(UnauthorizedError, {
   interfaces: [ErrorInterface],
 });
 
+export class ForbiddenError extends GraphQLError {
+  constructor(message?: string) {
+    super(message ?? "Forbidden.", { extensions: { code: "FORBIDDEN" } });
+    this.name = "ForbiddenError";
+  }
+}
+
+builder.objectType(ForbiddenError, {
+  name: "ForbiddenError",
+  interfaces: [ErrorInterface],
+});
+
+export class InvalidAccessTokenError extends GraphQLError {
+  constructor(message?: string) {
+    super(message ?? "Invalid access token.", {
+      extensions: { code: "INVALID_ACCESS_TOKEN" },
+    });
+    this.name = "InvalidAccessTokenError";
+  }
+}
+
+builder.objectType(InvalidAccessTokenError, {
+  name: "InvalidAccessTokenError",
+  interfaces: [ErrorInterface],
+});
+
 /* ------------------------------- User/Core Errors ------------------------------ */
 
 export class EmailAlreadyInUseError extends GraphQLError {
