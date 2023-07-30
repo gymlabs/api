@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { hash } from "bcrypt";
 
-import { AccessToken, PrismaClient, User } from "@gymlabs/core.db";
+import { AccessToken, PrismaClient, User } from "@gymlabs/db";
 
 export default async function seedUsers(prisma: PrismaClient) {
   const USER_COUNT = 42;

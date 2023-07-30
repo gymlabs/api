@@ -14,6 +14,10 @@ function getRandomNumberArray(min: number, max: number): number[] {
 
 const prisma = new PrismaClient();
 async function main() {
+  await prisma.role.deleteMany();
+  await prisma.accessRight.deleteMany();
+  await prisma.organization.deleteMany();
+  await prisma.user.deleteMany();
   const ORGANIZATION_COUNT = 10;
 
   for (let i = 0; i < ORGANIZATION_COUNT; i++) {

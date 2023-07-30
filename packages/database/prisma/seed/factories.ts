@@ -20,10 +20,10 @@ function createRandomGym(
   return {
     name: faker.company.name(),
     description: faker.lorem.sentence(),
-    street: faker.address.street(),
-    postalCode: faker.address.zipCode(),
-    city: faker.address.city(),
-    country: faker.address.country(),
+    street: faker.location.street(),
+    postalCode: faker.location.zipCode(),
+    city: faker.location.city(),
+    country: faker.location.country(),
     organizationId,
   };
 }
