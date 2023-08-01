@@ -62,15 +62,7 @@ builder.queryFields((t) => ({
       }
 
       return {
-        id: gym.id,
-        name: gym.name,
-        description: gym.description,
-        street: gym.street,
-        city: gym.city,
-        postalCode: gym.postalCode,
-        country: gym.country,
-        createdAt: gym.createdAt,
-        updatedAt: gym.updatedAt,
+        ...gym,
       };
     },
   }),
@@ -159,10 +151,7 @@ builder.queryFields((t) => ({
 
       return employments.map((employment) => {
         return {
-          id: employment.gym.id,
-          name: employment.gym.name,
-          organizationId: employment.gym.organizationId,
-          role: employment.role,
+          ...employment.gym,
         };
       });
     },

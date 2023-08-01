@@ -292,6 +292,7 @@ builder.mutationFields((t) => ({
       );
     },
   }),
+
   updateWorkoutPlanItem: t.fieldWithInput({
     type: WorkoutPlanItem,
     input: {

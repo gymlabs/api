@@ -83,13 +83,8 @@ builder.queryFields((t) => ({
       );
 
       return {
-        id: membership.id,
-        gymId: membership.gymId,
-        user: membership.user,
-        contractId: membership.contractId,
+        ...membership,
         contractName: membership.contract.name,
-        createdAt: membership.createdAt,
-        updatedAt: membership.updatedAt,
       };
     },
   }),
@@ -158,13 +153,8 @@ builder.queryFields((t) => ({
       );
 
       return memberships.map((membership) => ({
-        id: membership.id,
-        gymId: membership.gymId,
-        user: membership.user,
-        contractId: membership.contractId,
+        ...membership,
         contractName: membership.contract.name,
-        createdAt: new Date(membership.createdAt),
-        updatedAt: new Date(membership.updatedAt),
       }));
     },
   }),

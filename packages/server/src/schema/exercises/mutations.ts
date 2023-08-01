@@ -184,7 +184,6 @@ builder.mutationFields((t) => ({
           throw new UnauthorizedError();
         }
 
-        // TODO: and error boundary?
         await db.exercise.delete({
           where: {
             id: input.id,

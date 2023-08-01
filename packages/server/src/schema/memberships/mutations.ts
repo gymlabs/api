@@ -94,13 +94,8 @@ builder.mutationFields((t) => ({
       );
 
       return {
-        id: membership.id,
-        gymId: membership.gymId,
-        userId: membership.userId,
-        contractId: membership.contractId,
+        ...membership,
         contractName: membership.contract.name,
-        createdAt: membership.createdAt,
-        updatedAt: membership.updatedAt,
       };
     },
   }),
