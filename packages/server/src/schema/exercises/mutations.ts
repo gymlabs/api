@@ -1,13 +1,7 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import {
-  BooleanType__Output,
-  ExerciseStep__Output,
-  Exercise__Output,
-} from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
 import { Exercise, ExerciseStep } from "./types";
+import { db } from "../../db";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -15,8 +9,9 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../errors";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateOrganizationEntity } from "../../lib/authenticate";
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
-import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 
 builder.mutationFields((t) => ({
@@ -37,42 +32,45 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const exercise: Exercise__Output = await new Promise(
-          (resolve, reject) => {
-            client.createExercise(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return {
-          ...exercise,
-          steps: exercise.steps.map((step) => ({
-            ...step,
-            createdAt: new Date(step.createdAt),
-            updatedAt: new Date(step.updatedAt),
-          })),
-          createdAt: new Date(exercise.createdAt),
-          updatedAt: new Date(exercise.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateOrganizationEntity(
+            "EXERCISE",
+            "create",
+            ctx.viewer.user?.id ?? "",
+            input.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.exercise.create({
+          data: {
+            ...input,
+            createdAt: new Date(),
+          },
+          include: {
+            steps: true,
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          name: z.string().min(1, "Name must be provided"),
+          description: z.string().min(1, "Description must be provided"),
+          organizationId: z.string().uuid(),
+        }),
+        input
+      );
     },
   }),
+
   updateExercise: t.fieldWithInput({
     type: Exercise,
     input: {
@@ -91,48 +89,56 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const exercise: Exercise__Output = await new Promise(
-          (resolve, reject) => {
-            client.updateExercise(
-              mapNullToUndefined(input),
-              meta(ctx.viewer),
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
-              }
-            );
-          }
-        );
-        return {
-          ...exercise,
-          steps: exercise.steps.map((step) => ({
-            ...step,
-            createdAt: new Date(step.createdAt),
-            updatedAt: new Date(step.updatedAt),
-          })),
-          createdAt: new Date(exercise.createdAt),
-          updatedAt: new Date(exercise.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const exercise = await db.exercise.findUnique({
+          where: {
+            id: input.id,
+          },
+        });
+
+        if (!exercise) {
+          throw new NotFoundError("Exercise");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "EXERCISE",
+            "update",
+            ctx.viewer.user?.id ?? "",
+            exercise.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        const { name, description } = input;
+        return await db.exercise.update({
+          where: {
+            id: input.id,
+          },
+          data: mapNullToUndefined({ name, description }),
+          include: {
+            steps: true,
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+          name: z.string().optional(),
+          description: z.string().optional(),
+        }),
+        input
+      );
     },
   }),
+
   deleteExercise: t.fieldWithInput({
     type: "Boolean",
     input: {
@@ -149,35 +155,55 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const exercise: BooleanType__Output = await new Promise(
-          (resolve, reject) => {
-            client.deleteExercise(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return exercise.value;
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const exercise = await db.exercise.findUnique({
+          where: {
+            id: input.id,
+          },
+        });
+
+        if (!exercise) {
+          throw new NotFoundError("Exercise");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "EXERCISE",
+            "delete",
+            ctx.viewer.user?.id ?? "",
+            exercise.organizationId
+            /* TODO: eventuell die orga ids und gym ids in den viewer
+            würde das alles etwas cleaner machen (auch an anderen Stellen)
+            */
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        // TODO: and error boundary?
+        await db.exercise.delete({
+          where: {
+            id: input.id,
+          },
+        });
+
+        return true;
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+        }),
+        input
+      );
     },
   }),
+
   createExerciseStep: t.fieldWithInput({
     type: ExerciseStep,
     input: {
@@ -196,37 +222,53 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const exerciseStep: ExerciseStep__Output = await new Promise(
-          (resolve, reject) => {
-            client.createExerciseStep(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return {
-          ...exerciseStep,
-          createdAt: new Date(exerciseStep.createdAt),
-          updatedAt: new Date(exerciseStep.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const exercise = await db.exercise.findUnique({
+          where: {
+            id: input.exerciseId,
+          },
+        });
+
+        if (!exercise) {
+          throw new InvalidArgumentError("Exercise does not exist");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "EXERCISE",
+            "update",
+            ctx.viewer.user?.id ?? "",
+            exercise.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.exerciseStep.create({
+          data: {
+            ...input,
+            createdAt: new Date(),
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          exerciseId: z.string().uuid(),
+          name: z.string().min(1, "Name must be provided"),
+          description: z.string().min(1, "Description must be provided"),
+          index: z.number().min(0, "Index must be provided"),
+        }),
+        input
+      );
     },
   }),
+
   updateExerciseStep: t.fieldWithInput({
     type: ExerciseStep,
     input: {
@@ -246,43 +288,58 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const exerciseStep: ExerciseStep__Output = await new Promise(
-          (resolve, reject) => {
-            client.updateExerciseStep(
-              mapNullToUndefined(input),
-              meta(ctx.viewer),
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
-              }
-            );
-          }
-        );
-        return {
-          ...exerciseStep,
-          createdAt: new Date(exerciseStep.createdAt),
-          updatedAt: new Date(exerciseStep.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const exerciseStep = await db.exerciseStep.findUnique({
+          where: {
+            id: input.id,
+          },
+          include: {
+            exercise: true,
+          },
+        });
+
+        if (!exerciseStep) {
+          throw new NotFoundError("Exercise Step");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "EXERCISE",
+            "update",
+            ctx.viewer.user?.id ?? "",
+            exerciseStep.exercise.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        const { name, description, index } = input;
+
+        return await db.exerciseStep.update({
+          where: {
+            id: input.id,
+          },
+          data: mapNullToUndefined({ name, description, index }),
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+          name: z.string().optional(),
+          description: z.string().optional(),
+          index: z.number().optional(),
+        }),
+        input
+      );
     },
   }),
+
   deleteExerciseStep: t.fieldWithInput({
     type: "Boolean",
     input: {
@@ -299,33 +356,48 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const exerciseStep: BooleanType__Output = await new Promise(
-          (resolve, reject) => {
-            client.deleteExerciseStep(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return exerciseStep.value;
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const exerciseStep = await db.exerciseStep.findUnique({
+          where: {
+            id: input.id,
+          },
+          include: {
+            exercise: true,
+          },
+        });
+
+        if (!exerciseStep) {
+          throw new NotFoundError("Exercise Step");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "EXERCISE",
+            "update",
+            ctx.viewer.user?.id ?? "",
+            exerciseStep.exercise.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        // TODO: soft-delete and error boundary?
+        await db.exerciseStep.delete({
+          where: { id: input.id },
+        });
+
+        return true;
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({ id: z.string().uuid() }),
+        input
+      );
     },
   }),
 }));
