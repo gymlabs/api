@@ -1,23 +1,27 @@
 import { ZodError, z } from "zod";
 
-import { Role } from "./types";
-import { db } from "../../db";
+import { db } from "../../../db";
 import {
-  InternalServerError,
   InvalidArgumentError,
+  InternalServerError,
   NotFoundError,
   UnauthenticatedError,
   UnauthorizedError,
-} from "../../errors";
-import validationWrapper from "../../errors/validationWrapper";
-import { authenticateGymEntity } from "../../lib/authenticate";
-import { builder } from "../builder";
+} from "../../../errors";
+import validationWrapper from "../../../errors/validationWrapper";
+import { authenticateGymEntity } from "../../../lib/authenticate";
+import { builder } from "../../builder";
+import { Role } from "../types";
 
-builder.queryFields((t) => ({
-  roles: t.fieldWithInput({
-    type: [Role],
+builder.mutationField("createRole", (t) =>
+  t.fieldWithInput({
+    type: Role,
     input: {
+      name: t.input.string(),
       gymId: t.input.string(),
+      accessRightIds: t.input.field({
+        type: ["String"],
+      }),
     },
     errors: {
       types: [
@@ -33,11 +37,12 @@ builder.queryFields((t) => ({
       if (!ctx.viewer.isAuthenticated()) {
         throw new UnauthenticatedError();
       }
+
       const wrapped = async () => {
         if (
           !(await authenticateGymEntity(
             "ROLE",
-            "read",
+            "create",
             ctx.viewer.user?.id ?? "",
             input.gymId
           ))
@@ -45,9 +50,14 @@ builder.queryFields((t) => ({
           throw new UnauthorizedError();
         }
 
-        return await db.role.findMany({
-          where: {
-            gymId: input.gymId,
+        const { accessRightIds, ...roleData } = input;
+
+        return await db.role.create({
+          data: {
+            ...roleData,
+            accessRights: {
+              connect: accessRightIds.map((id) => ({ id })),
+            },
           },
           include: {
             accessRights: true,
@@ -57,9 +67,13 @@ builder.queryFields((t) => ({
 
       return await validationWrapper(
         wrapped,
-        z.object({ gymId: z.string().uuid() }),
+        z.object({
+          gymId: z.string().uuid(),
+          name: z.string().min(4, "Name must be provided"),
+          accessRightIds: z.array(z.string().uuid()),
+        }),
         input
       );
     },
-  }),
-}));
+  })
+);

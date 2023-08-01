@@ -1,20 +1,20 @@
 import { ZodError, z } from "zod";
 
-import { Role } from "./types";
-import { db } from "../../db";
+import { db } from "../../../db";
 import {
-  InternalServerError,
   InvalidArgumentError,
+  InternalServerError,
   NotFoundError,
   UnauthenticatedError,
   UnauthorizedError,
-} from "../../errors";
-import validationWrapper from "../../errors/validationWrapper";
-import { authenticateGymEntity } from "../../lib/authenticate";
-import { builder } from "../builder";
+} from "../../../errors";
+import validationWrapper from "../../../errors/validationWrapper";
+import { authenticateGymEntity } from "../../../lib/authenticate";
+import { builder } from "../../builder";
+import { Role } from "../types";
 
-builder.queryFields((t) => ({
-  roles: t.fieldWithInput({
+builder.queryField("roles", (t) =>
+  t.fieldWithInput({
     type: [Role],
     input: {
       gymId: t.input.string(),
@@ -61,5 +61,5 @@ builder.queryFields((t) => ({
         input
       );
     },
-  }),
-}));
+  })
+);
