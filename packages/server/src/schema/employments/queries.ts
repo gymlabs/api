@@ -1,8 +1,8 @@
 import * as grpc from "@grpc/grpc-js";
 import client from "@gymlabs/admin.grpc.client";
 import {
-  Exercise__Output,
-  Exercises__Output,
+  Employment__Output,
+  Employments__Output,
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
@@ -15,20 +15,19 @@ import {
 } from "../../errors";
 import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
-import { Exercise } from "../exercise/types";
+import { EmploymentWithUser } from "./types";
 
 builder.queryFields((t) => ({
-  exercise: t.fieldWithInput({
-    type: Exercise,
+  employmentsWithUser: t.fieldWithInput({
+    type: [EmploymentWithUser],
     input: {
-      id: t.input.string(),
+      gymId: t.input.string(),
     },
     errors: {
       types: [
         ZodError,
-        NotFoundError,
-        InternalServerError,
         InvalidArgumentError,
+        InternalServerError,
         UnauthenticatedError,
         UnauthorizedError,
       ],
@@ -36,9 +35,9 @@ builder.queryFields((t) => ({
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const exercise: Exercise__Output = await new Promise(
+        const employment: Employments__Output = await new Promise(
           (resolve, reject) => {
-            client.getExercise(input, meta(ctx.viewer), (err, res) => {
+            client.getEmployments(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -47,21 +46,35 @@ builder.queryFields((t) => ({
             });
           }
         );
-        return {
-          ...exercise,
-          steps: exercise.steps.map((step) => ({
-            ...step,
-            createdAt: new Date(step.createdAt),
-            updatedAt: new Date(step.updatedAt),
-          })),
-          createdAt: new Date(exercise.createdAt),
-          updatedAt: new Date(exercise.updatedAt),
-        };
+
+        const result = employment.employments.map(async (employment) => {
+          const user = await ctx.prisma.user.findUnique({
+            where: {
+              id: employment.userId,
+            },
+          });
+
+          if (!user) throw new NotFoundError("User not found");
+
+          const { userId, ...rest } = employment;
+
+          return {
+            ...rest,
+            user: {
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+            },
+            createdAt: new Date(employment.createdAt),
+            updatedAt: new Date(employment.updatedAt),
+          };
+        });
+
+        return result;
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
           case grpc.status.INVALID_ARGUMENT:
             throw new InvalidArgumentError(error.message);
           case grpc.status.PERMISSION_DENIED:
@@ -72,16 +85,18 @@ builder.queryFields((t) => ({
       }
     },
   }),
-  exercises: t.fieldWithInput({
-    type: [Exercise],
+
+  employmentWithUser: t.fieldWithInput({
+    type: EmploymentWithUser,
     input: {
-      organizationId: t.input.string(),
+      id: t.input.string(),
     },
     errors: {
       types: [
         ZodError,
-        InternalServerError,
         InvalidArgumentError,
+        NotFoundError,
+        InternalServerError,
         UnauthenticatedError,
         UnauthorizedError,
       ],
@@ -89,9 +104,9 @@ builder.queryFields((t) => ({
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
       try {
-        const exercises: Exercises__Output = await new Promise(
+        const employment: Employment__Output = await new Promise(
           (resolve, reject) => {
-            client.getExercises(input, meta(ctx.viewer), (err, res) => {
+            client.getEmployment(input, meta(ctx.viewer), (err, res) => {
               if (err) {
                 reject(err);
               } else if (res) {
@@ -100,21 +115,35 @@ builder.queryFields((t) => ({
             });
           }
         );
-        return exercises.exercises.map((exercise) => ({
-          ...exercise,
-          steps: exercise.steps.map((step) => ({
-            ...step,
-            createdAt: new Date(step.createdAt),
-            updatedAt: new Date(step.updatedAt),
-          })),
-          createdAt: new Date(exercise.createdAt),
-          updatedAt: new Date(exercise.updatedAt),
-        }));
+
+        const user = await ctx.prisma.user.findUnique({
+          where: {
+            id: employment.userId,
+          },
+        });
+
+        if (!user) throw new NotFoundError("User not found");
+
+        const { userId, ...rest } = employment;
+
+        return {
+          ...rest,
+          user: {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+          },
+          createdAt: new Date(employment.createdAt),
+          updatedAt: new Date(employment.updatedAt),
+        };
       } catch (err) {
         const error = err as grpc.ServiceError;
         switch (error.code) {
           case grpc.status.INVALID_ARGUMENT:
             throw new InvalidArgumentError(error.message);
+          case grpc.status.NOT_FOUND:
+            throw new NotFoundError(error.message);
           case grpc.status.PERMISSION_DENIED:
             throw new UnauthorizedError();
           default:

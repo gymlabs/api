@@ -1,5 +1,5 @@
 import { builder } from "../builder";
-import { UserInfo } from "../user/types";
+import { UserInfo } from "../users/types";
 
 export const Employment = builder.simpleObject("Employment", {
   fields: (t) => ({

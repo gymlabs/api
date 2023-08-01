@@ -12,7 +12,7 @@ import {
 } from "../../errors";
 import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
-import { Role } from "../role/types";
+import { Role } from "./types";
 
 builder.queryFields((t) => ({
   role: t.fieldWithInput({

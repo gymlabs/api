@@ -1,5 +1,5 @@
 import { builder } from "../builder";
-import { Role } from "../role/types";
+import { Role } from "../roles/types";
 
 export const Gym = builder.simpleObject("Gym", {
   fields: (t) => ({

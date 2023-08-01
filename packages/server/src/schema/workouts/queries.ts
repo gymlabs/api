@@ -15,7 +15,7 @@ import {
 } from "../../errors";
 import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
-import { Workout } from "../workout/types";
+import { Workout } from "./types";
 
 builder.queryFields((t) => ({
   workout: t.fieldWithInput({

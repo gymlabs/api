@@ -8,6 +8,7 @@ import {
 } from "@gymlabs/admin.grpc.definition";
 import { ZodError } from "zod";
 
+import { Gym, GymWhereEmployed } from "./types";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -17,7 +18,6 @@ import {
 } from "../../errors";
 import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
-import { Gym, GymWhereEmployed } from "../gym/types";
 
 builder.queryFields((t) => ({
   gyms: t.fieldWithInput({
