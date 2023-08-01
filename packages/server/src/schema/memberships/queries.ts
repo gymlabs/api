@@ -1,12 +1,7 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import {
-  Membership__Output,
-  Memberships__Output,
-} from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
 import { MembershipWithUser } from "./types";
+import { db } from "../../db";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -14,79 +9,12 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../errors";
-import { meta } from "../../lib/metadata";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateGymEntity } from "../../lib/authenticate";
 import { builder } from "../builder";
 
 builder.queryFields((t) => ({
-  membershipsWithUser: t.fieldWithInput({
-    type: [MembershipWithUser],
-    input: {
-      gymId: t.input.string(),
-    },
-    errors: {
-      types: [
-        ZodError,
-        InvalidArgumentError,
-        InternalServerError,
-        UnauthenticatedError,
-        UnauthorizedError,
-      ],
-    },
-    resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const memberships: Memberships__Output = await new Promise(
-          (resolve, reject) => {
-            client.getMemberships(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-
-        const result = memberships.memberships.map(async (membership) => {
-          const user = await ctx.prisma.user.findUnique({
-            where: {
-              id: membership.userId,
-            },
-          });
-
-          if (!user) throw new NotFoundError("User not found");
-
-          const { userId, ...rest } = membership;
-
-          return {
-            ...rest,
-            user: {
-              id: user.id,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email,
-            },
-            createdAt: new Date(membership.createdAt),
-            updatedAt: new Date(membership.updatedAt),
-          };
-        });
-
-        return result;
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
-      }
-    },
-  }),
-
-  membershipWithUser: t.fieldWithInput({
+  membership: t.fieldWithInput({
     type: MembershipWithUser,
     input: {
       id: t.input.string(),
@@ -102,54 +30,142 @@ builder.queryFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const membership: Membership__Output = await new Promise(
-          (resolve, reject) => {
-            client.getMembership(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
+      }
 
-        const user = await ctx.prisma.user.findUnique({
+      const wrapped = async () => {
+        const membership = await db.membership.findFirst({
           where: {
-            id: membership.userId,
+            id: input.id,
+          },
+          include: {
+            contract: {
+              select: {
+                name: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
           },
         });
 
-        if (!user) throw new NotFoundError("User not found");
-
-        const { userId, ...rest } = membership;
-
-        return {
-          ...rest,
-          user: {
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-          },
-          createdAt: new Date(membership.createdAt),
-          updatedAt: new Date(membership.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
+        if (!membership || membership.deletedAt) {
+          throw new NotFoundError("Membership");
         }
+
+        if (
+          !(await authenticateGymEntity(
+            "MEMBERSHIP",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            membership.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return membership;
+      };
+
+      const membership = await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+        }),
+        input
+      );
+
+      return {
+        id: membership.id,
+        gymId: membership.gymId,
+        user: membership.user,
+        contractId: membership.contractId,
+        contractName: membership.contract.name,
+        createdAt: membership.createdAt,
+        updatedAt: membership.updatedAt,
+      };
+    },
+  }),
+
+  memberships: t.fieldWithInput({
+    type: [MembershipWithUser],
+    input: {
+      gymId: t.input.string(),
+    },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateGymEntity(
+            "MEMBERSHIP",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            input.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.membership.findMany({
+          where: {
+            gym: {
+              id: input.gymId,
+            },
+          },
+          include: {
+            contract: {
+              select: {
+                name: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        });
+      };
+
+      const memberships = await validationWrapper(
+        wrapped,
+        z.object({
+          gymId: z.string().uuid(),
+        }),
+        input
+      );
+
+      return memberships.map((membership) => ({
+        id: membership.id,
+        gymId: membership.gymId,
+        user: membership.user,
+        contractId: membership.contractId,
+        contractName: membership.contract.name,
+        createdAt: new Date(membership.createdAt),
+        updatedAt: new Date(membership.updatedAt),
+      }));
     },
   }),
 }));
