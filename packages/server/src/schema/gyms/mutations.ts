@@ -1,9 +1,7 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import { Gym__Output } from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
 import { Gym } from "./types";
+import { db } from "../../db";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -11,8 +9,12 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../errors";
+import validationWrapper from "../../errors/validationWrapper";
+import {
+  authenticateGymEntity,
+  authenticateOrganizationEntity,
+} from "../../lib/authenticate";
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
-import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 
 builder.mutationFields((t) => ({
@@ -38,34 +40,51 @@ builder.mutationFields((t) => ({
     },
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const gym: Gym__Output = await new Promise((resolve, reject) => {
-          client.createGym(input, meta(ctx.viewer), (err, res) => {
-            if (err) {
-              reject(err);
-            } else if (res) {
-              resolve(res);
-            }
-          });
-        });
-        return {
-          ...gym,
-          createdAt: new Date(gym.createdAt),
-          updatedAt: new Date(gym.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateOrganizationEntity(
+            "GYM",
+            "create",
+            ctx.viewer.user?.id ?? "",
+            input.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
         }
-      }
+
+        const organization = await db.organization.findUnique({
+          where: { id: input.organizationId },
+        });
+
+        if (!organization) {
+          throw new InvalidArgumentError("Organization not found.");
+        }
+
+        return await db.gym.create({
+          data: {
+            ...input,
+            createdAt: new Date(),
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          organizationId: z.string().uuid(),
+          name: z.string().min(1, "Name must be provided"),
+          description: z.string().min(1, "Description must be provided"),
+          street: z.string().min(1, "Street must be provided"),
+          city: z.string().min(1, "City must be provided"),
+          postalCode: z.string().min(1, "Postal code must be provided"),
+          country: z.string().min(1, "Country must be provided"),
+        }),
+        input
+      );
     },
   }),
+
   updateGym: t.fieldWithInput({
     type: Gym,
     input: {
@@ -90,38 +109,60 @@ builder.mutationFields((t) => ({
     },
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const gym: Gym__Output = await new Promise((resolve, reject) => {
-          client.updateGym(
-            mapNullToUndefined(input),
-            meta(ctx.viewer),
-            (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            }
-          );
-        });
-        return {
-          ...gym,
-          createdAt: new Date(gym.createdAt),
-          updatedAt: new Date(gym.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateGymEntity(
+            "GYM",
+            "update",
+            ctx.viewer.user?.id ?? "",
+            input.id
+          ))
+        ) {
+          throw new UnauthorizedError();
         }
-      }
+
+        const gym = await db.gym.findUnique({
+          where: { id: input.id },
+        });
+
+        if (!gym) {
+          throw new NotFoundError("Gym");
+        }
+
+        if (
+          input.organizationId &&
+          !(await authenticateOrganizationEntity(
+            "GYM",
+            "update",
+            ctx.viewer.user?.id ?? "",
+            input.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.gym.update({
+          where: { id: input.id },
+          data: mapNullToUndefined({
+            ...input,
+          }),
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+          name: z.string().optional(),
+          description: z.string().optional(),
+          street: z.string().optional(),
+          city: z.string().optional(),
+          postalCode: z.string().optional(),
+          country: z.string().optional(),
+        }),
+        input
+      );
     },
   }),
 }));

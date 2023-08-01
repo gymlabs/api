@@ -1,14 +1,7 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import {
-  Category,
-  Gym__Output,
-  GymsWhereEmployed__Output,
-  Gyms__Output,
-} from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
 import { Gym, GymWhereEmployed } from "./types";
+import { db } from "../../db";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -16,111 +9,11 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../errors";
-import { meta } from "../../lib/metadata";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateOrganizationEntity } from "../../lib/authenticate";
 import { builder } from "../builder";
 
 builder.queryFields((t) => ({
-  gyms: t.fieldWithInput({
-    type: [Gym],
-    input: {
-      organizationId: t.input.string(),
-    },
-    errors: {
-      types: [
-        ZodError,
-        InvalidArgumentError,
-        InternalServerError,
-        UnauthenticatedError,
-        UnauthorizedError,
-      ],
-    },
-    resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const gyms: Gyms__Output = await new Promise((resolve, reject) => {
-          client.getGyms(input, meta(ctx.viewer), (err, res) => {
-            if (err) {
-              reject(err);
-            } else if (res) {
-              resolve(res);
-            }
-          });
-        });
-        return gyms.gyms.map((gym) => ({
-          ...gym,
-          createdAt: new Date(gym.createdAt),
-          updatedAt: new Date(gym.updatedAt),
-        }));
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
-      }
-    },
-  }),
-  gymsWhereEmployed: t.field({
-    type: [GymWhereEmployed],
-    errors: {
-      types: [
-        InvalidArgumentError,
-        InternalServerError,
-        UnauthenticatedError,
-        UnauthorizedError,
-      ],
-    },
-    resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const gyms: GymsWhereEmployed__Output = await new Promise(
-          (resolve, reject) => {
-            client.getGymsWhereEmployed(
-              { userId: ctx.viewer.user?.id },
-              meta(ctx.viewer),
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
-              }
-            );
-          }
-        );
-
-        return gyms.gyms.map((gym) => ({
-          ...gym,
-          role: gym.role && {
-            ...gym.role,
-            accessRights: gym.role.accessRights
-              ? gym.role.accessRights.accessRights.map((accessRight) => ({
-                  ...accessRight,
-                  category:
-                    accessRight.category.toString() as keyof typeof Category,
-                }))
-              : [],
-            createdAt: new Date(gym.role.createdAt),
-            updatedAt: new Date(gym.role.updatedAt),
-          },
-        }));
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
-      }
-    },
-  }),
   gym: t.fieldWithInput({
     type: Gym,
     input: {
@@ -137,35 +30,141 @@ builder.queryFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const gym: Gym__Output = await new Promise((resolve, reject) => {
-          client.getGym(input, meta(ctx.viewer), (err, res) => {
-            if (err) {
-              reject(err);
-            } else if (res) {
-              resolve(res);
-            }
-          });
-        });
-        return {
-          ...gym,
-          createdAt: new Date(gym.createdAt),
-          updatedAt: new Date(gym.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateOrganizationEntity(
+            "GYM",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            input.id
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.gym.findUnique({
+          where: input,
+        });
+      };
+
+      const gym = await validationWrapper(
+        wrapped,
+        z.object({ id: z.string().uuid() }),
+        input
+      );
+
+      if (!gym) {
+        throw new NotFoundError("Gym");
+      }
+
+      return {
+        id: gym.id,
+        name: gym.name,
+        description: gym.description,
+        street: gym.street,
+        city: gym.city,
+        postalCode: gym.postalCode,
+        country: gym.country,
+        createdAt: gym.createdAt,
+        updatedAt: gym.updatedAt,
+      };
+    },
+  }),
+
+  gyms: t.fieldWithInput({
+    type: [Gym],
+    input: {
+      organizationId: t.input.string(),
+    },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
+      }
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateOrganizationEntity(
+            "GYM",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            input.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.gym.findMany({
+          where: {
+            id: input.organizationId,
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          organizationId: z.string().uuid(),
+        }),
+        input
+      );
+    },
+  }),
+
+  // TODO: move this into the gyms query and check permissions accordingly
+  gymsWhereEmployed: t.field({
+    type: [GymWhereEmployed],
+    errors: {
+      types: [
+        InvalidArgumentError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
+    resolve: async (query, args, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
+
+      const employments = await db.employment.findMany({
+        where: {
+          id: ctx.viewer.user?.id,
+        },
+        select: {
+          gym: {
+            select: {
+              id: true,
+              name: true,
+              organizationId: true,
+            },
+          },
+          role: {
+            include: {
+              accessRights: true,
+            },
+          },
+        },
+      });
+
+      return employments.map((employment) => {
+        return {
+          id: employment.gym.id,
+          name: employment.gym.name,
+          organizationId: employment.gym.organizationId,
+          role: employment.role,
+        };
+      });
     },
   }),
 }));
