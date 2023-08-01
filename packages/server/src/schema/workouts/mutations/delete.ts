@@ -55,7 +55,6 @@ builder.mutationField("deleteWorkout", (t) =>
           throw new UnauthorizedError();
         }
 
-        // TODO soft-delete?
         await db.workoutPlan.delete({
           where: {
             id: input.id,

@@ -12,7 +12,7 @@ import { authenticateOrganizationEntity } from "../../../lib/authenticate";
 import { builder } from "../../builder";
 import { Contract } from "../types";
 
-builder.mutationField("createEmployment", (t) =>
+builder.mutationField("createContract", (t) =>
   t.fieldWithInput({
     type: Contract,
     input: {

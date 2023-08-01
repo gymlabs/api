@@ -1,4 +1,3 @@
-// TODO: fix this
 import communicationClient from "@gymlabs/communication.grpc.client";
 import { ResetType } from "@gymlabs/db";
 import { addMilliseconds } from "date-fns";

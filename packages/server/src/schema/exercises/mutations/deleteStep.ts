@@ -58,7 +58,6 @@ builder.mutationField("deleteExerciseStep", (t) =>
           throw new UnauthorizedError();
         }
 
-        // TODO: soft-delete and error boundary?
         await db.exerciseStep.delete({
           where: { id: input.id },
         });

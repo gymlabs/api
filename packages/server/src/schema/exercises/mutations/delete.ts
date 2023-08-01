@@ -50,9 +50,6 @@ builder.mutationField("deleteExercise", (t) =>
             "delete",
             ctx.viewer.user?.id ?? "",
             exercise.organizationId
-            /* TODO: eventuell die orga ids und gym ids in den viewer
-            würde das alles etwas cleaner machen (auch an anderen Stellen)
-            */
           ))
         ) {
           throw new UnauthorizedError();

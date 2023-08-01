@@ -13,7 +13,7 @@ import { authenticateGymEntity } from "../../../lib/authenticate";
 import { builder } from "../../builder";
 import { MembershipWithUser } from "../types";
 
-builder.queryField("gym", (t) =>
+builder.queryField("membership", (t) =>
   t.fieldWithInput({
     type: MembershipWithUser,
     input: {
