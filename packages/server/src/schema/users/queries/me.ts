@@ -1,12 +1,12 @@
 import {
-  InternalServerError,
-  NotFoundError,
   UnauthenticatedError,
-} from "../../errors";
-import { builder } from "../builder";
+  NotFoundError,
+  InternalServerError,
+} from "../../../errors";
+import { builder } from "../../builder";
 
-builder.queryFields((t) => ({
-  me: t.prismaField({
+builder.queryField("me", (t) =>
+  t.prismaField({
     type: "User",
     errors: {
       types: [UnauthenticatedError, NotFoundError, InternalServerError],
@@ -26,5 +26,5 @@ builder.queryFields((t) => ({
         throw new InternalServerError();
       }
     },
-  }),
-}));
+  })
+);
