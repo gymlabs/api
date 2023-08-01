@@ -3,7 +3,7 @@ import { builder } from "../builder";
 export const WorkoutPlanItem = builder.simpleObject("WorkoutPlanItem", {
   fields: (t) => ({
     id: t.id(),
-    workoutId: t.string(),
+    workoutPlanId: t.string(),
     index: t.int(),
     exerciseId: t.string(),
     repetitions: t.intList(),

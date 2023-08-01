@@ -1,11 +1,7 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import {
-  Workout__Output,
-  Workouts__Output,
-} from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
+import { Workout } from "./types";
+import { db } from "../../db";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -13,9 +9,9 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../errors";
-import { meta } from "../../lib/metadata";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateOrganizationEntity } from "../../lib/authenticate";
 import { builder } from "../builder";
-import { Workout } from "./types";
 
 builder.queryFields((t) => ({
   workout: t.fieldWithInput({
@@ -34,44 +30,48 @@ builder.queryFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const workout: Workout__Output = await new Promise(
-          (resolve, reject) => {
-            client.getWorkout(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return {
-          ...workout,
-          items: workout.items.map((item) => ({
-            ...item,
-            createdAt: new Date(item.createdAt),
-            updatedAt: new Date(item.updatedAt),
-          })),
-          createdAt: new Date(workout.createdAt),
-          updatedAt: new Date(workout.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const workout = await db.workoutPlan.findUnique({
+          where: {
+            id: input.id,
+          },
+          include: {
+            items: true,
+          },
+        });
+
+        if (!workout) {
+          throw new NotFoundError("Workout");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "WORKOUT",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            workout.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return workout;
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+        }),
+        input
+      );
     },
   }),
+
   workouts: t.fieldWithInput({
     type: [Workout],
     input: {
@@ -87,40 +87,47 @@ builder.queryFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const workouts: Workouts__Output = await new Promise(
-          (resolve, reject) => {
-            client.getWorkouts(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return workouts.workouts.map((workout) => ({
-          ...workout,
-          items: workout.items.map((item) => ({
-            ...item,
-            createdAt: new Date(item.createdAt),
-            updatedAt: new Date(item.updatedAt),
-          })),
-          createdAt: new Date(workout.createdAt),
-          updatedAt: new Date(workout.updatedAt),
-        }));
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const workouts = await db.workoutPlan.findMany({
+          where: {
+            organization: {
+              id: input.organizationId,
+            },
+          },
+          include: {
+            items: true,
+          },
+        });
+
+        if (!workouts) {
+          throw new NotFoundError("Workout");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "WORKOUT",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            input.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return workouts;
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          organizationId: z.string().uuid(),
+        }),
+        input
+      );
     },
   }),
 }));

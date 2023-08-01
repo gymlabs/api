@@ -1,13 +1,7 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import {
-  BooleanType__Output,
-  WorkoutPlanItem__Output,
-  Workout__Output,
-} from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
 import { Workout, WorkoutPlanItem } from "./types";
+import { db } from "../../db";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -15,8 +9,9 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../errors";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateOrganizationEntity } from "../../lib/authenticate";
 import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
-import { meta } from "../../lib/metadata";
 import { builder } from "../builder";
 
 builder.mutationFields((t) => ({
@@ -37,42 +32,60 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const workout: Workout__Output = await new Promise(
-          (resolve, reject) => {
-            client.createWorkout(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return {
-          ...workout,
-          items: workout.items.map((item) => ({
-            ...item,
-            createdAt: new Date(item.createdAt),
-            updatedAt: new Date(item.updatedAt),
-          })),
-          createdAt: new Date(workout.createdAt),
-          updatedAt: new Date(workout.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const organization = await db.organization.findUnique({
+          where: {
+            id: input.organizationId,
+          },
+        });
+
+        if (!organization) {
+          throw new InvalidArgumentError("Organization not found.");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "WORKOUT",
+            "create",
+            ctx.viewer.user?.id ?? "",
+            organization.id
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.workoutPlan.create({
+          data: {
+            organization: {
+              connect: {
+                id: organization.id,
+              },
+            },
+            name: input.name,
+            description: input.description,
+          },
+          include: {
+            items: true,
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          organizationId: z.string().uuid(),
+          name: z.string().min(4, "Name must be provided"),
+          description: z.string().min(1, "Description must be provided"),
+        }),
+        input
+      );
     },
   }),
+
   updateWorkout: t.fieldWithInput({
     type: Workout,
     input: {
@@ -91,48 +104,57 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const workout: Workout__Output = await new Promise(
-          (resolve, reject) => {
-            client.updateWorkout(
-              mapNullToUndefined(input),
-              meta(ctx.viewer),
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
-              }
-            );
-          }
-        );
-        return {
-          ...workout,
-          items: workout.items.map((item) => ({
-            ...item,
-            createdAt: new Date(item.createdAt),
-            updatedAt: new Date(item.updatedAt),
-          })),
-          createdAt: new Date(workout.createdAt),
-          updatedAt: new Date(workout.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const workout = await db.workoutPlan.findUnique({
+          where: {
+            id: input.id,
+          },
+        });
+
+        if (!workout) {
+          throw new NotFoundError("Workout not found.");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "WORKOUT",
+            "update",
+            ctx.viewer.user?.id ?? "",
+            workout.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        const { name, description } = input;
+
+        return await db.workoutPlan.update({
+          where: {
+            id: input.id,
+          },
+          data: mapNullToUndefined({ name, description }),
+          include: {
+            items: true,
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().min(1, "Workout ID must be provided"),
+          name: z.string().optional(),
+          description: z.string().optional(),
+        }),
+        input
+      );
     },
   }),
+
   deleteWorkout: t.fieldWithInput({
     type: "Boolean",
     input: {
@@ -149,39 +171,56 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const workout: BooleanType__Output = await new Promise(
-          (resolve, reject) => {
-            client.deleteWorkout(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return workout.value;
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const workout = await db.workoutPlan.findUnique({
+          where: {
+            id: input.id,
+          },
+        });
+
+        if (!workout) {
+          throw new NotFoundError("Workout");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "WORKOUT",
+            "delete",
+            ctx.viewer.user?.id ?? "",
+            workout.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        // TODO soft-delete?
+        await db.workoutPlan.delete({
+          where: {
+            id: input.id,
+          },
+        });
+
+        return true;
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+        }),
+        input
+      );
     },
   }),
+
   createWorkoutPlanItem: t.fieldWithInput({
     type: WorkoutPlanItem,
     input: {
-      workoutId: t.input.string(),
+      workoutPlanId: t.input.string(),
       exerciseId: t.input.string(),
       repititions: t.input.intList(),
       weights: t.input.intList(),
@@ -197,46 +236,67 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const workoutPlanItem: WorkoutPlanItem__Output = await new Promise(
-          (resolve, reject) => {
-            client.createWorkoutPlanItem(
-              input,
-              meta(ctx.viewer),
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
-              }
-            );
-          }
-        );
-        return {
-          ...workoutPlanItem,
-          createdAt: new Date(workoutPlanItem.createdAt),
-          updatedAt: new Date(workoutPlanItem.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const workoutExists = await db.workoutPlan.findUnique({
+          where: {
+            id: input.workoutPlanId,
+          },
+        });
+
+        if (!workoutExists) {
+          throw new InvalidArgumentError("Workout not found");
+        }
+
+        const exerciseExists = await db.exercise.findUnique({
+          where: {
+            id: input.exerciseId,
+          },
+        });
+
+        if (!exerciseExists) {
+          throw new InvalidArgumentError("Exercise not found");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "WORKOUT",
+            "update",
+            ctx.viewer.user?.id ?? "",
+            workoutExists.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.workoutPlanItem.create({
+          data: { ...input, workoutPlanId: input.workoutPlanId },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          workoutPlanId: z.string().uuid(),
+          exerciseId: z.string().uuid(),
+          index: z.number().min(0, "Index must be provided"),
+          repititions: z
+            .array(z.number())
+            .min(0, "Repititions must be provided"),
+          weights: z.array(z.number()).min(0, "Weights must be provided"),
+        }),
+        input
+      );
     },
   }),
   updateWorkoutPlanItem: t.fieldWithInput({
     type: WorkoutPlanItem,
     input: {
       id: t.input.string(),
-      repititions: t.input.intList({ required: false }),
+      repetitions: t.input.intList({ required: false }),
       weights: t.input.intList({ required: false }),
       index: t.input.int({ required: false }),
     },
@@ -251,43 +311,62 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const workoutPlanItem: WorkoutPlanItem__Output = await new Promise(
-          (resolve, reject) => {
-            client.updateWorkoutPlanItem(
-              mapNullToUndefined(input),
-              meta(ctx.viewer),
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
-              }
-            );
-          }
-        );
-        return {
-          ...workoutPlanItem,
-          createdAt: new Date(workoutPlanItem.createdAt),
-          updatedAt: new Date(workoutPlanItem.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const { index, repetitions, weights } = input;
+
+        const workOutPlanItemExists = await db.workoutPlanItem.findUnique({
+          where: {
+            id: input.id,
+          },
+          include: {
+            workoutPlan: {
+              select: {
+                organizationId: true,
+              },
+            },
+          },
+        });
+
+        if (!workOutPlanItemExists) {
+          throw new NotFoundError("Workout Plan");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "WORKOUT",
+            "update",
+            ctx.viewer.user?.id ?? "",
+            workOutPlanItemExists.workoutPlan.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.workoutPlanItem.update({
+          where: {
+            id: input.id,
+          },
+          data: mapNullToUndefined({ index, repetitions, weights }),
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+          index: z.number().optional(),
+          repetitions: z.array(z.number()).optional(),
+          weights: z.array(z.number()).optional(),
+        }),
+        input
+      );
     },
   }),
+
   deleteWorkoutPlanItem: t.fieldWithInput({
     type: "Boolean",
     input: {
@@ -304,37 +383,53 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const workoutPlanItem: BooleanType__Output = await new Promise(
-          (resolve, reject) => {
-            client.deleteWorkoutPlanItem(
-              input,
-              meta(ctx.viewer),
-              (err, res) => {
-                if (err) {
-                  reject(err);
-                } else if (res) {
-                  resolve(res);
-                }
-              }
-            );
-          }
-        );
-        return workoutPlanItem.value;
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const workoutPlanItemExists = await db.workoutPlanItem.findUnique({
+          where: {
+            id: input.id,
+          },
+          include: {
+            workoutPlan: {
+              select: {
+                organizationId: true,
+              },
+            },
+          },
+        });
+
+        if (!workoutPlanItemExists) {
+          throw new NotFoundError("Workout Plan Item");
+        }
+
+        if (
+          !(await authenticateOrganizationEntity(
+            "WORKOUT",
+            "update",
+            ctx.viewer.user?.id ?? "",
+            workoutPlanItemExists.workoutPlan.organizationId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        await db.workoutPlanItem.delete({
+          where: input,
+        });
+
+        return true;
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+        }),
+        input
+      );
     },
   }),
 }));
