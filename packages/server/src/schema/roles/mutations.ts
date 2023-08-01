@@ -1,13 +1,7 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import {
-  BooleanType,
-  Category,
-  Role__Output,
-} from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
 import { Role } from "./types";
+import { db } from "../../db";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -15,7 +9,9 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../errors";
-import { meta } from "../../lib/metadata";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateGymEntity } from "../../lib/authenticate";
+import { mapNullToUndefined } from "../../lib/mapNullToUndefined";
 import { builder } from "../builder";
 
 builder.mutationFields((t) => ({
@@ -39,50 +35,49 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const role: Role__Output = await new Promise((resolve, reject) => {
-          client.createRole(input, meta(ctx.viewer), (err, res) => {
-            if (err) {
-              reject(err);
-            } else if (res) {
-              resolve(res);
-            }
-          });
-        });
-
-        const { accessRights, ...rest } = role;
-
-        const roleAccessRights =
-          accessRights?.accessRights.map((accessRight) => {
-            const { category, ...rest } = accessRight;
-            return {
-              ...rest,
-              category: category.toString() as keyof typeof Category,
-            };
-          }) || [];
-
-        return {
-          ...rest,
-          accessRights: roleAccessRights,
-          createdAt: new Date(role.createdAt),
-          updatedAt: new Date(role.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateGymEntity(
+            "ROLE",
+            "create",
+            ctx.viewer.user?.id ?? "",
+            input.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        const { accessRightIds, ...roleData } = input;
+
+        return await db.role.create({
+          data: {
+            ...roleData,
+            accessRights: {
+              connect: accessRightIds.map((id) => ({ id })),
+            },
+          },
+          include: {
+            accessRights: true,
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          gymId: z.string().uuid(),
+          name: z.string().min(4, "Name must be provided"),
+          accessRightIds: z.array(z.string().uuid()),
+        }),
+        input
+      );
     },
   }),
+
   updateRole: t.fieldWithInput({
     type: Role,
     input: {
@@ -103,48 +98,60 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const role: Role__Output = await new Promise((resolve, reject) => {
-          client.updateRole(input, meta(ctx.viewer), (err, res) => {
-            if (err) {
-              reject(err);
-            } else if (res) {
-              resolve(res);
-            }
-          });
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
+      }
+
+      const wrapped = async () => {
+        const role = await db.role.findUnique({
+          where: {
+            id: input.id,
+          },
         });
 
-        const { accessRights, ...rest } = role;
-
-        const roleAccessRights =
-          accessRights?.accessRights.map((accessRight) => {
-            const { category, ...rest } = accessRight;
-            return {
-              ...rest,
-              category: category.toString() as keyof typeof Category,
-            };
-          }) || [];
-
-        return {
-          ...rest,
-          accessRights: roleAccessRights,
-          createdAt: new Date(role.createdAt),
-          updatedAt: new Date(role.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
+        if (!role) {
+          throw new NotFoundError("Role");
         }
-      }
+
+        // Check permissions
+        if (
+          !(await authenticateGymEntity(
+            "ROLE",
+            "update",
+            ctx.viewer.user?.id ?? "",
+            role.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        const { id, name, accessRightIds } = input;
+
+        return await db.role.update({
+          where: {
+            id,
+          },
+          data: mapNullToUndefined({
+            name,
+            accessRights: {
+              set: accessRightIds.map((id) => ({ id })),
+            },
+          }),
+          include: {
+            accessRights: true,
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+          name: z.string().min(4, "Name must be provided").optional(),
+          accessRightIds: z.array(z.string().uuid()),
+        }),
+        input
+      );
     },
   }),
 
@@ -164,31 +171,48 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const success: BooleanType = await new Promise((resolve, reject) => {
-          client.deleteRole(input, meta(ctx.viewer), (err, res) => {
-            if (err) {
-              reject(err);
-            } else if (res) {
-              resolve(res);
-            }
-          });
-        });
-        return success.value ?? false;
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        const role = await db.role.findUnique({
+          where: {
+            id: input.id,
+          },
+        });
+
+        if (!role) {
+          throw new NotFoundError("Role");
+        }
+
+        if (
+          !(await authenticateGymEntity(
+            "ROLE",
+            "delete",
+            ctx.viewer.user?.id ?? "",
+            role.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        await db.role.delete({
+          where: {
+            id: input.id,
+          },
+        });
+
+        return true;
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+        }),
+        input
+      );
     },
   }),
 }));

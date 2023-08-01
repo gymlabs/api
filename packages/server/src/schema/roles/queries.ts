@@ -1,8 +1,7 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import { Category, Role__Output } from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
+import { Role } from "./types";
+import { db } from "../../db";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -10,9 +9,9 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../errors";
-import { meta } from "../../lib/metadata";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateGymEntity } from "../../lib/authenticate";
 import { builder } from "../builder";
-import { Role } from "./types";
 
 builder.queryFields((t) => ({
   role: t.fieldWithInput({
@@ -31,50 +30,46 @@ builder.queryFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const role: Role__Output = await new Promise((resolve, reject) => {
-          client.getRole(input, meta(ctx.viewer), (err, res) => {
-            if (err) {
-              reject(err);
-            } else if (res) {
-              resolve(res);
-            }
-          });
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
+      }
+
+      const wrapped = async () => {
+        const role = await db.role.findUnique({
+          where: {
+            id: input.id,
+          },
+          include: {
+            accessRights: true,
+          },
         });
 
-        const { accessRights, ...rest } = role;
-
-        const roleAccessRights =
-          accessRights?.accessRights.map((accessRight) => {
-            const { category, ...rest } = accessRight;
-            return {
-              ...rest,
-              category: category.toString() as keyof typeof Category,
-            };
-          }) || [];
-
-        return {
-          ...rest,
-          accessRights: roleAccessRights,
-          createdAt: new Date(role.createdAt),
-          updatedAt: new Date(role.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
+        if (!role) {
+          throw new NotFoundError("Role");
         }
-      }
+
+        if (
+          !(await authenticateGymEntity(
+            "ROLE",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            role.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return role;
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({ id: z.string().uuid() }),
+        input
+      );
     },
   }),
+
   roles: t.fieldWithInput({
     type: [Role],
     input: {
@@ -91,50 +86,36 @@ builder.queryFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const roles: Role__Output[] = await new Promise((resolve, reject) => {
-          client.getRoles(input, meta(ctx.viewer), (err, res) => {
-            if (err) {
-              reject(err);
-            } else if (res) {
-              resolve(res.roles);
-            }
-          });
-        });
-
-        return roles.map((role) => {
-          const { accessRights, ...rest } = role;
-
-          const roleAccessRights =
-            accessRights?.accessRights.map((accessRight) => {
-              const { category, ...rest } = accessRight;
-              return {
-                ...rest,
-                category: category.toString() as keyof typeof Category,
-              };
-            }) || [];
-
-          return {
-            ...rest,
-            accessRights: roleAccessRights,
-            createdAt: new Date(role.createdAt),
-            updatedAt: new Date(role.updatedAt),
-          };
-        });
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+      const wrapped = async () => {
+        if (
+          !(await authenticateGymEntity(
+            "ROLE",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            input.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.role.findMany({
+          where: {
+            gymId: input.gymId,
+          },
+          include: {
+            accessRights: true,
+          },
+        });
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({ gymId: z.string().uuid() }),
+        input
+      );
     },
   }),
 }));
