@@ -1,12 +1,8 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import {
-  BooleanType__Output,
-  Employment__Output,
-} from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { PrismaClientKnownRequestError } from "@gymlabs/db/dist/client/runtime/library";
+import { ZodError, z } from "zod";
 
 import { Employment } from "./types";
+import { db } from "../../db";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -14,7 +10,8 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../errors";
-import { meta } from "../../lib/metadata";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateGymEntity } from "../../lib/authenticate";
 import { builder } from "../builder";
 
 builder.mutationFields((t) => ({
@@ -35,35 +32,52 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const employment: Employment__Output = await new Promise(
-          (resolve, reject) => {
-            client.createEmployment(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return {
-          ...employment,
-          createdAt: new Date(employment.createdAt),
-          updatedAt: new Date(employment.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateGymEntity(
+            "EMPLOYMENT",
+            "create",
+            ctx.viewer.user?.id ?? "",
+            input.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return await db.employment.create({
+          data: {
+            gymId: input.gymId,
+            userId: input.userId,
+            roleId: input.roleId,
+          },
+          include: {
+            role: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+      };
+
+      const employment = await validationWrapper(
+        wrapped,
+        z.object({
+          userId: z.string().uuid(),
+          gymId: z.string().uuid(),
+          roleId: z.string().uuid(),
+        }),
+        input
+      );
+
+      return {
+        ...employment,
+        roleName: employment.role.name,
+      };
     },
   }),
 
@@ -83,33 +97,39 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const success: BooleanType__Output = await new Promise(
-          (resolve, reject) => {
-            client.activateEmployment(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return success.value;
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        try {
+          await db.employment.update({
+            where: {
+              id: input.employmentId,
+            },
+            data: {
+              isActive: true,
+            },
+          });
+
+          return true;
+        } catch (e) {
+          if (
+            e instanceof PrismaClientKnownRequestError &&
+            e.code === "P2025"
+          ) {
+            throw new NotFoundError("Employment not found");
+          } else {
+            throw new InternalServerError();
+          }
+        }
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({ employmentId: z.string().uuid() }),
+        input
+      );
     },
   }),
 
@@ -130,33 +150,56 @@ builder.mutationFields((t) => ({
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const success: BooleanType__Output = await new Promise(
-          (resolve, reject) => {
-            client.deleteEmployment(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-        return success.value;
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
+      if (!ctx.viewer.isAuthenticated()) {
+        throw new UnauthenticatedError();
       }
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateGymEntity(
+            "EMPLOYMENT",
+            "delete",
+            ctx.viewer.user?.id ?? "",
+            input.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        try {
+          await db.employment.update({
+            where: {
+              userId_gymId: {
+                userId: input.userId,
+                gymId: input.gymId,
+              },
+            },
+            data: {
+              deletedAt: new Date(),
+            },
+          });
+
+          return true;
+        } catch (e) {
+          if (
+            e instanceof PrismaClientKnownRequestError &&
+            e.code === "P2025"
+          ) {
+            throw new NotFoundError("Employment not found");
+          } else {
+            throw new InternalServerError();
+          }
+        }
+      };
+
+      return await validationWrapper(
+        wrapped,
+        z.object({
+          userId: z.string().uuid(),
+          gymId: z.string().uuid(),
+        }),
+        input
+      );
     },
   }),
 }));

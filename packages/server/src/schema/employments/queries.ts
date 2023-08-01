@@ -1,11 +1,7 @@
-import * as grpc from "@grpc/grpc-js";
-import client from "@gymlabs/admin.grpc.client";
-import {
-  Employment__Output,
-  Employments__Output,
-} from "@gymlabs/admin.grpc.definition";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
+import { EmploymentWithUser } from "./types";
+import { db } from "../../db";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -13,80 +9,12 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../errors";
-import { meta } from "../../lib/metadata";
+import validationWrapper from "../../errors/validationWrapper";
+import { authenticateGymEntity } from "../../lib/authenticate";
 import { builder } from "../builder";
-import { EmploymentWithUser } from "./types";
 
 builder.queryFields((t) => ({
-  employmentsWithUser: t.fieldWithInput({
-    type: [EmploymentWithUser],
-    input: {
-      gymId: t.input.string(),
-    },
-    errors: {
-      types: [
-        ZodError,
-        InvalidArgumentError,
-        InternalServerError,
-        UnauthenticatedError,
-        UnauthorizedError,
-      ],
-    },
-    resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const employment: Employments__Output = await new Promise(
-          (resolve, reject) => {
-            client.getEmployments(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
-
-        const result = employment.employments.map(async (employment) => {
-          const user = await ctx.prisma.user.findUnique({
-            where: {
-              id: employment.userId,
-            },
-          });
-
-          if (!user) throw new NotFoundError("User not found");
-
-          const { userId, ...rest } = employment;
-
-          return {
-            ...rest,
-            user: {
-              id: user.id,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email,
-            },
-            createdAt: new Date(employment.createdAt),
-            updatedAt: new Date(employment.updatedAt),
-          };
-        });
-
-        return result;
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
-        }
-      }
-    },
-  }),
-
-  employmentWithUser: t.fieldWithInput({
+  employment: t.fieldWithInput({
     type: EmploymentWithUser,
     input: {
       id: t.input.string(),
@@ -103,53 +31,133 @@ builder.queryFields((t) => ({
     },
     resolve: async (query, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
-      try {
-        const employment: Employment__Output = await new Promise(
-          (resolve, reject) => {
-            client.getEmployment(input, meta(ctx.viewer), (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            });
-          }
-        );
 
-        const user = await ctx.prisma.user.findUnique({
+      const wrapped = async () => {
+        const employment = await db.employment.findFirst({
           where: {
-            id: employment.userId,
+            id: input.id,
+          },
+          include: {
+            role: {
+              select: {
+                name: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
           },
         });
 
-        if (!user) throw new NotFoundError("User not found");
-
-        const { userId, ...rest } = employment;
-
-        return {
-          ...rest,
-          user: {
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-          },
-          createdAt: new Date(employment.createdAt),
-          updatedAt: new Date(employment.updatedAt),
-        };
-      } catch (err) {
-        const error = err as grpc.ServiceError;
-        switch (error.code) {
-          case grpc.status.INVALID_ARGUMENT:
-            throw new InvalidArgumentError(error.message);
-          case grpc.status.NOT_FOUND:
-            throw new NotFoundError(error.message);
-          case grpc.status.PERMISSION_DENIED:
-            throw new UnauthorizedError();
-          default:
-            throw new InternalServerError();
+        if (!employment) {
+          throw new NotFoundError("Employment");
         }
-      }
+
+        if (
+          !(await authenticateGymEntity(
+            "EMPLOYMENT",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            employment.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return employment;
+      };
+
+      const employment = await validationWrapper(
+        wrapped,
+        z.object({
+          id: z.string().uuid(),
+        }),
+        input
+      );
+
+      return {
+        ...employment,
+        roleName: employment.role.name,
+      };
+    },
+  }),
+
+  employments: t.fieldWithInput({
+    type: [EmploymentWithUser],
+    input: {
+      gymId: t.input.string(),
+    },
+    errors: {
+      types: [
+        ZodError,
+        InvalidArgumentError,
+        InternalServerError,
+        UnauthenticatedError,
+        UnauthorizedError,
+      ],
+    },
+    resolve: async (query, { input }, ctx) => {
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
+
+      const wrapped = async () => {
+        if (
+          !(await authenticateGymEntity(
+            "EMPLOYMENT",
+            "create",
+            ctx.viewer.user?.id ?? "",
+            input.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        const gym = await db.gym.findUnique({
+          where: { id: input.gymId },
+        });
+
+        if (!gym) {
+          throw new NotFoundError("Gym not found");
+        }
+
+        return await db.employment.findMany({
+          where: {
+            gymId: input.gymId,
+          },
+          include: {
+            role: {
+              select: {
+                name: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        });
+      };
+
+      const employments = await validationWrapper(
+        wrapped,
+        z.object({
+          gymId: z.string().uuid(),
+        }),
+        input
+      );
+
+      return employments.map((employment) => ({
+        ...employment,
+        roleName: employment.role.name,
+      }));
     },
   }),
 }));
