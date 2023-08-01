@@ -1,19 +1,19 @@
 import { ZodError, z } from "zod";
 
-import { Contract } from "./types";
-import { db } from "../../db";
+import { db } from "../../../db";
 import {
-  InternalServerError,
-  InvalidArgumentError,
   UnauthenticatedError,
+  InvalidArgumentError,
+  InternalServerError,
   UnauthorizedError,
-} from "../../errors";
-import validationWrapper from "../../errors/validationWrapper";
-import { authenticateOrganizationEntity } from "../../lib/authenticate";
-import { builder } from "../builder";
+} from "../../../errors";
+import validationWrapper from "../../../errors/validationWrapper";
+import { authenticateOrganizationEntity } from "../../../lib/authenticate";
+import { builder } from "../../builder";
+import { Contract } from "../types";
 
-builder.mutationFields((t) => ({
-  createContract: t.fieldWithInput({
+builder.mutationField("createEmployment", (t) =>
+  t.fieldWithInput({
     type: Contract,
     input: {
       name: t.input.string(),
@@ -70,5 +70,5 @@ builder.mutationFields((t) => ({
         input
       );
     },
-  }),
-}));
+  })
+);
