@@ -1,23 +1,22 @@
 import { ZodError, z } from "zod";
 
-import { Role } from "./types";
-import { db } from "../../db";
+import { db } from "../../../db";
 import {
-  InternalServerError,
   InvalidArgumentError,
+  InternalServerError,
   NotFoundError,
   UnauthenticatedError,
   UnauthorizedError,
-} from "../../errors";
-import validationWrapper from "../../errors/validationWrapper";
-import { authenticateGymEntity } from "../../lib/authenticate";
-import { builder } from "../builder";
+} from "../../../errors";
+import validationWrapper from "../../../errors/validationWrapper";
+import { authenticateGymEntity } from "../../../lib/authenticate";
+import { builder } from "../../builder";
 
-builder.queryFields((t) => ({
-  roles: t.fieldWithInput({
-    type: [Role],
+builder.mutationField("deleteRole", (t) =>
+  t.fieldWithInput({
+    type: "Boolean",
     input: {
-      gymId: t.input.string(),
+      id: t.input.string(),
     },
     errors: {
       types: [
@@ -33,33 +32,45 @@ builder.queryFields((t) => ({
       if (!ctx.viewer.isAuthenticated()) {
         throw new UnauthenticatedError();
       }
+
       const wrapped = async () => {
+        const role = await db.role.findUnique({
+          where: {
+            id: input.id,
+          },
+        });
+
+        if (!role) {
+          throw new NotFoundError("Role");
+        }
+
         if (
           !(await authenticateGymEntity(
             "ROLE",
-            "read",
+            "delete",
             ctx.viewer.user?.id ?? "",
-            input.gymId
+            role.gymId
           ))
         ) {
           throw new UnauthorizedError();
         }
 
-        return await db.role.findMany({
+        await db.role.delete({
           where: {
-            gymId: input.gymId,
-          },
-          include: {
-            accessRights: true,
+            id: input.id,
           },
         });
+
+        return true;
       };
 
       return await validationWrapper(
         wrapped,
-        z.object({ gymId: z.string().uuid() }),
+        z.object({
+          id: z.string().uuid(),
+        }),
         input
       );
     },
-  }),
-}));
+  })
+);

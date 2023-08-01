@@ -1,23 +1,23 @@
 import { ZodError, z } from "zod";
 
-import { Role } from "./types";
-import { db } from "../../db";
+import { db } from "../../../db";
 import {
-  InternalServerError,
   InvalidArgumentError,
+  InternalServerError,
   NotFoundError,
   UnauthenticatedError,
   UnauthorizedError,
-} from "../../errors";
-import validationWrapper from "../../errors/validationWrapper";
-import { authenticateGymEntity } from "../../lib/authenticate";
-import { builder } from "../builder";
+} from "../../../errors";
+import validationWrapper from "../../../errors/validationWrapper";
+import { authenticateGymEntity } from "../../../lib/authenticate";
+import { builder } from "../../builder";
+import { Role } from "../types";
 
-builder.queryFields((t) => ({
-  roles: t.fieldWithInput({
-    type: [Role],
+builder.queryField("role", (t) =>
+  t.fieldWithInput({
+    type: Role,
     input: {
-      gymId: t.input.string(),
+      id: t.input.string(),
     },
     errors: {
       types: [
@@ -33,33 +33,40 @@ builder.queryFields((t) => ({
       if (!ctx.viewer.isAuthenticated()) {
         throw new UnauthenticatedError();
       }
-      const wrapped = async () => {
-        if (
-          !(await authenticateGymEntity(
-            "ROLE",
-            "read",
-            ctx.viewer.user?.id ?? "",
-            input.gymId
-          ))
-        ) {
-          throw new UnauthorizedError();
-        }
 
-        return await db.role.findMany({
+      const wrapped = async () => {
+        const role = await db.role.findUnique({
           where: {
-            gymId: input.gymId,
+            id: input.id,
           },
           include: {
             accessRights: true,
           },
         });
+
+        if (!role) {
+          throw new NotFoundError("Role");
+        }
+
+        if (
+          !(await authenticateGymEntity(
+            "ROLE",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            role.gymId
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
+        return role;
       };
 
       return await validationWrapper(
         wrapped,
-        z.object({ gymId: z.string().uuid() }),
+        z.object({ id: z.string().uuid() }),
         input
       );
     },
-  }),
-}));
+  })
+);
