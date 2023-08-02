@@ -1,5 +1,5 @@
 {
-  "name": "@gymlabs/core.api",
+  "name": "@gymlabs/api",
   "version": "0.0.0",
   "description": "Core module for GymLabs architecture",
   "author": "GymLabs",
