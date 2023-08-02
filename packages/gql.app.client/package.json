@@ -15,6 +15,11 @@
     "prebuild": "npm run codegen",
     "build": "tsup"
   },
+  "nx": {
+    "implicitDependencies": [
+      "@gymlabs/db"
+    ]
+  },
   "devDependencies": {
     "@graphql-codegen/cli": "^3.3.0",
     "@graphql-codegen/schema-ast": "^3.0.1",
