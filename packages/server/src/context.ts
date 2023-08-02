@@ -1,6 +1,6 @@
 import { BaseContext } from "@apollo/server";
 import { StandaloneServerContextFunctionArgument } from "@apollo/server/dist/esm/standalone";
-import { AccessToken, User } from "@gymlabs/core.db";
+import { AccessToken, User } from "@gymlabs/db";
 import { parse } from "cookie";
 import { SetNonNullable } from "type-fest";
 

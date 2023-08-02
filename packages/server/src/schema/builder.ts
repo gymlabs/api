@@ -1,4 +1,4 @@
-import type PrismaTypes from "@gymlabs/core.db/dist/photos-types";
+import type PrismaTypes from "@gymlabs/db/dist/photos-types";
 import SchemaBuilder from "@pothos/core";
 import ErrorsPlugin from "@pothos/plugin-errors";
 // eslint-disable-next-line import/no-named-as-default

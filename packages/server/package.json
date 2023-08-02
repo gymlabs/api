@@ -1,5 +1,5 @@
 {
-  "name": "@gymlabs/core.api",
+  "name": "@gymlabs/api",
   "version": "0.0.0",
   "description": "Core module for GymLabs architecture",
   "author": "GymLabs",
@@ -43,12 +43,9 @@
     "ts-node": "^10.9.1"
   },
   "dependencies": {
-    "@gymlabs/admin.grpc.client": "^4.0.7",
-    "@gymlabs/admin.grpc.definition": "^0.5.7",
     "@gymlabs/communication.grpc.client": "^0.0.4",
     "@gymlabs/communication.grpc.definition": "^0.0.2",
-    "@gymlabs/core.db": "^0.0.0",
-    "@gymlabs/core.grpc.definition": "^0.0.0",
+    "@gymlabs/db": "^0.0.0",
     "@pothos/core": "^3.29.0",
     "@pothos/plugin-errors": "^3.11.0",
     "@pothos/plugin-prisma": "^3.53.0",
@@ -70,6 +67,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "type-fest": "^4.0.0",
-    "zod": "^3.21.4"
+    "zod": "^3.21.4",
+    "@apollo/server": "^4.7.5"
   }
 }

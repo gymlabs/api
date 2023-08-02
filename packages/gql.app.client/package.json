@@ -1,6 +1,6 @@
 {
-  "name": "@gymlabs/core.gql.app.client",
-  "version": "0.0.4",
+  "name": "@gymlabs/api-gql-client-app",
+  "version": "0.0.1",
   "main": "dist/graphql.js",
   "types": "dist/graphql.d.ts",
   "module": "dist/graphql.mjs",
@@ -14,6 +14,11 @@
     "codegen": "npm run codegen:pre && npm run operations && npm run codegen:post",
     "prebuild": "npm run codegen",
     "build": "tsup"
+  },
+  "nx": {
+    "implicitDependencies": [
+      "@gymlabs/db"
+    ]
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^3.3.0",

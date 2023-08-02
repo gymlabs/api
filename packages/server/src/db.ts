@@ -1,4 +1,4 @@
-import { PrismaClient } from "@gymlabs/core.db";
+import { PrismaClient } from "@gymlabs/db";
 
 import { config } from "./config";
 
