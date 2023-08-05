@@ -1,4 +1,3 @@
-import communicationClient from "@gymlabs/communication.grpc.client";
 import { ResetType } from "@gymlabs/db";
 import { addMilliseconds } from "date-fns";
 import { ZodError } from "zod";
@@ -6,6 +5,7 @@ import { ZodError } from "zod";
 import { config } from "../../../config";
 import { InternalServerError, NotFoundError } from "../../../errors";
 import { randomToken, hashToken } from "../../../lib/security";
+import { sendResetPasswordRequestEmail } from "../../../services/mail/mailService";
 import { builder } from "../../builder";
 
 builder.mutationField("requestResetPassword", (t) =>
@@ -44,22 +44,7 @@ builder.mutationField("requestResetPassword", (t) =>
           },
         });
 
-        await new Promise((resolve, reject) => {
-          communicationClient.SendResetPasswordRequestEmail(
-            {
-              to: user.email,
-              name: user.firstName,
-              token,
-            },
-            (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            }
-          );
-        });
+        sendResetPasswordRequestEmail(user.email, user.firstName, token);
 
         return true;
       } catch (err) {

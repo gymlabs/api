@@ -10,7 +10,10 @@
     "lint": "lerna run lint",
     "lint:fix": "lerna run \"lint:fix\"",
     "format": "lerna run format",
-    "format:check": "lerna run \"format:check\""
+    "format:check": "lerna run \"format:check\"",
+    "db:generate": "lerna run prisma:generate",
+    "db:push": "lerna run prisma:push",
+    "db:studio": "lerna run prisma:studio"
   },
   "lint-staged": {
     "src/**/*.ts": [
@@ -34,6 +37,7 @@
     "typescript": "^5.0.4"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/client/*"
   ]
 }

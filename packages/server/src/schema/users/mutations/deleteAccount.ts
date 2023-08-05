@@ -1,5 +1,3 @@
-import communicationClient from "@gymlabs/communication.grpc.client";
-
 import { db } from "../../../db";
 import {
   UserHasMembershipsOrEmploymentsError,
@@ -7,6 +5,7 @@ import {
   NotFoundError,
 } from "../../../errors";
 import { randomToken, hashToken } from "../../../lib/security";
+import { sendReactivationEmail } from "../../../services/mail/mailService";
 import { builder } from "../../builder";
 
 builder.mutationField("deleteAccount", (t) =>
@@ -54,23 +53,7 @@ builder.mutationField("deleteAccount", (t) =>
           },
         });
 
-        await new Promise((resolve, reject) => {
-          communicationClient.SendReactivationEmail(
-            {
-              to: user.email,
-              name: user.firstName,
-              token,
-              deleteAt: deleteAt.toDateString(),
-            },
-            (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            }
-          );
-        });
+        sendReactivationEmail(user.email, user.firstName, deleteAt, token);
 
         return true;
       } catch (err) {

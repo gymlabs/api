@@ -1,8 +1,8 @@
-import communicationClient from "@gymlabs/communication.grpc.client";
 import { ZodError } from "zod";
 
 import { EmailAlreadyInUseError, InternalServerError } from "../../../errors";
 import { randomToken, hashPassword, hashToken } from "../../../lib/security";
+import { sendWelcomeEmail } from "../../../services/mail/mailService";
 import { builder } from "../../builder";
 
 builder.mutationField("register", (t) =>
@@ -41,22 +41,7 @@ builder.mutationField("register", (t) =>
           },
         });
 
-        await new Promise((resolve, reject) => {
-          communicationClient.SendWelcomeEmail(
-            {
-              to: user.email,
-              name: user.firstName,
-              token: verificationToken,
-            },
-            (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            }
-          );
-        });
+        sendWelcomeEmail(user.email, user.firstName, verificationToken);
 
         return true;
       } catch (err) {

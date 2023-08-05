@@ -3,6 +3,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "moduleResolution": "node",
-    "types": ["node"]
+    "types": ["node"],
+    "jsx": "react"
   }
 }

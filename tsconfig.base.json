@@ -21,32 +21,3 @@
   },
   "exclude": ["node_modules", "dist", "build"]
 }
-
-// {
-//   "$schema": "https://json.schemastore.org/tsconfig",
-//   "display": "Node 16",
-
-//   "compilerOptions": {
-//     "jsx": "react",
-//     "lib": ["es2022"],
-//     "module": "commonjs",
-//     "target": "es2022",
-
-//     "strict": true,
-//     "esModuleInterop": true,
-//     "skipLibCheck": true,
-//     "noUncheckedIndexedAccess": true,
-//     "forceConsistentCasingInFileNames": true,
-//     "moduleResolution": "node",
-//     "alwaysStrict": true,
-//     "noUnusedLocals": true,
-
-//     // Paths
-//     "outDir": "build",
-//     "baseUrl": "."
-
-//     // SWC related
-//     // "verbatimModuleSyntax": true // ensure that TypeScript properly marks all type imports during type checking as type, thus removing them accurately in SWC
-//   },
-//   "exclude": ["node_modules"]
-// }
