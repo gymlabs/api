@@ -38,7 +38,7 @@ builder.mutationField("requestChangeMail", (t) =>
     resolve: async (parent, { input }, ctx) => {
       try {
         const user = await ctx.prisma.user.findUnique({
-          where: { email: input.email },
+          where: { email: input.email.toLowerCase() },
         });
 
         if (!user) {
@@ -46,7 +46,7 @@ builder.mutationField("requestChangeMail", (t) =>
         }
 
         const newMailUser = await ctx.prisma.user.findUnique({
-          where: { email: input.newValue },
+          where: { email: input.newValue.toLowerCase() },
         });
 
         if (newMailUser) {
@@ -66,7 +66,7 @@ builder.mutationField("requestChangeMail", (t) =>
             userId: user.id,
             token: tokenHash,
             type: ResetType.EMAIL,
-            newValue: input.newValue,
+            newValue: input.newValue.toLowerCase(),
             expiresAt,
           },
         });
