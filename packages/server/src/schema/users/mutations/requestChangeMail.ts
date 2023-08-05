@@ -1,4 +1,3 @@
-import communicationClient from "@gymlabs/communication.grpc.client";
 import { ResetType } from "@gymlabs/db";
 import { addMilliseconds } from "date-fns";
 import { ZodError } from "zod";
@@ -10,6 +9,7 @@ import {
   EmailAlreadyInUseError,
 } from "../../../errors";
 import { randomToken, hashToken } from "../../../lib/security";
+import { sendEmailUpdateEmail } from "../../../services/mail/mailService";
 import { builder } from "../../builder";
 
 builder.mutationField("requestChangeMail", (t) =>
@@ -71,22 +71,7 @@ builder.mutationField("requestChangeMail", (t) =>
           },
         });
 
-        await new Promise((resolve, reject) => {
-          communicationClient.SendEmailUpdateEmail(
-            {
-              to: user.email,
-              name: user.firstName,
-              token,
-            },
-            (err, res) => {
-              if (err) {
-                reject(err);
-              } else if (res) {
-                resolve(res);
-              }
-            }
-          );
-        });
+        sendEmailUpdateEmail(user.email, user.firstName, token);
 
         return true;
       } catch (err) {
