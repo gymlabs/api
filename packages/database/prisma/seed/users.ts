@@ -13,12 +13,12 @@ export default async function seedUsers(prisma: PrismaClient) {
     const email = faker.internet.email({ firstName, lastName });
 
     const user = await prisma.user.upsert({
-      where: { email: email },
+      where: { email: email.toLowerCase() },
       update: {},
       create: {
         firstName: firstName,
         lastName: lastName,
-        email: email,
+        email: email.toLowerCase(),
         isEmailVerified: true,
         password: await hash(`${firstName}-${lastName}`, 10),
         createdAt: new Date(),

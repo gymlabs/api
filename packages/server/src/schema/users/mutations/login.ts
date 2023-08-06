@@ -22,7 +22,7 @@ builder.mutationField("login", (t) =>
     resolve: async (parent, { input }, ctx) => {
       try {
         const user = await ctx.prisma.user.findUnique({
-          where: { email: input.email },
+          where: { email: input.email.toLowerCase() },
         });
 
         if (!user || !(await comparePassword(input.password, user.password)))

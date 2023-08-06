@@ -27,7 +27,7 @@ builder.mutationField("register", (t) =>
     resolve: async (parent, { input }, ctx) => {
       try {
         const userExists = await ctx.prisma.user.findFirst({
-          where: { email: input.email },
+          where: { email: input.email.toLowerCase() },
         });
         if (userExists) throw new EmailAlreadyInUseError(input.email);
 
@@ -36,6 +36,7 @@ builder.mutationField("register", (t) =>
         const user = await ctx.prisma.user.create({
           data: {
             ...input,
+            email: input.email.toLowerCase(),
             password: await hashPassword(input.password),
             emailVerificationToken: hashToken(verificationToken),
           },
