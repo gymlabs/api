@@ -5,7 +5,6 @@ import { parse } from "cookie";
 import { SetNonNullable } from "type-fest";
 
 import { db } from "./db";
-import { InvalidAccessTokenError } from "./errors";
 import { extractBearerToken, hashToken } from "./lib/security";
 
 export const getContext = async ({
@@ -33,19 +32,17 @@ export const getContext = async ({
       include: { user: true },
     });
 
-    if (!accessToken) {
-      throw new InvalidAccessTokenError();
-    }
-
     const now = new Date();
-    if (accessToken.expiresAt < now) {
-      throw new InvalidAccessTokenError();
+    if (!accessToken) {
+      viewer = new Viewer();
+    } else if (accessToken.expiresAt < now) {
+      viewer = new Viewer();
+    } else {
+      viewer = new Viewer({
+        user: accessToken.user,
+        accessToken,
+      });
     }
-
-    viewer = new Viewer({
-      user: accessToken.user,
-      accessToken,
-    });
   } else {
     viewer = new Viewer();
   }
