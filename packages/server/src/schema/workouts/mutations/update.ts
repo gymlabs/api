@@ -14,7 +14,7 @@ import { mapNullToUndefined } from "../../../lib/mapNullToUndefined";
 import { builder } from "../../builder";
 import { Workout } from "../types";
 
-builder.mutationField("updateUpdate", (t) =>
+builder.mutationField("updateWorkout", (t) =>
   t.fieldWithInput({
     type: Workout,
     input: {
