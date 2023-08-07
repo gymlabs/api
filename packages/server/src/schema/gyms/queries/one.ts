@@ -35,20 +35,26 @@ builder.queryField("gym", (t) =>
       }
 
       const wrapped = async () => {
+        const gym = await db.gym.findUnique({
+          where: input,
+        });
+
+        if (!gym) {
+          throw new NotFoundError("Gym");
+        }
+
         if (
           !(await authenticateOrganizationEntity(
             "GYM",
             "read",
             ctx.viewer.user?.id ?? "",
-            input.id
+            gym.organizationId
           ))
         ) {
           throw new UnauthorizedError();
         }
 
-        return await db.gym.findUnique({
-          where: input,
-        });
+        return gym;
       };
 
       const gym = await validationWrapper(
@@ -56,10 +62,6 @@ builder.queryField("gym", (t) =>
         z.object({ id: z.string().uuid() }),
         input
       );
-
-      if (!gym) {
-        throw new NotFoundError("Gym");
-      }
 
       return {
         ...gym,

@@ -1,6 +1,10 @@
 import { ZodError, ZodType } from "zod";
 
-import { InternalServerError, InvalidArgumentError } from ".";
+import {
+  InternalServerError,
+  InvalidArgumentError,
+  UnauthorizedError,
+} from ".";
 
 const validationWrapper = async <T, U>(
   toWrap: () => Promise<U>,
@@ -19,6 +23,7 @@ const validationWrapper = async <T, U>(
 
     return await toWrap();
   } catch (err) {
+    if (err instanceof UnauthorizedError) throw new UnauthorizedError();
     throw new InternalServerError();
   }
 };

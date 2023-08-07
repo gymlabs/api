@@ -25,7 +25,7 @@ builder.queryField("gymsWhereEmployed", (t) =>
 
       const employments = await db.employment.findMany({
         where: {
-          id: ctx.viewer.user?.id,
+          userId: ctx.viewer.user.id,
         },
         select: {
           gym: {
