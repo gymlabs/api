@@ -33,6 +33,10 @@ jobs:
           context: .
           push: false
           tags: gymlabs/api:latest
+
+      - name: Get Lightsail instances
+        run: |
+          aws lightsail get-instances --region eu-central-1
       
       - name: Deploy to Lightsail
         run: |
