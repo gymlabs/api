@@ -35,7 +35,7 @@ jobs:
         with:
           context: .
           push: false
-          tags: gymlabs/api:latest
+          tags: api-gymlabs-de:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
@@ -44,5 +44,5 @@ jobs:
 
       - name: Deploy to Lightsail
         run: |
-          aws lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label gymlabs/api --image gymlabs/api:latest --debug
+          aws lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label api-gymlabs-de --image api-gymlabs-de:latest --debug
           aws lightsail get-container-images --service-name api-gymlabs-de
