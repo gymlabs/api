@@ -21,7 +21,7 @@ jobs:
           sudo chmod +x /usr/local/bin/lightsailctl
           
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -33,3 +33,11 @@ jobs:
           context: .
           push: false
           tags: gymlabs/api:latest
+      
+      - name: Deploy to Lightsail
+        run: |
+          aws lightsail push-container-image \
+            --region eu-central-1 \
+            --service-name api-gymlabs-de \
+            --label latest \
+            --image gymlabs/api:latest
