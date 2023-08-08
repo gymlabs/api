@@ -48,5 +48,5 @@ jobs:
       - name: Deploy to Lightsail
         run: |
           aws lightsail get-container-services
-          aws lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label api-gymlabs-de --image api-gymlabs-de:latest --debug
+          aws --debug lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label api-gymlabs-de-latest --image api-gymlabs-de:latest
           aws lightsail get-container-images --service-name api-gymlabs-de
