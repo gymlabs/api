@@ -44,9 +44,7 @@ builder.queryField("contracts", (t) =>
         }
 
         return await db.contract.findMany({
-          where: {
-            id: input.organizationId,
-          },
+          where: input,
         });
       };
 
