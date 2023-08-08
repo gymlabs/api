@@ -34,9 +34,8 @@ jobs:
           push: false
           tags: gymlabs/api:latest
 
-      - name: Get Lightsail instances
-        run: |
-          aws lightsail get-instances --region eu-central-1
+      - name: List docker images
+        run: docker images
       
       - name: Deploy to Lightsail
         run: aws lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label latest --image gymlabs/api:latest --debug
