@@ -17,7 +17,7 @@ jobs:
       - name: Install AWS CLI
         run: |
           aws --version
-          sudo curl https://s3.us-east-1.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl -o /usr/local/bin/lightsailctl
+          sudo curl "https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl" -o "/usr/local/bin/lightsailctl"
           sudo chmod +x /usr/local/bin/lightsailctl
 
       - name: Configure AWS credentials
