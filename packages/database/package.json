@@ -9,7 +9,7 @@
     "build": "prisma generate",
     "dbml": "prisma generate --schema=prisma/schema.prisma --generator=dbml",
     "prisma:studio": "prisma studio",
-    "start:migrate": "prisma migrate deploy && node ./build/main.js",
+    "start:migrate": "prisma migrate deploy",
     "prisma:migrate": "prisma migrate",
     "prisma:push": "prisma db push",
     "prisma:seed": "prisma db seed"

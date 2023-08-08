@@ -13,10 +13,10 @@ const validatedEnv = z
     SMTP_PASSWORD: z.string().optional(),
     SMTP_FROM: z.string().optional(),
     PORT: z.preprocess(Number, z.number().int()).default(8000),
-    COMMUNICATION_GRPC_HOST: z.string().default("localhost"),
-    COMMUNICATION_GRPC_PORT: z
-      .preprocess(Number, z.number().int())
-      .default(8003),
+    // COMMUNICATION_GRPC_HOST: z.string().default("localhost"),
+    // COMMUNICATION_GRPC_PORT: z
+    //   .preprocess(Number, z.number().int())
+    //   .default(8003),
     DEBUG: z
       .enum(["true", "false"])
       .default("false")
@@ -45,12 +45,12 @@ export const config = {
     port: env.PORT,
     corsOrigion: env.CORS_ORIGN,
   },
-  client: {
-    communication: {
-      host: env.COMMUNICATION_GRPC_HOST,
-      port: env.COMMUNICATION_GRPC_PORT,
-    },
-  },
+  // client: {
+  //   communication: {
+  //     host: env.COMMUNICATION_GRPC_HOST,
+  //     port: env.COMMUNICATION_GRPC_PORT,
+  //   },
+  // },
   logging: {
     level: env.DEBUG ? "debug" : "info",
   },
