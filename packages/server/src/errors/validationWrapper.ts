@@ -3,6 +3,7 @@ import { ZodError, ZodType } from "zod";
 import {
   InternalServerError,
   InvalidArgumentError,
+  NotFoundError,
   UnauthorizedError,
 } from ".";
 
@@ -23,6 +24,7 @@ const validationWrapper = async <T, U>(
 
     return await toWrap();
   } catch (err) {
+    if (err instanceof NotFoundError) throw new NotFoundError(err.message);
     if (err instanceof UnauthorizedError) throw new UnauthorizedError();
     throw new InternalServerError();
   }
