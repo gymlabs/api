@@ -19,7 +19,7 @@ jobs:
           aws --version
           sudo curl "https://s3.us-west-2.amazonaws.com/lightsailctl/latest/darwin-amd64/lightsailctl" -o "/usr/local/bin/lightsailctl"
           sudo chmod +x /usr/local/bin/lightsailctl
-          
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -41,6 +41,8 @@ jobs:
 
       - name: List docker images
         run: docker images
-      
+
       - name: Deploy to Lightsail
-        run: aws lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label gymlabs/api --image gymlabs/api:latest --debug
+        run: |
+          aws lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label gymlabs/api --image gymlabs/api:latest --debug
+          aws lightsail get-container-images --service-name api-gymlabs-de
