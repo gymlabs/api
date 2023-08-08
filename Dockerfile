@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY packages/database/package.json ./packages/database/
 COPY packages/server/package.json ./packages/server/
-COPY .npmrc ./
+# COPY .npmrc ./
 RUN npm ci
 
 FROM node:18 AS builder
