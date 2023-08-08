@@ -39,9 +39,4 @@ jobs:
           aws lightsail get-instances --region eu-central-1
       
       - name: Deploy to Lightsail
-        run: |
-          aws lightsail push-container-image \
-            --region eu-central-1 \
-            --service-name api-gymlabs-de \
-            --label latest \
-            --image gymlabs/api:latest
+        run: aws lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label latest --image gymlabs/api:latest --debug
