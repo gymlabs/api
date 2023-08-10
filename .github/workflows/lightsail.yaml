@@ -1,4 +1,4 @@
-name: Check
+name: Create Docker Image and Deploy to Lightsail
 
 on:
   push:
@@ -49,4 +49,8 @@ jobs:
         run: |
           aws lightsail get-container-services
           aws --debug lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label api-gymlabs-de-latest --image api-gymlabs-de:latest
-          aws lightsail get-container-images --service-name api-gymlabs-de
+          aws lightsail get-container-images --service-name api-gymlabs-de | jq --raw-output ".containerImages[0].image" > image.txt
+          cat image.txt
+          jq --arg image $(cat image.txt) '.containers.app.image = $image' container.template.json > container.json
+          cat container.json
+          aws lightsail create-container-service-deployment --service-name api-gymlabs-de --cli-input-json file://$(pwd)/container.json
