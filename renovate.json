@@ -24,16 +24,6 @@
     "enabled": true,
     "schedule": ["before 6am on tuesday"]
   },
-  "hostRules": [
-    {
-      "matchHost": "https://npm.pkg.github.com/",
-      "hostType": "npm",
-      "encrypted": {
-        "token": "wcFMA/xDdHCJBTolAQ/+LYT1UWTnT69ysdgXOC5wSopfUwJRxvCpsYGJOuw00C7dnMKvNwn+ePRF/3e58MwPbcwTOySlP+5EHKlu+tX9XZLCdOpoTOXwmVY6QLsT/srK/Rkj0WoddUl5tfc/8poQ1JN1TMBVV+kJt4PyajvuPy92PvJlrIQJKHmQqhpLODwPfp0OBzlsNpZIpBynWrZoi6LdHDLQapMK2pfxIWnrod0EK4eMmLzZYB5A8sshHfbdLfIBwxdRVm4HKVUUVCTjJCvZPHTpkmOskN7ECVBwg+Ls6NJjmuWhGErJK5qaPKWoodzrwB4pTf0dETibfhc5ZCizmI+pZCPiFCvp6xm5raGAi+q0FQQWHLktZCOCNi6pNiZMZka1bA9Q0DlXWu5EyE9ftfXQeeOcJvbpqfVZ23t8wArNpjinPhE+dP8vFRSmqKTjbzKFEYapKKesimrTSD2PSsAV9SlvYhO1XN25xhxf36kaAZiImlemA99BORIRaiToda98m+cko+628xy00lb5ZK6ZbAVJQk7lb2TijsOorKxYSvqhJH3TkTKlW5eWLO/0mi1T4mmkj1TV9btqWwDoHDjZb24uzICLqkG1royq9SWICPIeg1CjkOBl3kGFL3TkvLEFnxJh+HTS2I8kzqiFY/bnZ8kT+2UcWjaejLm9ViZgf/xoRwI4IybskBXSdgEyrbcQSLviiB9Vj6Mp4wY/u9yxVg/yEbVqYfhJ7FI4DKhe6GaJ3+0pWwldUB19DUxsv3AeLQnf84Lk1kIFZYoOEdGif5hI1NRX2JICSS1rgj2n2sqC7J5iSelkfjH9EwwodQ1g4jyjEwgEyCWLM4yGoJKP0Kg"
-      },
-      "npmrc": "@gymlabs:registry=https://npm.pkg.github.com/"
-    }
-  ],
   "configMigration": true,
   "automergeStrategy": "squash",
   "dependencyDashboardAutoclose": true,
