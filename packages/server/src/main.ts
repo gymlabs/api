@@ -36,7 +36,7 @@ async function main() {
   app.use(
     "/",
     cors<cors.CorsRequest>({
-      origin: config.server.corsOrigion,
+      origin: config.server.corsOrigin,
       credentials: true,
     }),
     json(),
