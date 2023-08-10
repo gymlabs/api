@@ -49,5 +49,5 @@ builder.queryField("gymsWhereEmployed", (t) =>
         };
       });
     },
-  })
+  }),
 );

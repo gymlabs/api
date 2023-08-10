@@ -7,7 +7,7 @@ export class InvitationEmail extends Email {
   constructor(
     private readonly customerName: string,
     private readonly organizationName: string,
-    private readonly invitationToken: string
+    private readonly invitationToken: string,
   ) {
     super();
   }

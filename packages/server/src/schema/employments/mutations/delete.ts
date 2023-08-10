@@ -41,7 +41,7 @@ builder.mutationField("deleteEmployment", (t) =>
             "EMPLOYMENT",
             "delete",
             ctx.viewer.user?.id ?? "",
-            input.gymId
+            input.gymId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -79,8 +79,8 @@ builder.mutationField("deleteEmployment", (t) =>
           userId: z.string().uuid(),
           gymId: z.string().uuid(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

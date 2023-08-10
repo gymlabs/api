@@ -41,7 +41,7 @@ builder.mutationField("deleteMembership", (t) =>
             "MEMBERSHIP",
             "delete",
             ctx.viewer.user?.id ?? "",
-            input.gymId
+            input.gymId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -79,8 +79,8 @@ builder.mutationField("deleteMembership", (t) =>
           gymId: z.string().uuid(),
           userId: z.string().uuid(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

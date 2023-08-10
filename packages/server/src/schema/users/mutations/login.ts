@@ -33,7 +33,7 @@ builder.mutationField("login", (t) =>
 
         const expiresAt = addMilliseconds(
           new Date(),
-          config.security.accessTokenLifetime
+          config.security.accessTokenLifetime,
         );
 
         await ctx.prisma.accessToken.create({
@@ -53,5 +53,5 @@ builder.mutationField("login", (t) =>
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

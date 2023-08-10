@@ -42,12 +42,12 @@ async function main() {
     json(),
     expressMiddleware(apolloServer, {
       context: getContext,
-    })
+    }),
   );
 
   const { host, port } = config.server;
   await new Promise<void>((resolve) =>
-    httpServer.listen({ host, port }, resolve)
+    httpServer.listen({ host, port }, resolve),
   );
 
   logger.info(`🚀 Server ready at http://${host}:${port}/graphql`);

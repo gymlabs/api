@@ -42,7 +42,7 @@ builder.mutationField("createGym", (t) =>
             "GYM",
             "create",
             ctx.viewer.user?.id ?? "",
-            input.organizationId
+            input.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -75,8 +75,8 @@ builder.mutationField("createGym", (t) =>
           postalCode: z.string().min(1, "Postal code must be provided"),
           country: z.string().min(1, "Country must be provided"),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );
