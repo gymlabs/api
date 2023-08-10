@@ -49,7 +49,7 @@ function createRandomEmployment(
     roleId,
     userId,
     gymId,
-    isActive: +faker.random.numeric() % 2 === 0,
+    isActive: +faker.string.numeric() % 2 === 0,
     deletedAt: null,
   };
 }
@@ -63,7 +63,7 @@ function createRandomMembership(
     userId,
     gymId,
     contractId,
-    isActive: +faker.random.numeric() % 2 === 0,
+    isActive: +faker.string.numeric() % 2 === 0,
     deletedAt: null,
   };
 }

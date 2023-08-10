@@ -10,7 +10,11 @@ export default async function seedUsers(prisma: PrismaClient) {
   for (let i = 0; i < USER_COUNT; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
-    const email = faker.internet.email({ firstName, lastName });
+    const email = faker.internet.email({
+      firstName,
+      lastName,
+      provider: "gymlabs.de",
+    });
 
     const user = await prisma.user.upsert({
       where: { email: email.toLowerCase() },
