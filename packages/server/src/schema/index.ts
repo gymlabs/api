@@ -1,11 +1,11 @@
 import "./contracts";
-import "./employment";
-import "./exercise";
-import "./gym";
-import "./membership";
-import "./role";
-import "./user";
-import "./workout";
+import "./employments";
+import "./exercises";
+import "./gyms";
+import "./memberships";
+import "./roles";
+import "./users";
+import "./workouts";
 import "./scalars";
 import { builder } from "./builder";
 

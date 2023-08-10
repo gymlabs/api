@@ -13,17 +13,15 @@ const validatedEnv = z
     SMTP_PASSWORD: z.string().optional(),
     SMTP_FROM: z.string().optional(),
     PORT: z.preprocess(Number, z.number().int()).default(8000),
-    GRPC_PORT: z.preprocess(Number, z.number().int()).default(8001),
-    ADMIN_GRPC_HOST: z.string().default("localhost"),
-    ADMIN_GRPC_PORT: z.preprocess(Number, z.number().int()).default(8002),
-    COMMUNICATION_GRPC_HOST: z.string().default("localhost"),
-    COMMUNICATION_GRPC_PORT: z
-      .preprocess(Number, z.number().int())
-      .default(8003),
+    // COMMUNICATION_GRPC_HOST: z.string().default("localhost"),
+    // COMMUNICATION_GRPC_PORT: z
+    //   .preprocess(Number, z.number().int())
+    //   .default(8003),
     DEBUG: z
       .enum(["true", "false"])
       .default("false")
       .transform((v) => v === "true"),
+    CORS_ORIGN: z.string().url().default("http://localhost:3000"),
   })
 
   .safeParse(process.env);
@@ -45,18 +43,14 @@ export const config = {
   server: {
     host: env.HOST,
     port: env.PORT,
-    grpcPort: env.GRPC_PORT,
+    corsOrigion: env.CORS_ORIGN,
   },
-  client: {
-    admin: {
-      host: env.ADMIN_GRPC_HOST,
-      port: env.ADMIN_GRPC_PORT,
-    },
-    communication: {
-      host: env.COMMUNICATION_GRPC_HOST,
-      port: env.COMMUNICATION_GRPC_PORT,
-    },
-  },
+  // client: {
+  //   communication: {
+  //     host: env.COMMUNICATION_GRPC_HOST,
+  //     port: env.COMMUNICATION_GRPC_PORT,
+  //   },
+  // },
   logging: {
     level: env.DEBUG ? "debug" : "info",
   },

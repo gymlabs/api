@@ -17,6 +17,8 @@ gql/
 src/grpc/types
 src/grpc/*.bin
 
+# misc
+.eslintcache
 .npmrc
 
 # macOS

@@ -2,15 +2,12 @@
   "$schema": "https://json.schemastore.org/swcrc",
   "jsc": {
     "parser": {
-      "syntax": "typescript",
-      "tsx": false,
-      "dynamicImport": true,
-      "decorators": true
+      "syntax": "typescript"
     },
     "target": "es2022"
   },
   "module": {
     "type": "commonjs"
   },
-  "minify": false
+  "minify": true
 }
