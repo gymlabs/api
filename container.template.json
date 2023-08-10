@@ -1,7 +1,9 @@
 {
+  "serviceName": "api-gymlabs-de",
   "containers": {
     "api": {
       "image": "",
+      "command": [""],
       "environment": {
         "DATABASE_URL": "",
         "NODE_ENV": "production"
