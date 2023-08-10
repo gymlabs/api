@@ -41,7 +41,7 @@ builder.mutationField("changeMail", (t) =>
 
         await ctx.prisma.user.update({
           where: { id: changeMailRequest.userId },
-          data: { email: (changeMailRequest.newValue as string).toLowerCase() },
+          data: { email: changeMailRequest.newValue!.toLowerCase() },
         });
 
         await ctx.prisma.resetRequest.update({

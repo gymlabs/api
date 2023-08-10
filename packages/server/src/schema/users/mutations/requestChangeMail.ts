@@ -71,7 +71,7 @@ builder.mutationField("requestChangeMail", (t) =>
           },
         });
 
-        sendEmailUpdateEmail(user.email, user.firstName, token);
+        await sendEmailUpdateEmail(user.email, user.firstName, token);
 
         return true;
       } catch (err) {
