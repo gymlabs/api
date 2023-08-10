@@ -56,6 +56,9 @@ jobs:
           cat container.json
           jq --arg DATABASE_URL $(echo $DATABASE_URL) '.containers.api.environment.DATABASE_URL = $DATABASE_URL' container.json > container.json
           cat container.json
-          aws --debug lightsail create-container-service-deployment --cli-input-json cat container.json > /dev/null
+          json_string="'$(jq -c . container.json | sed 's/"/\\"/g')'"
+          echo "JSON_STRING=$json_string" >> $GITHUB_ENV
+          aws --debug lightsail create-container-service-deployment --cli-input-json "$JSON_STRING"
+          
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
