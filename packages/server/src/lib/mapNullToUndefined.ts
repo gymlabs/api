@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // TODO: fix types
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
@@ -6,6 +8,7 @@
 // not perfect but should be enough for graphql args mapping
 
 // https://github.com/apollographql/apollo-client/issues/2412#issuecomment-755449680
+
 export type RecursivelyMapNullToUndefined<T> = T extends null
   ? undefined // Note: Add interfaces here of all GraphQL scalars that will be transformed into an object
   : T extends Date
@@ -33,6 +36,7 @@ function mapValues<T>(
   const result: Record<string, T> = {};
   for (const key in object) {
     if (Object.prototype.hasOwnProperty.call(object, key)) {
+      // @ts-ignore
       result[key] = iteratee(object[key]);
     }
   }

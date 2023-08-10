@@ -42,7 +42,7 @@ builder.mutationField("register", (t) =>
           },
         });
 
-        sendWelcomeEmail(user.email, user.firstName, verificationToken);
+        await sendWelcomeEmail(user.email, user.firstName, verificationToken);
 
         return true;
       } catch (err) {

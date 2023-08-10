@@ -44,7 +44,7 @@ builder.mutationField("requestResetPassword", (t) =>
           },
         });
 
-        sendResetPasswordRequestEmail(user.email, user.firstName, token);
+        await sendResetPasswordRequestEmail(user.email, user.firstName, token);
 
         return true;
       } catch (err) {
