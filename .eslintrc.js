@@ -1,4 +1,6 @@
-module.exports = {
+/** @type {import("eslint").Linter.Config} */
+const config = {
+  root: true,
   env: {
     commonjs: true,
     es2022: true,
@@ -6,15 +8,16 @@ module.exports = {
   },
   extends: [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-type-checked",
+    "plugin:@typescript-eslint/stylistic-type-checked",
     "plugin:import/recommended",
     "plugin:import/typescript",
     "prettier",
   ],
-  overrides: [],
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: "latest",
+    tsconfigRootDir: __dirname,
+    project: ["./tsconfig.base.json", "./packages/*/tsconfig.json"],
   },
   plugins: ["@typescript-eslint", "import"],
   rules: {
@@ -53,3 +56,5 @@ module.exports = {
     },
   },
 };
+
+module.exports = config;

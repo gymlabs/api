@@ -53,12 +53,17 @@ builder.mutationField("deleteAccount", (t) =>
           },
         });
 
-        sendReactivationEmail(user.email, user.firstName, deleteAt, token);
+        await sendReactivationEmail(
+          user.email,
+          user.firstName,
+          deleteAt,
+          token,
+        );
 
         return true;
       } catch (err) {
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

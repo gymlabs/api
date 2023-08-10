@@ -1,5 +1,5 @@
-import { BaseContext } from "@apollo/server";
-import { StandaloneServerContextFunctionArgument } from "@apollo/server/dist/esm/standalone";
+import { IncomingMessage, ServerResponse } from "http";
+
 import { AccessToken, User } from "@gymlabs/db";
 import { parse } from "cookie";
 import { SetNonNullable } from "type-fest";
@@ -7,10 +7,18 @@ import { SetNonNullable } from "type-fest";
 import { db } from "./db";
 import { extractBearerToken, hashToken } from "./lib/security";
 
+// TODO: why does this not work
+// interface ApplicationContext
+//   extends BaseContext,
+//     StandaloneServerContextFunctionArgument {}
+
 export const getContext = async ({
   req,
   res,
-}: BaseContext & StandaloneServerContextFunctionArgument) => {
+}: {
+  req: IncomingMessage;
+  res: ServerResponse<IncomingMessage>;
+}) => {
   const prisma = db;
   const authorizationHeader = req.headers.authorization;
   const cookieHeader = req.headers.cookie;
@@ -20,7 +28,7 @@ export const getContext = async ({
     bearerToken = extractBearerToken(authorizationHeader);
   } else if (cookieHeader) {
     const cookies = parse(cookieHeader);
-    bearerToken = cookies["accessToken"] ?? null;
+    bearerToken = cookies.accessToken ?? null;
   }
 
   let viewer: Viewer;
@@ -52,10 +60,10 @@ export const getContext = async ({
 
 export type Context = Awaited<ReturnType<typeof getContext>>;
 
-type ViewerConstructorOptions = {
+interface ViewerConstructorOptions {
   user: User;
   accessToken: AccessToken;
-};
+}
 
 export class Viewer {
   readonly user: User | null;

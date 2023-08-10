@@ -50,7 +50,7 @@ builder.mutationField("createWorkout", (t) =>
             "WORKOUT",
             "create",
             ctx.viewer.user?.id ?? "",
-            organization.id
+            organization.id,
           ))
         ) {
           throw new UnauthorizedError();
@@ -79,8 +79,8 @@ builder.mutationField("createWorkout", (t) =>
           name: z.string().min(4, "Name must be provided"),
           description: z.string().min(1, "Description must be provided"),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

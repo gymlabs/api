@@ -48,7 +48,7 @@ builder.queryField("gym", (t) =>
             "GYM",
             "read",
             ctx.viewer.user?.id ?? "",
-            gym.organizationId
+            gym.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -60,12 +60,12 @@ builder.queryField("gym", (t) =>
       const gym = await validationWrapper(
         wrapped,
         z.object({ id: z.string().uuid() }),
-        input
+        input,
       );
 
       return {
         ...gym,
       };
     },
-  })
+  }),
 );

@@ -47,7 +47,7 @@ builder.queryField("contract", (t) =>
             "CONTRACT",
             "read",
             ctx.viewer.user?.id ?? "",
-            contract.organizationId
+            contract.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -59,8 +59,8 @@ builder.queryField("contract", (t) =>
       return await validationWrapper(
         wrapped,
         z.object({ id: z.string().uuid() }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

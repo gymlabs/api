@@ -63,7 +63,7 @@ builder.mutationField("updateWorkoutPlanItem", (t) =>
             "WORKOUT",
             "update",
             ctx.viewer.user?.id ?? "",
-            workOutPlanItemExists.workoutPlan.organizationId
+            workOutPlanItemExists.workoutPlan.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -85,8 +85,8 @@ builder.mutationField("updateWorkoutPlanItem", (t) =>
           repetitions: z.array(z.number()).optional(),
           weights: z.array(z.number()).optional(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

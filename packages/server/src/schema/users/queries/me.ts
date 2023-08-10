@@ -26,5 +26,5 @@ builder.queryField("me", (t) =>
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

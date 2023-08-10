@@ -63,7 +63,7 @@ builder.queryField("employment", (t) =>
             "EMPLOYMENT",
             "read",
             ctx.viewer.user?.id ?? "",
-            employment.gymId
+            employment.gymId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -77,7 +77,7 @@ builder.queryField("employment", (t) =>
         z.object({
           id: z.string().uuid(),
         }),
-        input
+        input,
       );
 
       return {
@@ -85,5 +85,5 @@ builder.queryField("employment", (t) =>
         roleName: employment.role.name,
       };
     },
-  })
+  }),
 );

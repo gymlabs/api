@@ -62,7 +62,7 @@ builder.mutationField("createWorkoutPlanItem", (t) =>
             "WORKOUT",
             "update",
             ctx.viewer.user?.id ?? "",
-            workoutExists.organizationId
+            workoutExists.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -84,8 +84,8 @@ builder.mutationField("createWorkoutPlanItem", (t) =>
             .min(0, "Repititions must be provided"),
           weights: z.array(z.number()).min(0, "Weights must be provided"),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

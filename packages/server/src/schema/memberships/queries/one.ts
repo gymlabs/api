@@ -65,7 +65,7 @@ builder.queryField("membership", (t) =>
             "MEMBERSHIP",
             "read",
             ctx.viewer.user?.id ?? "",
-            membership.gymId
+            membership.gymId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -79,7 +79,7 @@ builder.queryField("membership", (t) =>
         z.object({
           id: z.string().uuid(),
         }),
-        input
+        input,
       );
 
       return {
@@ -87,5 +87,5 @@ builder.queryField("membership", (t) =>
         contractName: membership.contract.name,
       };
     },
-  })
+  }),
 );

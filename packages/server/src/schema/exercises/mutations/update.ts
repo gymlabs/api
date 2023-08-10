@@ -53,7 +53,7 @@ builder.mutationField("updateExercise", (t) =>
             "EXERCISE",
             "update",
             ctx.viewer.user?.id ?? "",
-            exercise.organizationId
+            exercise.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -78,8 +78,8 @@ builder.mutationField("updateExercise", (t) =>
           name: z.string().optional(),
           description: z.string().optional(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

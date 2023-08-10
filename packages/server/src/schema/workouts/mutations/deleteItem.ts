@@ -56,7 +56,7 @@ builder.mutationField("deleteWorkoutPlanItem", (t) =>
             "WORKOUT",
             "update",
             ctx.viewer.user?.id ?? "",
-            workoutPlanItemExists.workoutPlan.organizationId
+            workoutPlanItemExists.workoutPlan.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -74,8 +74,8 @@ builder.mutationField("deleteWorkoutPlanItem", (t) =>
         z.object({
           id: z.string().uuid(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

@@ -1,7 +1,4 @@
-import { promisify } from "util";
-
 import {
-  TestAccount,
   createTestAccount,
   createTransport,
   getTestMessageUrl,
@@ -17,14 +14,14 @@ import { config } from "../../config";
 import { InternalServerError, InvalidArgumentError } from "../../errors";
 import { logger } from "../../logger";
 
-export type SendMailOptions = {
+export interface SendMailOptions {
   to: string;
   from?: string;
-};
+}
 
 export async function sendMail(
   email: Email,
-  { to, from = config.smtp.from }: SendMailOptions
+  { to, from = config.smtp.from }: SendMailOptions,
 ) {
   const subject = email.getSubject();
   const html = email.getHtml();
@@ -32,8 +29,7 @@ export async function sendMail(
 
   if (config.nodeEnv === "development") {
     // TODO: replace this with private testing account
-    const getTestAccount = promisify<TestAccount>(createTestAccount);
-    const testAccount = await getTestAccount();
+    const testAccount = await createTestAccount();
 
     if (!testAccount) {
       throw new Error("Could not get test account");
@@ -69,7 +65,7 @@ export async function sendMail(
 export const sendWelcomeEmail = async (
   to: string,
   name: string,
-  token: string
+  token: string,
 ) => {
   try {
     try {
@@ -84,7 +80,7 @@ export const sendWelcomeEmail = async (
       }
       throw e;
     }
-    sendMail(new WelcomeEmail(name, token), { to });
+    await sendMail(new WelcomeEmail(name, token), { to });
     return true;
   } catch (e) {
     throw new InternalServerError();
@@ -94,7 +90,7 @@ export const sendWelcomeEmail = async (
 export const sendResetPasswordRequestEmail = async (
   to: string,
   name: string,
-  token: string
+  token: string,
 ) => {
   try {
     try {
@@ -110,7 +106,7 @@ export const sendResetPasswordRequestEmail = async (
       }
       throw e;
     }
-    sendMail(new ResetPasswordRequestEmail(name, token), { to });
+    await sendMail(new ResetPasswordRequestEmail(name, token), { to });
     return true;
   } catch (e) {
     throw new InternalServerError();
@@ -120,7 +116,7 @@ export const sendResetPasswordRequestEmail = async (
 export const sendEmailUpdateEmail = async (
   to: string,
   name: string,
-  token: string
+  token: string,
 ) => {
   try {
     try {
@@ -136,7 +132,7 @@ export const sendEmailUpdateEmail = async (
       throw e;
     }
 
-    sendMail(new EmailUpdatedEmail(name, token), { to });
+    await sendMail(new EmailUpdatedEmail(name, token), { to });
     return true;
   } catch (e) {
     throw new InternalServerError();
@@ -147,7 +143,7 @@ export const sendReactivationEmail = async (
   to: string,
   name: string,
   deletedAt: Date,
-  token: string
+  token: string,
 ) => {
   try {
     try {
@@ -164,7 +160,9 @@ export const sendReactivationEmail = async (
       throw e;
     }
 
-    sendMail(new ReactivationEmail(name, token, new Date(deletedAt)), { to });
+    await sendMail(new ReactivationEmail(name, token, new Date(deletedAt)), {
+      to,
+    });
     return true;
   } catch (e) {
     throw new InternalServerError();
