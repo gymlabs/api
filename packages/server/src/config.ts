@@ -30,7 +30,7 @@ if (!validatedEnv.success) {
   // cannot use logger here because it depends on config
   console.error(
     "❌ Invalid environment variables:",
-    JSON.stringify(validatedEnv.error.flatten().fieldErrors, null, 2)
+    JSON.stringify(validatedEnv.error.flatten().fieldErrors, null, 2),
   );
   process.exit(1);
 }

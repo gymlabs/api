@@ -52,7 +52,7 @@ builder.mutationField("deleteExerciseStep", (t) =>
             "EXERCISE",
             "update",
             ctx.viewer.user?.id ?? "",
-            exerciseStep.exercise.organizationId
+            exerciseStep.exercise.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -68,8 +68,8 @@ builder.mutationField("deleteExerciseStep", (t) =>
       return await validationWrapper(
         wrapped,
         z.object({ id: z.string().uuid() }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

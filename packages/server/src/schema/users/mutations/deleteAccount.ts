@@ -60,5 +60,5 @@ builder.mutationField("deleteAccount", (t) =>
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

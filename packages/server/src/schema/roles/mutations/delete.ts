@@ -49,7 +49,7 @@ builder.mutationField("deleteRole", (t) =>
             "ROLE",
             "delete",
             ctx.viewer.user?.id ?? "",
-            role.gymId
+            role.gymId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -69,8 +69,8 @@ builder.mutationField("deleteRole", (t) =>
         z.object({
           id: z.string().uuid(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

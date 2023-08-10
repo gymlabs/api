@@ -53,7 +53,7 @@ builder.queryField("workoutPlan", (t) =>
             "WORKOUT",
             "read",
             ctx.viewer.user?.id ?? "",
-            workout.organizationId
+            workout.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -67,8 +67,8 @@ builder.queryField("workoutPlan", (t) =>
         z.object({
           id: z.string().uuid(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

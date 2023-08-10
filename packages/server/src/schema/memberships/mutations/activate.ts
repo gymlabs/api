@@ -72,8 +72,8 @@ builder.mutationField("activateMembership", (t) =>
         z.object({
           id: z.string().uuid(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

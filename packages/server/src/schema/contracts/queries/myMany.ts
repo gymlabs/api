@@ -48,8 +48,8 @@ builder.queryField("myContract", (t) =>
       return await validationWrapper(
         wrapped,
         z.object({ userId: z.string().uuid() }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

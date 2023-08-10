@@ -28,7 +28,7 @@ function isArray(value: any): value is any[] {
 
 function mapValues<T>(
   object: Record<string, T>,
-  iteratee: (value: T) => T
+  iteratee: (value: T) => T,
 ): Record<string, T> {
   const result: Record<string, T> = {};
   for (const key in object) {
@@ -45,7 +45,7 @@ function mapValues<T>(
  * this can for example be used to convert gql args explicit nulls to undefined (= implicit nulls)
  */
 export function mapNullToUndefined<T>(
-  value: T
+  value: T,
 ): RecursivelyMapNullToUndefined<T> {
   if (isPlainObject(value)) {
     // @ts-ignore

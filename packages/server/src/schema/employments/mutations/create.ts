@@ -40,7 +40,7 @@ builder.mutationField("createEmployment", (t) =>
             "EMPLOYMENT",
             "create",
             ctx.viewer.user?.id ?? "",
-            input.gymId
+            input.gymId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -69,7 +69,7 @@ builder.mutationField("createEmployment", (t) =>
           gymId: z.string().uuid(),
           roleId: z.string().uuid(),
         }),
-        input
+        input,
       );
 
       return {
@@ -77,5 +77,5 @@ builder.mutationField("createEmployment", (t) =>
         roleName: employment.role.name,
       };
     },
-  })
+  }),
 );

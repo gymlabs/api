@@ -7,7 +7,7 @@ export class ReactivationEmail extends Email {
   constructor(
     private readonly name: string,
     private readonly reactivationToken: string,
-    private readonly deletedAt: Date
+    private readonly deletedAt: Date,
   ) {
     super();
   }

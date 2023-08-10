@@ -28,7 +28,7 @@ builder.objectType(Error, {
 
 function flattenErrors(
   error: ZodFormattedError<unknown>,
-  path: string[]
+  path: string[],
 ): { path: string[]; message: string }[] {
   // eslint-disable-next-line no-underscore-dangle
   const errors = error._errors.map((message) => ({
@@ -41,8 +41,8 @@ function flattenErrors(
       errors.push(
         ...flattenErrors(
           (error as Record<string, unknown>)[key] as ZodFormattedError<unknown>,
-          [...path, key]
-        )
+          [...path, key],
+        ),
       );
     }
   });

@@ -10,7 +10,7 @@ import {
 const validationWrapper = async <T, U>(
   toWrap: () => Promise<U>,
   validator: ZodType<T>,
-  input: object
+  input: object,
 ) => {
   try {
     try {

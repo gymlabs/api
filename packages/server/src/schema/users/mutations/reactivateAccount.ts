@@ -49,5 +49,5 @@ builder.mutationField("reactivateAccount", (t) =>
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

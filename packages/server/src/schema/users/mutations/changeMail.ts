@@ -59,5 +59,5 @@ builder.mutationField("changeMail", (t) =>
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

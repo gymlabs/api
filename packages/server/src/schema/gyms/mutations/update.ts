@@ -49,7 +49,7 @@ builder.mutationField("updateGym", (t) =>
             "GYM",
             "update",
             ctx.viewer.user?.id ?? "",
-            input.id
+            input.id,
           ))
         ) {
           throw new UnauthorizedError();
@@ -69,7 +69,7 @@ builder.mutationField("updateGym", (t) =>
             "GYM",
             "update",
             ctx.viewer.user?.id ?? "",
-            input.organizationId
+            input.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -94,8 +94,8 @@ builder.mutationField("updateGym", (t) =>
           postalCode: z.string().optional(),
           country: z.string().optional(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

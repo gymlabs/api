@@ -60,8 +60,8 @@ builder.mutationField("activateEmployment", (t) =>
       return await validationWrapper(
         wrapped,
         z.object({ employmentId: z.string().uuid() }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

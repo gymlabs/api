@@ -6,7 +6,7 @@ import { Email } from "./Email";
 export class ResetPasswordRequestEmail extends Email {
   constructor(
     private readonly customerName: string,
-    private readonly token: string
+    private readonly token: string,
   ) {
     super();
   }

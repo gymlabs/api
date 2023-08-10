@@ -53,7 +53,7 @@ builder.queryField("role", (t) =>
             "ROLE",
             "read",
             ctx.viewer.user?.id ?? "",
-            role.gymId
+            role.gymId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -65,8 +65,8 @@ builder.queryField("role", (t) =>
       return await validationWrapper(
         wrapped,
         z.object({ id: z.string().uuid() }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

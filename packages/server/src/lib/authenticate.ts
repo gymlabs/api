@@ -6,7 +6,7 @@ const authenticateGymEntity = async (
   category: Category,
   operation: "create" | "read" | "update" | "delete",
   userId: string,
-  gymId: string
+  gymId: string,
 ): Promise<boolean> => {
   const operationFilter: {
     create?: boolean;
@@ -41,7 +41,7 @@ const authenticateOrganizationEntity = async (
   category: Category,
   operation: "create" | "read" | "update" | "delete",
   userId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<boolean> => {
   const gyms = await db.gym.findMany({
     where: {

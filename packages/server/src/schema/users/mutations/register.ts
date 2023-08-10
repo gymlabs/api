@@ -49,5 +49,5 @@ builder.mutationField("register", (t) =>
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

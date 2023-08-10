@@ -10,7 +10,7 @@ export async function hashPassword(password: string): Promise<string> {
 
 export async function comparePassword(
   password: string,
-  hash: string
+  hash: string,
 ): Promise<boolean> {
   return await compare(password, hash);
 }
@@ -28,7 +28,7 @@ export function compareToken(token: string, hash: string): boolean {
 }
 
 export function extractBearerToken(
-  authorizationHeader: string | undefined | null
+  authorizationHeader: string | undefined | null,
 ): string | null {
   if (!authorizationHeader) {
     return null;

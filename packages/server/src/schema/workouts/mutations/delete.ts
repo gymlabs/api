@@ -49,7 +49,7 @@ builder.mutationField("deleteWorkout", (t) =>
             "WORKOUT",
             "delete",
             ctx.viewer.user?.id ?? "",
-            workout.organizationId
+            workout.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -69,8 +69,8 @@ builder.mutationField("deleteWorkout", (t) =>
         z.object({
           id: z.string().uuid(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );
