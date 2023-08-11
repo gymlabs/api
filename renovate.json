@@ -1,6 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended", ":rebaseStalePrs"],
+  "baseBranches": ["preview"],
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "schedule": ["at 6am on thursday"],
   "assignees": ["caldotdev", "nicolaskurzweil", "kevludwig"],
   "packageRules": [
     {
@@ -16,13 +20,13 @@
       "description": "Automatically merge minor and patch-level updates",
       "matchUpdateTypes": ["minor", "patch", "lockFileMaintenance"],
       "automerge": true,
-      "automergeSchedule": ["at 6am on tueday"],
+      "automergeSchedule": ["at 6am on monday"],
       "groupName": "minor/patch updates"
     }
   ],
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": ["before 6am on tuesday"]
+    "schedule": ["before 6am on monday"]
   },
   "configMigration": true,
   "automergeStrategy": "squash",
