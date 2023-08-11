@@ -1,6 +1,6 @@
 {
   "name": "@gymlabs/api-web-client",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "dist/graphql.js",
   "types": "dist/graphql.d.ts",
   "module": "dist/graphql.mjs",

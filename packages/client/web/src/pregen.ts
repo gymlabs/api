@@ -8,6 +8,7 @@ import { printSchema } from "graphql";
 import { schema } from "../../../server/build/schema";
 
 const config: CodegenConfig = {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   schema: printSchema(schema),
   generates: {
     "src/gql/schema.graphql": {
