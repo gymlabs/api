@@ -43,5 +43,5 @@ builder.mutationField("verifyMail", (t) =>
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

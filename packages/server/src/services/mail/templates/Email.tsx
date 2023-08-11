@@ -21,7 +21,7 @@ export abstract class Email {
             <title>{this.getSubject()}</title>
           </head>
           <body>{this.getBody()}</body>
-        </html>
+        </html>,
       )
     );
   }

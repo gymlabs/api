@@ -52,7 +52,7 @@ builder.mutationField("updateContract", (t) =>
             "CONTRACT",
             "update",
             ctx.viewer.user?.id ?? "",
-            contract.organizationId
+            contract.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -73,8 +73,8 @@ builder.mutationField("updateContract", (t) =>
         z.object({
           id: z.string().min(1, "Id must be provided"),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

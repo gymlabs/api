@@ -56,7 +56,7 @@ builder.mutationField("updateRole", (t) =>
             "ROLE",
             "update",
             ctx.viewer.user?.id ?? "",
-            role.gymId
+            role.gymId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -87,8 +87,8 @@ builder.mutationField("updateRole", (t) =>
           name: z.string().min(4, "Name must be provided").optional(),
           accessRightIds: z.array(z.string().uuid()),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

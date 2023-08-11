@@ -6,7 +6,7 @@ import { Email } from "./Email";
 export class EmailUpdatedEmail extends Email {
   constructor(
     private readonly customerName: string,
-    private readonly emailVerificationToken: string
+    private readonly emailVerificationToken: string,
   ) {
     super();
   }

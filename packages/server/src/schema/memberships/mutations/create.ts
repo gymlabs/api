@@ -40,7 +40,7 @@ builder.mutationField("createMembership", (t) =>
             "MEMBERSHIP",
             "create",
             ctx.viewer.user?.id ?? "",
-            input.gymId
+            input.gymId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -88,7 +88,7 @@ builder.mutationField("createMembership", (t) =>
           userId: z.string().uuid(),
           contractId: z.string().uuid(),
         }),
-        input
+        input,
       );
 
       return {
@@ -96,5 +96,5 @@ builder.mutationField("createMembership", (t) =>
         contractName: membership.contract.name,
       };
     },
-  })
+  }),
 );

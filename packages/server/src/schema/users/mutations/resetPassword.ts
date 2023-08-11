@@ -69,5 +69,5 @@ builder.mutationField("resetPassword", (t) =>
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

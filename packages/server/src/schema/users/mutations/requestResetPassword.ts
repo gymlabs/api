@@ -32,7 +32,7 @@ builder.mutationField("requestResetPassword", (t) =>
 
         const expiresAt = addMilliseconds(
           new Date(),
-          config.security.passwordResetRequestLifetime
+          config.security.passwordResetRequestLifetime,
         );
 
         await ctx.prisma.resetRequest.create({
@@ -44,12 +44,12 @@ builder.mutationField("requestResetPassword", (t) =>
           },
         });
 
-        sendResetPasswordRequestEmail(user.email, user.firstName, token);
+        await sendResetPasswordRequestEmail(user.email, user.firstName, token);
 
         return true;
       } catch (err) {
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

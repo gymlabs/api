@@ -34,5 +34,5 @@ builder.mutationField("logout", (t) =>
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

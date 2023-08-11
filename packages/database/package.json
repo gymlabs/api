@@ -12,7 +12,8 @@
     "start:migrate": "prisma migrate deploy",
     "prisma:migrate": "prisma migrate",
     "prisma:push": "prisma db push",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "prisma:seed:production": "NODE_ENV=production prisma db seed"
   },
   "prisma": {
     "seed": "ts-node prisma/seed/index.ts"

@@ -58,7 +58,7 @@ builder.mutationField("requestChangeMail", (t) =>
 
         const expiresAt = addMilliseconds(
           new Date(),
-          config.security.changeMailRequestLifetime
+          config.security.changeMailRequestLifetime,
         );
 
         await ctx.prisma.resetRequest.create({
@@ -71,12 +71,12 @@ builder.mutationField("requestChangeMail", (t) =>
           },
         });
 
-        sendEmailUpdateEmail(user.email, user.firstName, token);
+        await sendEmailUpdateEmail(user.email, user.firstName, token);
 
         return true;
       } catch (err) {
         throw new InternalServerError();
       }
     },
-  })
+  }),
 );

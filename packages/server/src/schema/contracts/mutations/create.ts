@@ -40,7 +40,7 @@ builder.mutationField("createContract", (t) =>
             "CONTRACT",
             "create",
             ctx.viewer.user?.id ?? "",
-            input.organizationId
+            input.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -67,8 +67,8 @@ builder.mutationField("createContract", (t) =>
             .min(1, "Contract duration must be provided and > 0"),
           organizationId: z.string().uuid(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );

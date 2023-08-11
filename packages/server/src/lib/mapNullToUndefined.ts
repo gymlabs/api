@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // TODO: fix types
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
@@ -6,6 +8,7 @@
 // not perfect but should be enough for graphql args mapping
 
 // https://github.com/apollographql/apollo-client/issues/2412#issuecomment-755449680
+
 export type RecursivelyMapNullToUndefined<T> = T extends null
   ? undefined // Note: Add interfaces here of all GraphQL scalars that will be transformed into an object
   : T extends Date
@@ -28,11 +31,12 @@ function isArray(value: any): value is any[] {
 
 function mapValues<T>(
   object: Record<string, T>,
-  iteratee: (value: T) => T
+  iteratee: (value: T) => T,
 ): Record<string, T> {
   const result: Record<string, T> = {};
   for (const key in object) {
     if (Object.prototype.hasOwnProperty.call(object, key)) {
+      // @ts-ignore
       result[key] = iteratee(object[key]);
     }
   }
@@ -45,7 +49,7 @@ function mapValues<T>(
  * this can for example be used to convert gql args explicit nulls to undefined (= implicit nulls)
  */
 export function mapNullToUndefined<T>(
-  value: T
+  value: T,
 ): RecursivelyMapNullToUndefined<T> {
   if (isPlainObject(value)) {
     // @ts-ignore

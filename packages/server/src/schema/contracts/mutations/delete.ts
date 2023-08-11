@@ -47,7 +47,7 @@ builder.mutationField("deleteContract", (t) =>
             "CONTRACT",
             "delete",
             ctx.viewer.user?.id ?? "",
-            contract.organizationId
+            contract.organizationId,
           ))
         ) {
           throw new UnauthorizedError();
@@ -65,8 +65,8 @@ builder.mutationField("deleteContract", (t) =>
         z.object({
           id: z.string().uuid(),
         }),
-        input
+        input,
       );
     },
-  })
+  }),
 );
