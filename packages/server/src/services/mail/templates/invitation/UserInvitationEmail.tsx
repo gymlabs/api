@@ -1,12 +1,11 @@
 import * as React from "react";
 
-import { Ending, Greeting } from "./components";
-import { Email } from "./Email";
+import { Ending } from "../components";
+import { Email } from "../Email";
 
-export class InvitationEmail extends Email {
+export class UserInvitationEmail extends Email {
   constructor(
-    private readonly customerName: string,
-    private readonly organizationName: string,
+    private readonly inviter: string,
     private readonly invitationToken: string,
   ) {
     super();
@@ -19,9 +18,8 @@ export class InvitationEmail extends Email {
   getBody() {
     return (
       <>
-        <Greeting name={this.customerName} />
         <p>Du wurdest zu GymLabs eingeladen!</p>
-        <p>Du wurdest von {this.organizationName} zu GymLabs eingeladen.</p>
+        <p>Du wurdest von {this.inviter} zu GymLabs eingeladen.</p>
         <p>
           Erstelle jetzt dein Konto über den folgenden Link:
           <p>

@@ -1,8 +1,8 @@
 import * as React from "react";
 
-export type GreetingProps = {
+export interface GreetingProps {
   name: string;
-};
+}
 
 export function Greeting({ name }: GreetingProps) {
   return <p>Hallo {name},</p>;
