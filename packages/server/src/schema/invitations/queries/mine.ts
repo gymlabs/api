@@ -18,6 +18,14 @@ builder.queryField("myInvitations", (t) =>
           ...query,
           where: {
             email: ctx.viewer.user.email,
+            NOT: {
+              status: {
+                in: ["ACCEPTED", "DECLINED"],
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "asc",
           },
         });
 
