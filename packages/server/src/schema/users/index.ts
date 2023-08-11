@@ -11,6 +11,7 @@ import "./mutations/register";
 import "./mutations/requestChangeMail";
 import "./mutations/requestResetPassword";
 import "./mutations/resetPassword";
+import "./mutations/update";
 import "./mutations/verifyMail";
 
 import "./types";
