@@ -45,7 +45,7 @@ builder.mutationField("updateAccount", (t) =>
             ],
             {
               errorMap: (issue, ctx) => ({
-                message: "Either email or username must be filled in",
+                message: "Either first name or last name must be filled in",
               }),
             },
           ),
@@ -68,7 +68,7 @@ builder.mutationField("updateAccount", (t) =>
             e instanceof PrismaClientKnownRequestError &&
             e.code === "P2025"
           ) {
-            throw new NotFoundError("Employment not found");
+            throw new NotFoundError("User not found");
           } else {
             throw new InternalServerError();
           }
