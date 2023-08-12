@@ -17,7 +17,11 @@ builder.mutationField("createMembership", (t) =>
     type: Membership,
     input: {
       gymId: t.input.string(),
-      userId: t.input.string(),
+      userEmail: t.input.string({
+        validate: {
+          email: true,
+        },
+      }),
       contractId: t.input.string(),
     },
     errors: {
@@ -50,6 +54,9 @@ builder.mutationField("createMembership", (t) =>
           where: {
             id: input.gymId,
           },
+          select: {
+            id: true,
+          },
         });
 
         if (!gym) {
@@ -60,15 +67,33 @@ builder.mutationField("createMembership", (t) =>
           where: {
             id: input.contractId,
           },
+          select: {
+            id: true,
+          },
         });
 
         if (!contract) {
           throw new InvalidArgumentError("Contract not found.");
         }
 
+        const user = await db.user.findUnique({
+          where: {
+            email: input.userEmail,
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        if (!user) {
+          throw new InvalidArgumentError("User does not exist");
+        }
+
         return await db.membership.create({
           data: {
-            ...input,
+            gymId: gym.id,
+            userId: user.id,
+            contractId: contract.id,
             createdAt: new Date(),
           },
           include: {
@@ -85,7 +110,7 @@ builder.mutationField("createMembership", (t) =>
         wrapped,
         z.object({
           gymId: z.string().uuid(),
-          userId: z.string().uuid(),
+          userEmail: z.string().email(),
           contractId: z.string().uuid(),
         }),
         input,
