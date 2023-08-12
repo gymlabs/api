@@ -1,21 +1,12 @@
 import { Invitation } from "@gymlabs/db";
-import { PrismaClientKnownRequestError } from "@gymlabs/db/dist/client/runtime/library";
 import { z } from "zod";
 
+import { acceptInvitation as baseAcceptInvitation } from "./baseService";
 import { db } from "../../db";
-import {
-  InternalServerError,
-  InvalidArgumentError,
-  NotFoundError,
-} from "../../errors";
 import { sendMembershipInvitationEmail } from "../mail/mailService";
 
 export const acceptInvitation = async (invitation: Invitation) => {
-  if (!invitation) {
-    throw new InvalidArgumentError("Invalid invitation type");
-  }
-
-  try {
+  const acceptanceHandler = async () => {
     const { userId, gymId, contractId } = z
       .object({
         userId: z.string().uuid(),
@@ -24,7 +15,7 @@ export const acceptInvitation = async (invitation: Invitation) => {
       })
       .parse(invitation.content);
 
-    const membership = await db.membership.create({
+    return await db.membership.create({
       data: {
         user: {
           connect: { id: userId },
@@ -37,28 +28,9 @@ export const acceptInvitation = async (invitation: Invitation) => {
         },
       },
     });
+  };
 
-    try {
-      await db.invitation.update({
-        where: {
-          token: invitation.token,
-        },
-        data: {
-          status: "ACCEPTED",
-        },
-      });
-    } catch (e) {
-      if (e instanceof PrismaClientKnownRequestError && e.code === "P2025") {
-        throw new NotFoundError("User not found");
-      } else {
-        throw new InternalServerError();
-      }
-    }
-
-    return membership;
-  } catch (e) {
-    throw new InvalidArgumentError("Invalid invitation content");
-  }
+  return await baseAcceptInvitation(invitation, acceptanceHandler);
 };
 
 export const sendInvitation = async (
