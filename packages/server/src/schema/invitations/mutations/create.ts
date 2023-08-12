@@ -38,7 +38,7 @@ builder.mutationField("createInvitation", (t) =>
       }),
       type: t.input.string(),
       content: t.input.string(),
-      inviter: t.input.string(),
+      inviter: t.input.string({ required: false }),
     },
     resolve: async (parent, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
@@ -69,14 +69,16 @@ builder.mutationField("createInvitation", (t) =>
           case "MEMBERSHIP": {
             await membershipInvitationService.sendInvitation(
               invitation,
-              input.inviter,
+              input.inviter ??
+                `${ctx.viewer.user.firstName} ${ctx.viewer.user.lastName}`, // TODO: automatic handling via a session would be nice here
             );
             return true;
           }
           case "EMPLOYMENT": {
             await employmentInvitationService.sendInvitation(
               invitation,
-              input.inviter,
+              input.inviter ??
+                `${ctx.viewer.user.firstName} ${ctx.viewer.user.lastName}`, // TODO: automatic handling via a session would be nice here
             );
             return true;
           }
@@ -95,7 +97,7 @@ builder.mutationField("createInvitation", (t) =>
             z.literal("EMPLOYMENT"),
           ]),
           content: jsonSchema,
-          inviter: z.string().min(4),
+          inviter: z.string().min(4).optional(),
         }),
         input,
       );
