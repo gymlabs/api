@@ -3,6 +3,8 @@ import { z } from "zod";
 
 import { acceptInvitation as baseAcceptInvitation } from "./baseService";
 import { db } from "../../db";
+import { UnauthorizedError } from "../../errors";
+import { authenticateGymEntity } from "../../lib/authenticate";
 import { sendMembershipInvitationEmail } from "../mail/mailService";
 
 export const acceptInvitation = async (invitation: Invitation) => {
@@ -14,6 +16,17 @@ export const acceptInvitation = async (invitation: Invitation) => {
         contractId: z.string().uuid(),
       })
       .parse(invitation.content);
+
+    if (
+      !(await authenticateGymEntity(
+        "MEMBERSHIP",
+        "create",
+        invitation.inviterId,
+        gymId,
+      ))
+    ) {
+      throw new UnauthorizedError();
+    }
 
     return await db.membership.create({
       data: {

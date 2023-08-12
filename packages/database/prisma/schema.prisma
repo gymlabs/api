@@ -312,7 +312,8 @@ model AccessRight {
 model Invitation {
   id String @id @default(uuid())
 
-  email String
+  email     String
+  inviterId String
 
   type      InvitationType
   status    InvitationStatus

@@ -6,9 +6,10 @@ import { ZodError, z } from "zod";
 import { db } from "../../../db";
 import {
   InternalServerError,
-  InvalidCredentialsError,
+  InvalidArgumentError,
   NotFoundError,
   UnauthenticatedError,
+  UnauthorizedError,
 } from "../../../errors";
 import validationWrapper from "../../../errors/validationWrapper";
 import { jsonSchema } from "../../../lib/jsonValidationSchema";
@@ -24,10 +25,11 @@ builder.mutationField("createInvitation", (t) =>
     errors: {
       types: [
         ZodError,
-        InvalidCredentialsError,
+        NotFoundError,
+        UnauthorizedError,
+        InvalidArgumentError,
         InternalServerError,
         UnauthenticatedError,
-        NotFoundError,
       ],
     },
     input: {
@@ -50,6 +52,7 @@ builder.mutationField("createInvitation", (t) =>
         const invitation = await db.invitation.create({
           data: {
             email: input.email,
+            inviterId: ctx.viewer.user.id,
             type: input.type as InvitationType,
             status: "PENDING",
             content: JSON.parse(input.content) as JsonObject,
