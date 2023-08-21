@@ -1,6 +1,5 @@
 import { InvitationType } from "@gymlabs/db";
 import { JsonObject } from "@gymlabs/db/dist/client/runtime/library";
-import { nanoid } from "nanoid";
 import { ZodError, z } from "zod";
 
 import { db } from "../../../db";
@@ -13,6 +12,7 @@ import {
 } from "../../../errors";
 import validationWrapper from "../../../errors/validationWrapper";
 import { jsonSchema } from "../../../lib/jsonValidationSchema";
+import { randomToken } from "../../../lib/security";
 import * as employmentInvitationService from "../../../services/invitation/employmentInvitationService";
 import * as membershipInvitationService from "../../../services/invitation/membershipInvitationService";
 import * as userInvitationService from "../../../services/invitation/userInvitationService";
@@ -56,7 +56,7 @@ builder.mutationField("createInvitation", (t) =>
             type: input.type as InvitationType,
             status: "PENDING",
             content: JSON.parse(input.content) as JsonObject,
-            token: nanoid(8),
+            token: randomToken(),
             expiresAt: expiryDate,
           },
         });
