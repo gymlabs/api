@@ -29,7 +29,9 @@ builder.queryField("myInvitations", (t) =>
           },
         });
 
-        if (!invitations) throw new NotFoundError("No invitations found");
+        if (!invitations) {
+          return [];
+        }
 
         return invitations;
       } catch (err) {
