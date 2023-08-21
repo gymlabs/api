@@ -2,6 +2,7 @@ import "./contracts";
 import "./employments";
 import "./exercises";
 import "./gyms";
+import "./invitations";
 import "./memberships";
 import "./roles";
 import "./users";

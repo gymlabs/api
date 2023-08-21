@@ -308,3 +308,33 @@ model AccessRight {
   @@unique([category, create, read, update, delete])
   @@map("access_right")
 }
+
+model Invitation {
+  id String @id @default(uuid())
+
+  email     String
+  inviterId String
+
+  type      InvitationType
+  status    InvitationStatus
+  content   Json
+  token     String           @unique
+  expiresAt DateTime
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("invitation")
+}
+
+enum InvitationType {
+  USER
+  EMPLOYMENT
+  MEMBERSHIP
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}

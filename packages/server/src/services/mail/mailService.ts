@@ -7,6 +7,9 @@ import { z, ZodError } from "zod";
 
 import { Email } from "./templates/Email";
 import { EmailUpdatedEmail } from "./templates/EmailUpdatedEmail";
+import { EmploymentInvitationEmail } from "./templates/invitation/EmploymentInvitationEmail";
+import { MembershipInvitationEmail } from "./templates/invitation/MembershipInvitationEmail";
+import { UserInvitationEmail } from "./templates/invitation/UserInvitationEmail";
 import { ReactivationEmail } from "./templates/ReactivationEmail";
 import { ResetPasswordRequestEmail } from "./templates/ResetPasswordRequestEmail";
 import { WelcomeEmail } from "./templates/WelcomeEmail";
@@ -163,6 +166,84 @@ export const sendReactivationEmail = async (
     await sendMail(new ReactivationEmail(name, token, new Date(deletedAt)), {
       to,
     });
+    return true;
+  } catch (e) {
+    throw new InternalServerError();
+  }
+};
+
+export const sendUserInvitationEmail = async (
+  to: string,
+  inviter: string,
+  token: string,
+) => {
+  try {
+    try {
+      z.object({
+        to: z.string().email("Invalid email"),
+        inviter: z.string().min(3, "Name must be at least 3 characters long"),
+        token: z.string(),
+      }).parse({ to, inviter, token });
+    } catch (e) {
+      if (e instanceof ZodError) {
+        throw new InvalidArgumentError(e.message);
+      }
+      throw e;
+    }
+
+    await sendMail(new UserInvitationEmail(inviter, token), { to });
+    return true;
+  } catch (e) {
+    throw new InternalServerError();
+  }
+};
+
+export const sendMembershipInvitationEmail = async (
+  to: string,
+  inviter: string,
+  token: string,
+) => {
+  try {
+    try {
+      z.object({
+        to: z.string().email("Invalid email"),
+        inviter: z.string().min(3, "Name must be at least 3 characters long"),
+        token: z.string(),
+      }).parse({ to, inviter, token });
+    } catch (e) {
+      if (e instanceof ZodError) {
+        throw new InvalidArgumentError(e.message);
+      }
+      throw e;
+    }
+
+    await sendMail(new MembershipInvitationEmail(inviter, token), { to });
+    return true;
+  } catch (e) {
+    throw new InternalServerError();
+  }
+};
+
+export const sendEmploymentInvitationEmail = async (
+  to: string,
+  inviter: string,
+  token: string,
+) => {
+  try {
+    try {
+      z.object({
+        to: z.string().email("Invalid email"),
+        inviter: z.string().min(3, "Name must be at least 3 characters long"),
+        token: z.string(),
+      }).parse({ to, inviter, token });
+    } catch (e) {
+      if (e instanceof ZodError) {
+        throw new InvalidArgumentError(e.message);
+      }
+      throw e;
+    }
+
+    await sendMail(new EmploymentInvitationEmail(inviter, token), { to });
     return true;
   } catch (e) {
     throw new InternalServerError();
