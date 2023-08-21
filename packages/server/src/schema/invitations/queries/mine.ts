@@ -29,10 +29,6 @@ builder.queryField("myInvitations", (t) =>
           },
         });
 
-        if (!invitations) {
-          return [];
-        }
-
         return invitations;
       } catch (err) {
         throw new InternalServerError();
