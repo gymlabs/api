@@ -3,15 +3,15 @@ import { z } from "zod";
 
 import { acceptInvitation as baseAcceptInvitation } from "./baseService";
 import { db } from "../../db";
-import { UnauthorizedError } from "../../errors";
+import { InvalidArgumentError, UnauthorizedError } from "../../errors";
 import { authenticateGymEntity } from "../../lib/authenticate";
 import { sendMembershipInvitationEmail } from "../mail/mailService";
 
 export const acceptInvitation = async (invitation: Invitation) => {
   const acceptanceHandler = async () => {
-    const { userId, gymId, contractId } = z
+    const { userEmail, gymId, contractId } = z
       .object({
-        userId: z.string().uuid(),
+        userEmail: z.string().email(),
         gymId: z.string().uuid(),
         contractId: z.string().uuid(),
       })
@@ -28,10 +28,23 @@ export const acceptInvitation = async (invitation: Invitation) => {
       throw new UnauthorizedError();
     }
 
+    const user = await db.user.findUnique({
+      where: {
+        email: userEmail,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!user) {
+      throw new InvalidArgumentError("User does not exist");
+    }
+
     return await db.membership.create({
       data: {
         user: {
-          connect: { id: userId },
+          connect: { id: user.id },
         },
         gym: {
           connect: { id: gymId },

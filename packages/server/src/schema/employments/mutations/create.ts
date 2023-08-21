@@ -17,7 +17,11 @@ builder.mutationField("createEmployment", (t) =>
     type: Employment,
     input: {
       gymId: t.input.string(),
-      userId: t.input.string(),
+      userEmail: t.input.string({
+        validate: {
+          email: true,
+        },
+      }),
       roleId: t.input.string(),
     },
     errors: {
@@ -46,11 +50,56 @@ builder.mutationField("createEmployment", (t) =>
           throw new UnauthorizedError();
         }
 
+        const gym = await db.gym.findUnique({
+          where: {
+            id: input.gymId,
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        if (!gym) {
+          throw new InvalidArgumentError("Gym not found.");
+        }
+
+        const role = await db.role.findUnique({
+          where: {
+            id: input.roleId,
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        if (!role) {
+          throw new InvalidArgumentError("Role not found.");
+        }
+
+        const user = await db.user.findUnique({
+          where: {
+            email: input.userEmail,
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        if (!user) {
+          throw new InvalidArgumentError("User does not exist");
+        }
+
         return await db.employment.create({
           data: {
-            gymId: input.gymId,
-            userId: input.userId,
-            roleId: input.roleId,
+            gym: {
+              connect: { id: gym.id },
+            },
+            user: {
+              connect: { id: user.id },
+            },
+            role: {
+              connect: { id: role.id },
+            },
           },
           include: {
             role: {
@@ -66,7 +115,7 @@ builder.mutationField("createEmployment", (t) =>
         wrapped,
         z.object({
           userId: z.string().uuid(),
-          gymId: z.string().uuid(),
+          userEmail: z.string().email(),
           roleId: z.string().uuid(),
         }),
         input,

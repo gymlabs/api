@@ -21,7 +21,7 @@ import { builder } from "../../builder";
 builder.mutationField("createInvitation", (t) =>
   t.withAuth({ authenticated: true }).fieldWithInput({
     type: "Boolean",
-    description: "Accept an invitation",
+    description: "Create an invitation",
     errors: {
       types: [
         ZodError,
