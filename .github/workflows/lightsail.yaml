@@ -52,8 +52,7 @@ jobs:
           aws --debug lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label api-gymlabs-de-latest --image api-gymlabs-de:latest
           aws lightsail get-container-images --service-name api-gymlabs-de | jq --raw-output ".containerImages[0].image" > image.txt
           cat image.txt
-          IMAGE=$(cat image.txt)
-          jq '.containers.api.image = $IMAGE | .containers.api.environment.DATABASE_URL = $DATABASE_URL' container.template.json > container.json
+          jq --arg image $(cat image.txt) --arg DATABASE_URL $(echo $DATABASE_URL) '.containers.api.image = $IMAGE | .containers.api.environment.DATABASE_URL = $DATABASE_URL' container.template.json > container.json
           cat container.json
           json_string="'$(jq -c . container.json | sed 's/"/\\"/g')'"
           echo "JSON_STRING=$json_string" >> $GITHUB_ENV
