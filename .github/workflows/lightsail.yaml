@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - preview
-      - fix-ci
+      - optimize-docker-image
 
 jobs:
   main:
