@@ -45,10 +45,12 @@ jobs:
       - name: Deploy to Lightsail
         run: |
           aws lightsail get-container-services
-          aws --debug lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label api-gymlabs-de-latest --image api-gymlabs-de:latest
+          aws lightsail push-container-image --region eu-central-1 --service-name api-gymlabs-de --label api-gymlabs-de-latest --image api-gymlabs-de:latest
           aws lightsail get-container-images --service-name api-gymlabs-de | jq --raw-output ".containerImages[0].image" > image.txt
+          cat image.txt
           jq --arg IMAGE $(cat image.txt) --arg DATABASE_URL $(echo $DATABASE_URL) '.containers.api.image = $IMAGE | .containers.api.environment.DATABASE_URL = $DATABASE_URL' container.template.json > container.json
-          aws --debug lightsail create-container-service-deployment --cli-input-json file://container.json  
+          cat container.json
+          aws lightsail create-container-service-deployment --cli-input-json file://container.json  
           
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

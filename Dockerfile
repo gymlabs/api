@@ -29,6 +29,7 @@ ENV CORS_ORIGIN=https://app.gymlabs.de
 ENV DEBUG=false
 ENV HOST=0.0.0.0
 ENV PORT=8000
+ENV BLA=bla
 
 WORKDIR /app
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
