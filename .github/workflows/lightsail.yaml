@@ -6,7 +6,7 @@ on:
     branches:
       - main
       - preview
-      - setup-lightsail
+      - fix-ci
 
 jobs:
   main:
@@ -54,9 +54,9 @@ jobs:
           cat image.txt
           jq --arg IMAGE $(cat image.txt) --arg DATABASE_URL $(echo $DATABASE_URL) '.containers.api.image = $IMAGE | .containers.api.environment.DATABASE_URL = $DATABASE_URL' container.template.json > container.json
           cat container.json
-          json_string="'$(jq -c . container.json | sed 's/"/\\"/g')'"
+          export json_string="'$(jq -c . container.json | sed 's/"/\\"/g')'"
           echo "JSON_STRING=$json_string" >> $GITHUB_ENV
-          aws --debug lightsail create-container-service-deployment --cli-input-json $(cat container.json)
+          aws --debug lightsail create-container-service-deployment --cli-input-json file://container.json  
           
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
