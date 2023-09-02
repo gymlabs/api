@@ -46,8 +46,9 @@ builder.queryField("gymsWhereEmployed", (t) =>
       return employments.map((employment) => {
         return {
           ...employment.gym,
+          role: employment.role,
         };
       });
     },
-  }),
+  })
 );

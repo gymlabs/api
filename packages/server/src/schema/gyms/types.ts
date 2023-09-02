@@ -20,6 +20,6 @@ export const GymWhereEmployed = builder.simpleObject("GymWhereEmployed", {
     id: t.id(),
     name: t.string(),
     organizationId: t.string(),
-    role: t.field({ type: Role, nullable: true }),
+    role: t.field({ type: Role }),
   }),
 });
