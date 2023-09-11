@@ -17,6 +17,7 @@ import * as employmentInvitationService from "../../../services/invitation/emplo
 import * as membershipInvitationService from "../../../services/invitation/membershipInvitationService";
 import * as userInvitationService from "../../../services/invitation/userInvitationService";
 import { builder } from "../../builder";
+import { authenticateGymEntity } from "../../../lib/authenticate";
 
 builder.mutationField("createInvitation", (t) =>
   t.withAuth({ authenticated: true }).fieldWithInput({
@@ -44,8 +45,20 @@ builder.mutationField("createInvitation", (t) =>
     },
     resolve: async (parent, { input }, ctx) => {
       if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
+      const JsonContent = JSON.parse(input.content) as JsonObject;
 
       const wrapped = async () => {
+        if (input.type !== "USER" &&
+          !(await authenticateGymEntity(
+            "INVITATION",
+            "create",
+            ctx.viewer.user?.id ?? "",
+            JsonContent.gymId as string,
+          ))
+        ) {
+          throw new UnauthorizedError();
+        }
+
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + 1);
 
@@ -55,7 +68,7 @@ builder.mutationField("createInvitation", (t) =>
             inviterId: ctx.viewer.user.id,
             type: input.type as InvitationType,
             status: "PENDING",
-            content: JSON.parse(input.content) as JsonObject,
+            content: JsonContent,
             token: randomToken(),
             expiresAt: expiryDate,
           },

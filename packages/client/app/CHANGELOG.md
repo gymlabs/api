@@ -1,5 +1,11 @@
 # @gymlabs/api-app-client
 
+## 0.0.4
+
+### Patch Changes
+
+- invitation queries and category
+
 ## 0.0.3
 
 ### Patch Changes

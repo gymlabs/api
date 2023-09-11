@@ -5,5 +5,6 @@ import "./mutations/decline";
 
 // queries
 import "./queries/mine";
+import "./queries/many";
 
 import "./types";
