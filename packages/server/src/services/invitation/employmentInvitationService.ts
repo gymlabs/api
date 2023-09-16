@@ -3,8 +3,7 @@ import { z } from "zod";
 
 import { acceptInvitation as baseAcceptInvitation } from "./baseService";
 import { db } from "../../db";
-import { InvalidArgumentError, UnauthorizedError } from "../../errors";
-import { authenticateGymEntity } from "../../lib/authenticate";
+import { InvalidArgumentError } from "../../errors";
 import { sendEmploymentInvitationEmail } from "../mail/mailService";
 
 export const acceptInvitation = async (invitation: Invitation) => {
@@ -16,17 +15,6 @@ export const acceptInvitation = async (invitation: Invitation) => {
         roleId: z.string().uuid(),
       })
       .parse(invitation.content);
-
-    if (
-      !(await authenticateGymEntity(
-        "EMPLOYMENT",
-        "create",
-        invitation.inviterId,
-        gymId,
-      ))
-    ) {
-      throw new UnauthorizedError();
-    }
 
     const user = await db.user.findUnique({
       where: {
@@ -61,11 +49,11 @@ export const acceptInvitation = async (invitation: Invitation) => {
 
 export const sendInvitation = async (
   invitation: Invitation,
-  inviter: string,
+  inviter: string
 ) => {
   await sendEmploymentInvitationEmail(
     invitation.email,
     inviter,
-    invitation.token,
+    invitation.token
   );
 };
