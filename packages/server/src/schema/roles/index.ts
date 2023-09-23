@@ -1,6 +1,7 @@
 // queries
 import "./queries/many";
 import "./queries/one";
+import "./queries/oneByGym";
 
 // mutations
 import "./mutations/create";
