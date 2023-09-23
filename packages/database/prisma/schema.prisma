@@ -292,6 +292,7 @@ enum Category {
   MEMBERSHIP
   EXERCISE
   WORKOUT
+  INVITATION
 }
 
 model AccessRight {
