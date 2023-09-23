@@ -1,5 +1,11 @@
 # @gymlabs/api-web-client
 
+## 0.0.5
+
+### Patch Changes
+
+- add roleByGym endpoint
+
 ## 0.0.4
 
 ### Patch Changes
