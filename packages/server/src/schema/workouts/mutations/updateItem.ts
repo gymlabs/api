@@ -8,6 +8,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import { authenticateOrganizationEntity } from "../../../lib/authenticate";
 import { mapNullToUndefined } from "../../../lib/mapNullToUndefined";
@@ -69,12 +70,16 @@ builder.mutationField("updateWorkoutPlanItem", (t) =>
           throw new UnauthorizedError();
         }
 
-        return await db.workoutPlanItem.update({
-          where: {
-            id: input.id,
-          },
-          data: mapNullToUndefined({ index, repetitions, weights }),
-        });
+        return await notFoundWrapper(
+          () =>
+            db.workoutPlanItem.update({
+              where: {
+                id: input.id,
+              },
+              data: mapNullToUndefined({ index, repetitions, weights }),
+            }),
+          "Workout Plan Item",
+        );
       };
 
       return await validationWrapper(

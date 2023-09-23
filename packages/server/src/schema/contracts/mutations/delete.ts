@@ -8,6 +8,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import { authenticateOrganizationEntity } from "../../../lib/authenticate";
 import { builder } from "../../builder";
@@ -53,9 +54,10 @@ builder.mutationField("deleteContract", (t) =>
           throw new UnauthorizedError();
         }
 
-        await db.contract.delete({
-          where: input,
-        });
+        await notFoundWrapper(
+          () => db.contract.delete({ where: input }),
+          "Contract",
+        );
 
         return true;
       };

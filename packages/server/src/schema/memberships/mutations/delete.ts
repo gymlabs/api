@@ -1,4 +1,3 @@
-import { PrismaClientKnownRequestError } from "@gymlabs/db/dist/client/runtime/library";
 import { ZodError, z } from "zod";
 
 import { db } from "../../../db";
@@ -9,6 +8,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import { authenticateGymEntity } from "../../../lib/authenticate";
 import { builder } from "../../builder";
@@ -47,30 +47,20 @@ builder.mutationField("deleteMembership", (t) =>
           throw new UnauthorizedError();
         }
 
-        try {
-          await db.membership.update({
-            where: {
-              userId_gymId: {
-                gymId: input.gymId,
-                userId: input.userId,
+        await notFoundWrapper(
+          () =>
+            db.membership.delete({
+              where: {
+                userId_gymId: {
+                  gymId: input.gymId,
+                  userId: input.userId,
+                },
               },
-            },
-            data: {
-              deletedAt: new Date(),
-            },
-          });
+            }),
+          "Membership",
+        );
 
-          return true;
-        } catch (e) {
-          if (
-            e instanceof PrismaClientKnownRequestError &&
-            e.code === "P2025"
-          ) {
-            throw new NotFoundError("Membership");
-          } else {
-            throw e;
-          }
-        }
+        return true;
       };
 
       return await validationWrapper(

@@ -1,4 +1,3 @@
-import { PrismaClientKnownRequestError } from "@gymlabs/db/dist/client/runtime/library";
 import { ZodError, z } from "zod";
 
 import { db } from "../../../db";
@@ -47,30 +46,16 @@ builder.mutationField("deleteEmployment", (t) =>
           throw new UnauthorizedError();
         }
 
-        try {
-          await db.employment.update({
-            where: {
-              userId_gymId: {
-                userId: input.userId,
-                gymId: input.gymId,
-              },
+        void db.employment.delete({
+          where: {
+            userId_gymId: {
+              gymId: input.gymId,
+              userId: input.userId,
             },
-            data: {
-              deletedAt: new Date(),
-            },
-          });
+          },
+        });
 
-          return true;
-        } catch (e) {
-          if (
-            e instanceof PrismaClientKnownRequestError &&
-            e.code === "P2025"
-          ) {
-            throw new NotFoundError("Employment not found");
-          } else {
-            throw new InternalServerError();
-          }
-        }
+        return true;
       };
 
       return await validationWrapper(

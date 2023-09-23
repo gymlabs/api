@@ -8,6 +8,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import {
   authenticateGymEntity,
@@ -75,12 +76,16 @@ builder.mutationField("updateGym", (t) =>
           throw new UnauthorizedError();
         }
 
-        return await db.gym.update({
-          where: { id: input.id },
-          data: mapNullToUndefined({
-            ...input,
-          }),
-        });
+        return await notFoundWrapper(
+          () =>
+            db.gym.update({
+              where: { id: input.id },
+              data: mapNullToUndefined({
+                ...input,
+              }),
+            }),
+          "Gym",
+        );
       };
 
       return await validationWrapper(
