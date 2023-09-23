@@ -8,6 +8,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import { authenticateOrganizationEntity } from "../../../lib/authenticate";
 import { builder } from "../../builder";
@@ -62,9 +63,13 @@ builder.mutationField("deleteWorkoutPlanItem", (t) =>
           throw new UnauthorizedError();
         }
 
-        await db.workoutPlanItem.delete({
-          where: input,
-        });
+        await notFoundWrapper(
+          () =>
+            db.workoutPlanItem.delete({
+              where: input,
+            }),
+          "Workout Plan Item",
+        );
 
         return true;
       };

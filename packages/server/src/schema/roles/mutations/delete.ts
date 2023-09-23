@@ -8,6 +8,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import { authenticateGymEntity } from "../../../lib/authenticate";
 import { builder } from "../../builder";
@@ -55,11 +56,15 @@ builder.mutationField("deleteRole", (t) =>
           throw new UnauthorizedError();
         }
 
-        await db.role.delete({
-          where: {
-            id: input.id,
-          },
-        });
+        await notFoundWrapper(
+          () =>
+            db.role.delete({
+              where: {
+                id: input.id,
+              },
+            }),
+          "Role",
+        );
 
         return true;
       };

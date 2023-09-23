@@ -8,6 +8,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import { authenticateOrganizationEntity } from "../../../lib/authenticate";
 import { builder } from "../../builder";
@@ -58,9 +59,13 @@ builder.mutationField("deleteExerciseStep", (t) =>
           throw new UnauthorizedError();
         }
 
-        await db.exerciseStep.delete({
-          where: { id: input.id },
-        });
+        await notFoundWrapper(
+          () =>
+            db.exerciseStep.delete({
+              where: { id: input.id },
+            }),
+          "ExerciseStep",
+        );
 
         return true;
       };

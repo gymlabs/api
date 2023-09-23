@@ -8,6 +8,7 @@ import {
   UnauthorizedError,
   NotFoundError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import { authenticateOrganizationEntity } from "../../../lib/authenticate";
 import { mapNullToUndefined } from "../../../lib/mapNullToUndefined";
@@ -58,14 +59,18 @@ builder.mutationField("updateContract", (t) =>
           throw new UnauthorizedError();
         }
 
-        return await db.contract.update({
-          where: {
-            id: input.id,
-          },
-          data: {
-            ...mapNullToUndefined(input),
-          },
-        });
+        return await notFoundWrapper(
+          () =>
+            db.contract.update({
+              where: {
+                id: input.id,
+              },
+              data: {
+                ...mapNullToUndefined(input),
+              },
+            }),
+          "Contract",
+        );
       };
 
       return await validationWrapper(

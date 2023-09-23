@@ -8,6 +8,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import { authenticateOrganizationEntity } from "../../../lib/authenticate";
 import { mapNullToUndefined } from "../../../lib/mapNullToUndefined";
@@ -60,15 +61,19 @@ builder.mutationField("updateExercise", (t) =>
         }
 
         const { name, description } = input;
-        return await db.exercise.update({
-          where: {
-            id: input.id,
-          },
-          data: mapNullToUndefined({ name, description }),
-          include: {
-            steps: true,
-          },
-        });
+        return await notFoundWrapper(
+          () =>
+            db.exercise.update({
+              where: {
+                id: input.id,
+              },
+              data: mapNullToUndefined({ name, description }),
+              include: {
+                steps: true,
+              },
+            }),
+          "Exercise",
+        );
       };
 
       return await validationWrapper(

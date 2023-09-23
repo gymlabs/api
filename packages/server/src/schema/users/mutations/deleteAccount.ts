@@ -4,6 +4,7 @@ import {
   InternalServerError,
   NotFoundError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import { randomToken, hashToken } from "../../../lib/security";
 import { sendReactivationEmail } from "../../../services/mail/mailService";
 import { builder } from "../../builder";
@@ -45,13 +46,17 @@ builder.mutationField("deleteAccount", (t) =>
         if (memberships || employments)
           throw new UserHasMembershipsOrEmploymentsError();
 
-        const user = await ctx.prisma.user.update({
-          where: { id: ctx.viewer.user.id },
-          data: {
-            deletedAt: deleteAt,
-            reactivationToken: tokenHash,
-          },
-        });
+        const user = await notFoundWrapper(
+          () =>
+            ctx.prisma.user.update({
+              where: { id: ctx.viewer.user.id },
+              data: {
+                deletedAt: deleteAt,
+                reactivationToken: tokenHash,
+              },
+            }),
+          "User",
+        );
 
         await sendReactivationEmail(
           user.email,

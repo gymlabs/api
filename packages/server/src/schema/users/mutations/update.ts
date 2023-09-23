@@ -1,4 +1,3 @@
-import { PrismaClientKnownRequestError } from "@gymlabs/db/dist/client/runtime/library";
 import { z } from "zod";
 
 import { db } from "../../../db";
@@ -8,6 +7,7 @@ import {
   NotFoundError,
   UnauthenticatedError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import { builder } from "../../builder";
 import { UserNodeRef } from "../types";
@@ -54,25 +54,18 @@ builder.mutationField("updateAccount", (t) =>
       type UpdateType = z.infer<typeof updateSchema>;
 
       const wrapped = async () => {
-        try {
-          return await db.user.update({
-            where: {
-              id: ctx.viewer.user.id,
-            },
-            data: {
-              ...(input as UpdateType),
-            },
-          });
-        } catch (e) {
-          if (
-            e instanceof PrismaClientKnownRequestError &&
-            e.code === "P2025"
-          ) {
-            throw new NotFoundError("User not found");
-          } else {
-            throw new InternalServerError();
-          }
-        }
+        return await notFoundWrapper(
+          () =>
+            db.user.update({
+              where: {
+                id: ctx.viewer.user.id,
+              },
+              data: {
+                ...(input as UpdateType),
+              },
+            }),
+          "User",
+        );
       };
 
       return await validationWrapper(wrapped, updateSchema, input);

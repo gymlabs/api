@@ -8,6 +8,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../../../errors";
+import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import { authenticateGymEntity } from "../../../lib/authenticate";
 import { mapNullToUndefined } from "../../../lib/mapNullToUndefined";
@@ -64,20 +65,24 @@ builder.mutationField("updateRole", (t) =>
 
         const { id, name, accessRightIds } = input;
 
-        return await db.role.update({
-          where: {
-            id,
-          },
-          data: mapNullToUndefined({
-            name,
-            accessRights: {
-              set: accessRightIds.map((id) => ({ id })),
-            },
-          }),
-          include: {
-            accessRights: true,
-          },
-        });
+        return await notFoundWrapper(
+          () =>
+            db.role.update({
+              where: {
+                id,
+              },
+              data: mapNullToUndefined({
+                name,
+                accessRights: {
+                  set: accessRightIds.map((id) => ({ id })),
+                },
+              }),
+              include: {
+                accessRights: true,
+              },
+            }),
+          "Role",
+        );
       };
 
       return await validationWrapper(
