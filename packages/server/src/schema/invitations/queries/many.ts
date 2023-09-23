@@ -49,6 +49,7 @@ builder.queryField("invitations", (t) =>
               type: {
                 in: ["EMPLOYMENT", "MEMBERSHIP"],
               },
+              status: "PENDING",
             },
             orderBy: {
               createdAt: "asc",
