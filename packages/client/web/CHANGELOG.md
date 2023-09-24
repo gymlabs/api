@@ -1,5 +1,11 @@
 # @gymlabs/api-web-client
 
+## 0.1.0
+
+### Minor Changes
+
+- introduce posts
+
 ## 0.0.6
 
 ### Patch Changes
