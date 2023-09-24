@@ -46,7 +46,7 @@ builder.queryField("gyms", (t) =>
 
         return await db.gym.findMany({
           where: {
-            id: input.organizationId,
+            organizationId: input.organizationId,
           },
         });
       };
