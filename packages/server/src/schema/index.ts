@@ -1,5 +1,6 @@
 import "./contracts";
 import "./employments";
+import "./events";
 import "./exercises";
 import "./gyms";
 import "./invitations";
