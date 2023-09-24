@@ -1,10 +1,11 @@
 name: Release
 
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - preview
+  # pull_request:
+  #   types: [closed]
+  #   branches:
+  #     - preview
+  push:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
