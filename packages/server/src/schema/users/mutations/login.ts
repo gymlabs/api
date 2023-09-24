@@ -50,6 +50,10 @@ builder.mutationField("login", (t) =>
           expiresAt: expiresAt.toISOString(),
         };
       } catch (err) {
+        if (err instanceof InvalidCredentialsError) {
+          throw err;
+        }
+
         throw new InternalServerError();
       }
     },
