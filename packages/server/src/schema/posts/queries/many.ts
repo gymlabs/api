@@ -1,42 +1,38 @@
 import { ZodError, z } from "zod";
 
-import { Role } from "./types";
-import { db } from "../../db";
 import {
-  InternalServerError,
   InvalidArgumentError,
-  NotFoundError,
+  InternalServerError,
   UnauthenticatedError,
   UnauthorizedError,
-} from "../../errors";
-import validationWrapper from "../../errors/validationWrapper";
-import { authenticateGymEntity } from "../../lib/authenticate";
-import { builder } from "../builder";
+} from "../../../errors";
+import validationWrapper from "../../../errors/validationWrapper";
+import { authenticateGymEntity } from "../../../lib/authenticate";
+import { builder } from "../../builder";
+import { Post } from "../types";
 
-builder.queryFields((t) => ({
-  roles: t.fieldWithInput({
-    type: [Role],
+builder.queryField("posts", (t) =>
+  t.fieldWithInput({
+    type: [Post],
     input: {
       gymId: t.input.string(),
     },
     errors: {
       types: [
+        ZodError,
         InvalidArgumentError,
         InternalServerError,
-        NotFoundError,
         UnauthenticatedError,
         UnauthorizedError,
-        ZodError,
       ],
     },
     resolve: async (query, { input }, ctx) => {
-      if (!ctx.viewer.isAuthenticated()) {
-        throw new UnauthenticatedError();
-      }
+      if (!ctx.viewer.isAuthenticated()) throw new UnauthenticatedError();
+
       const wrapped = async () => {
         if (
           !(await authenticateGymEntity(
-            "ROLE",
+            "POST",
             "read",
             ctx.viewer.user?.id ?? "",
             input.gymId,
@@ -45,21 +41,24 @@ builder.queryFields((t) => ({
           throw new UnauthorizedError();
         }
 
-        return await db.role.findMany({
+        const posts = await ctx.prisma.post.findMany({
           where: {
             gymId: input.gymId,
           },
-          include: {
-            accessRights: true,
-          },
         });
+
+        return posts;
       };
 
-      return await validationWrapper(
+      const validatedInput = await validationWrapper(
         wrapped,
-        z.object({ gymId: z.string().uuid() }),
+        z.object({
+          gymId: z.string().uuid("Gym ID must be a valid UUID."),
+        }),
         input,
       );
+
+      return validatedInput;
     },
   }),
-}));
+);
