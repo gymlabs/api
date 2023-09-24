@@ -6,7 +6,7 @@ export const Post = builder.prismaObject("Post", {
     title: t.exposeString("title"),
     content: t.exposeString("content"),
     author: t.relation("author"),
-    gymId: t.relation("gym"),
+    gym: t.relation("gym"),
     createdAt: t.expose("createdAt", {
       type: "Date",
     }),

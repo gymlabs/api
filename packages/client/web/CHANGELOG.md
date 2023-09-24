@@ -1,5 +1,11 @@
 # @gymlabs/api-web-client
 
+## 0.2.1
+
+### Patch Changes
+
+- fix field name
+
 ## 0.2.0
 
 ### Minor Changes
