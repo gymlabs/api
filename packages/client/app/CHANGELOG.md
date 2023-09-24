@@ -1,5 +1,11 @@
 # @gymlabs/api-app-client
 
+## 0.0.6
+
+### Patch Changes
+
+- add organizationsWhereAdmin query
+
 ## 0.0.5
 
 ### Patch Changes

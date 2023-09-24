@@ -4,6 +4,7 @@ import "./exercises";
 import "./gyms";
 import "./invitations";
 import "./memberships";
+import "./organizations";
 import "./roles";
 import "./users";
 import "./workouts";
