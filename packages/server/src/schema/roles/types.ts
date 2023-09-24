@@ -6,6 +6,7 @@ export const Category = builder.enumType("Category", {
     "GYM",
     "ROLE",
     "EMPLOYMENT",
+    "EVENT",
     "CONTRACT",
     "MEMBERSHIP",
     "EXERCISE",
