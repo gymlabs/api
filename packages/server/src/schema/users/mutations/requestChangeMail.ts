@@ -50,7 +50,7 @@ builder.mutationField("requestChangeMail", (t) =>
         });
 
         if (newMailUser) {
-          throw new EmailAlreadyInUseError("New Email already in use");
+          throw new EmailAlreadyInUseError(input.newValue);
         }
 
         const token = randomToken();
@@ -61,6 +61,7 @@ builder.mutationField("requestChangeMail", (t) =>
           config.security.changeMailRequestLifetime,
         );
 
+        // TODO: delete old requests
         await ctx.prisma.resetRequest.create({
           data: {
             userId: user.id,
@@ -75,7 +76,11 @@ builder.mutationField("requestChangeMail", (t) =>
 
         return true;
       } catch (err) {
-        throw new InternalServerError();
+        if (err instanceof EmailAlreadyInUseError) {
+          throw new EmailAlreadyInUseError(input.newValue);
+        } else {
+          throw new InternalServerError();
+        }
       }
     },
   }),
