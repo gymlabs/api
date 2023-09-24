@@ -61,9 +61,17 @@ builder.mutationField("requestChangeMail", (t) =>
           config.security.changeMailRequestLifetime,
         );
 
-        // TODO: delete old requests
-        await ctx.prisma.resetRequest.create({
-          data: {
+        await ctx.prisma.resetRequest.upsert({
+          where: {
+            newValue: input.newValue.toLowerCase(),
+          },
+          update: {
+            userId: user.id,
+            token: tokenHash,
+            type: ResetType.EMAIL,
+            expiresAt,
+          },
+          create: {
             userId: user.id,
             token: tokenHash,
             type: ResetType.EMAIL,
@@ -76,6 +84,7 @@ builder.mutationField("requestChangeMail", (t) =>
 
         return true;
       } catch (err) {
+        console.error(err);
         if (err instanceof EmailAlreadyInUseError) {
           throw new EmailAlreadyInUseError(input.newValue);
         } else {
