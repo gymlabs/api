@@ -23,11 +23,11 @@
     ]
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "^3.3.0",
-    "@graphql-codegen/schema-ast": "^3.0.1",
-    "@graphql-codegen/typescript": "^3.0.3",
+    "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/schema-ast": "^4.0.0",
+    "@graphql-codegen/typescript": "^4.0.0",
     "@graphql-codegen/typescript-graphql-request": "^5.0.0",
-    "@graphql-codegen/typescript-operations": "^3.0.3",
+    "@graphql-codegen/typescript-operations": "^4.0.0",
     "gql-generator": "^1.0.19"
   },
   "peerDependencies": {
