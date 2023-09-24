@@ -14,9 +14,13 @@ import { NotFoundError } from ".";
 export const notFoundWrapper = async <T>(
   toWrap: () => Promise<T>,
   entity: string,
-): Promise<T> => {
+): Promise<Exclude<T, null>> => {
   try {
-    return await toWrap();
+    const result = await toWrap();
+    if (!result) {
+      throw new NotFoundError(entity);
+    }
+    return result as Exclude<T, null>;
   } catch (e) {
     if (e instanceof PrismaClientKnownRequestError && e.code === "P2025") {
       throw new NotFoundError(entity);

@@ -49,6 +49,7 @@ model User {
   Membership        Membership[]
   Employment        Employment[]
   Post              Post[]
+  Events            Event[]
 }
 
 model AccessToken {
@@ -128,6 +129,7 @@ model Gym {
   memberships Membership[]
   employments Employment[]
   roles       Role[]
+  events      Event[]
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
@@ -298,6 +300,7 @@ enum Category {
   ORGANIZATION
   GYM
   ROLE
+  EVENT
   EMPLOYMENT
   CONTRACT
   MEMBERSHIP
@@ -371,4 +374,34 @@ model Post {
   deletedAt DateTime?
 
   @@map("post")
+}
+
+model Event {
+  id String @id @default(uuid())
+
+  type        EventType
+  title       String
+  description String
+  location    String
+
+  startDate DateTime
+  endDate   DateTime
+
+  gymId String
+  gym   Gym    @relation(fields: [gymId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime?
+
+  @@map("event")
+}
+
+enum EventType {
+  COURSE
+  MEETING
+  TRAINING
 }

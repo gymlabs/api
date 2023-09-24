@@ -29,7 +29,6 @@ const validationWrapper = async <T, U>(
     if (err instanceof InvalidArgumentError) {
       throw new InvalidArgumentError(err.message);
     }
-
     throw new InternalServerError();
   }
 };
