@@ -42,20 +42,33 @@ builder.queryField("invitation", (t) =>
             throw new NotFoundError("Invitation");
           }
 
-          if (
-            result.type !== "USER" &&
+          const userId = ctx.viewer.user?.id ?? "";
+          const gymId = (JSON.parse(result.content as string) as JsonObject)
+            .gymId! as string;
+
+          const canReadMembershipInvitations =
+            result.type === "MEMBERSHIP" &&
             !(await authenticateGymEntity(
-              "INVITATION",
+              "MEMBERSHIP_INVITATION",
               "read",
-              ctx.viewer.user?.id ?? "",
-              (JSON.parse(result.content as string) as JsonObject)
-                .gymId! as string,
-            ))
-          ) {
+              userId,
+              gymId,
+            ));
+
+          const canReadEmploymentInvitations =
+            result.type === "EMPLOYMENT" &&
+            !(await authenticateGymEntity(
+              "EMPLOYMENT_INVITATION",
+              "read",
+              userId,
+              gymId,
+            ));
+
+          if (canReadMembershipInvitations || canReadEmploymentInvitations) {
+            return result;
+          } else {
             throw new UnauthorizedError();
           }
-
-          return result;
         };
 
         const invitation = await validationWrapper(

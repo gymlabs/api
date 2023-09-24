@@ -32,20 +32,27 @@ builder.queryField("contracts", (t) =>
       }
 
       const wrapped = async () => {
-        if (
-          !(await authenticateOrganizationEntity(
-            "CONTRACT",
-            "read",
-            ctx.viewer.user?.id ?? "",
-            input.organizationId,
-          ))
-        ) {
+        const canReadContracts = await authenticateOrganizationEntity(
+          "CONTRACT",
+          "read",
+          ctx.viewer.user?.id ?? "",
+          input.organizationId,
+        );
+
+        const canCreateMemberships = await authenticateOrganizationEntity(
+          "MEMBERSHIP_INVITATION",
+          "create",
+          ctx.viewer.user?.id ?? "",
+          input.organizationId,
+        );
+
+        if (canReadContracts || canCreateMemberships) {
+          return await db.contract.findMany({
+            where: input,
+          });
+        } else {
           throw new UnauthorizedError();
         }
-
-        return await db.contract.findMany({
-          where: input,
-        });
       };
 
       return await validationWrapper(
