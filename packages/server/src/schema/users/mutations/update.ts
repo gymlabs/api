@@ -10,11 +10,11 @@ import {
 import { notFoundWrapper } from "../../../errors/notFoundWrapper";
 import validationWrapper from "../../../errors/validationWrapper";
 import { builder } from "../../builder";
-import { UserNodeRef } from "../types";
+import { User } from "../types";
 
 builder.mutationField("updateAccount", (t) =>
   t.withAuth({ authenticated: true }).fieldWithInput({
-    type: UserNodeRef,
+    type: User,
     description: "Update the current user account.",
     input: {
       firstName: t.input.string({ required: false }),
