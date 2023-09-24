@@ -34,25 +34,34 @@ builder.queryField("roles", (t) =>
         throw new UnauthenticatedError();
       }
       const wrapped = async () => {
-        if (
-          !(await authenticateGymEntity(
-            "ROLE",
-            "read",
-            ctx.viewer.user?.id ?? "",
-            input.gymId,
-          ))
-        ) {
+        const userId = ctx.viewer.user?.id ?? "";
+        const gymId = input.gymId;
+
+        const canReadRole = await authenticateGymEntity(
+          "ROLE",
+          "read",
+          userId,
+          gymId,
+        );
+        const canCreateEmploymentInvitation = await authenticateGymEntity(
+          "EMPLOYMENT_INVITATION",
+          "create",
+          userId,
+          gymId,
+        );
+
+        if (canReadRole || canCreateEmploymentInvitation) {
+          return await db.role.findMany({
+            where: {
+              gymId: input.gymId,
+            },
+            include: {
+              accessRights: true,
+            },
+          });
+        } else {
           throw new UnauthorizedError();
         }
-
-        return await db.role.findMany({
-          where: {
-            gymId: input.gymId,
-          },
-          include: {
-            accessRights: true,
-          },
-        });
       };
 
       return await validationWrapper(

@@ -11,13 +11,13 @@ import {
   UnauthorizedError,
 } from "../../../errors";
 import validationWrapper from "../../../errors/validationWrapper";
+import { authenticateGymEntity } from "../../../lib/authenticate";
 import { jsonSchema } from "../../../lib/jsonValidationSchema";
 import { randomToken } from "../../../lib/security";
 import * as employmentInvitationService from "../../../services/invitation/employmentInvitationService";
 import * as membershipInvitationService from "../../../services/invitation/membershipInvitationService";
 import * as userInvitationService from "../../../services/invitation/userInvitationService";
 import { builder } from "../../builder";
-import { authenticateGymEntity } from "../../../lib/authenticate";
 
 builder.mutationField("createInvitation", (t) =>
   t.withAuth({ authenticated: true }).fieldWithInput({
@@ -48,17 +48,6 @@ builder.mutationField("createInvitation", (t) =>
       const JsonContent = JSON.parse(input.content) as JsonObject;
 
       const wrapped = async () => {
-        if (input.type !== "USER" &&
-          !(await authenticateGymEntity(
-            "INVITATION",
-            "create",
-            ctx.viewer.user?.id ?? "",
-            JsonContent.gymId as string,
-          ))
-        ) {
-          throw new UnauthorizedError();
-        }
-
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + 1);
 
@@ -83,6 +72,18 @@ builder.mutationField("createInvitation", (t) =>
             return true;
           }
           case "MEMBERSHIP": {
+            if (
+              input.type === "MEMBERSHIPS" &&
+              !(await authenticateGymEntity(
+                "MEMBERSHIP_INVITATION",
+                "create",
+                ctx.viewer.user?.id ?? "",
+                JsonContent.gymId as string,
+              ))
+            ) {
+              throw new UnauthorizedError();
+            }
+
             await membershipInvitationService.sendInvitation(
               invitation,
               input.inviter ??
@@ -91,6 +92,18 @@ builder.mutationField("createInvitation", (t) =>
             return true;
           }
           case "EMPLOYMENT": {
+            if (
+              input.type === "EMPLOYMENT" &&
+              !(await authenticateGymEntity(
+                "EMPLOYMENT_INVITATION",
+                "create",
+                ctx.viewer.user?.id ?? "",
+                JsonContent.gymId as string,
+              ))
+            ) {
+              throw new UnauthorizedError();
+            }
+
             await employmentInvitationService.sendInvitation(
               invitation,
               input.inviter ??

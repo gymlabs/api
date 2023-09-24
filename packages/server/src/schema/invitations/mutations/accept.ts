@@ -46,9 +46,8 @@ builder.mutationField("acceptInvitation", (t) =>
 
         switch (invitation.type) {
           case "USER": {
-            const user = await userInvitationService.acceptInvitation(
-              invitation,
-            );
+            const user =
+              await userInvitationService.acceptInvitation(invitation);
             return !!user;
           }
           case "MEMBERSHIP": {

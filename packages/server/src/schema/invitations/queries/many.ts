@@ -1,3 +1,7 @@
+import { InvitationType } from "@gymlabs/db";
+import { ZodError, z } from "zod";
+
+import { db } from "../../../db";
 import {
   InternalServerError,
   InvalidArgumentError,
@@ -8,10 +12,6 @@ import validationWrapper from "../../../errors/validationWrapper";
 import { authenticateGymEntity } from "../../../lib/authenticate";
 import { builder } from "../../builder";
 import { Invitation } from "../types";
-
-import { db } from "../../../db";
-import { ZodError, z } from "zod";
-import { JsonObject } from "@gymlabs/db/dist/client/runtime/library";
 
 builder.queryField("invitations", (t) =>
   t.fieldWithInput({
@@ -33,21 +33,38 @@ builder.queryField("invitations", (t) =>
 
       try {
         const wrapped = async () => {
-          if (
-            !(await authenticateGymEntity(
-              "INVITATION",
-              "read",
-              ctx.viewer.user?.id ?? "",
-              input.gymId,
-            ))
-          ) {
+          const invitationTypes = [] as InvitationType[];
+
+          const canReadMembershipInvitations = await authenticateGymEntity(
+            "MEMBERSHIP_INVITATION",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            input.gymId,
+          );
+
+          const canReadEmploymentInvitations = await authenticateGymEntity(
+            "EMPLOYMENT_INVITATION",
+            "read",
+            ctx.viewer.user?.id ?? "",
+            input.gymId,
+          );
+
+          if (canReadMembershipInvitations) {
+            invitationTypes.push("MEMBERSHIP");
+          } else if (canReadEmploymentInvitations) {
+            invitationTypes.push("EMPLOYMENT");
+          } else {
             throw new UnauthorizedError();
           }
 
-          const result = await db.invitation.findMany({
+          return await db.invitation.findMany({
             where: {
               type: {
-                in: ["EMPLOYMENT", "MEMBERSHIP"],
+                in: invitationTypes,
+              },
+              content: {
+                path: ["gymId"],
+                equals: input.gymId,
               },
               status: "PENDING",
             },
@@ -55,11 +72,6 @@ builder.queryField("invitations", (t) =>
               createdAt: "asc",
             },
           });
-
-          return result.filter(
-            (invitation) =>
-              (invitation.content! as JsonObject).gymId === input.gymId,
-          );
         };
 
         const invitations = await validationWrapper(

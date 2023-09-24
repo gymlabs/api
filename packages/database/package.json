@@ -8,12 +8,12 @@
   "scripts": {
     "build": "prisma generate",
     "dbml": "prisma generate --schema=prisma/schema.prisma --generator=dbml",
-    "prisma:studio": "prisma studio",
-    "start:migrate": "prisma migrate deploy",
-    "prisma:migrate": "prisma migrate",
-    "prisma:push": "prisma db push",
-    "prisma:seed": "prisma db seed",
-    "prisma:seed:production": "NODE_ENV=production prisma db seed"
+    "db:studio": "prisma studio",
+    "db:migrate": "prisma migrate",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "db:seed:production": "NODE_ENV=production prisma db seed",
+    "deploy:migrate": "prisma migrate deploy"
   },
   "prisma": {
     "seed": "ts-node prisma/seed/index.ts"
