@@ -1,0 +1,28 @@
+{
+  "serviceName": "api-gymlabs-de",
+  "containers": {
+    "api": {
+      "image": "",
+      "command": [""],
+      "environment": {
+        "DATABASE_URL": "",
+        "NODE_ENV": "production"
+      },
+      "ports": {
+        "8000": "HTTP"
+      }
+    }
+  },
+  "publicEndpoint": {
+    "containerName": "api",
+    "containerPort": 8000,
+    "healthCheck": {
+      "healthyThreshold": 2,
+      "unhealthyThreshold": 2,
+      "timeoutSeconds": 2,
+      "intervalSeconds": 5,
+      "path": "/graphql",
+      "successCodes": "200-499"
+    }
+  }
+}

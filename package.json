@@ -1,0 +1,46 @@
+{
+  "name": "root",
+  "version": "0.0.0",
+  "author": "GymLabs",
+  "description": "API module for GymLabs",
+  "scripts": {
+    "prepare": "husky install",
+    "dev": "lerna run dev",
+    "build": "lerna run build",
+    "lint": "lerna run lint",
+    "lint:fix": "lerna run \"lint:fix\"",
+    "format": "lerna run format",
+    "format:check": "lerna run \"format:check\"",
+    "db:generate": "lerna run prisma:generate",
+    "db:push": "lerna run prisma:push",
+    "db:studio": "lerna run prisma:studio",
+    "db:start-migration": "lerna run start:migrate",
+    "db:seed": "lerna run prisma:seed",
+    "start": "lerna run start:migrate && NODE_ENV=production node ./packages/server/build/main.js"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "lerna run \"lint:fix\"",
+      "lerna run format"
+    ]
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.26.1",
+    "@types/node": "^18.16.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.37.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-import-resolver-typescript": "^3.5.5",
+    "eslint-plugin-import": "^2.27.5",
+    "husky": "^8.0.3",
+    "lerna": "^7.0.0",
+    "prettier": "^3.0.0",
+    "tsup": "^7.0.0",
+    "typescript": "^5.0.4"
+  },
+  "workspaces": [
+    "packages/*",
+    "packages/client/*"
+  ]
+}

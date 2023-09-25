@@ -1,0 +1,36 @@
+{
+  "name": "@gymlabs/api-app-client",
+  "version": "0.2.1",
+  "main": "dist/graphql.js",
+  "types": "dist/graphql.d.ts",
+  "module": "dist/graphql.mjs",
+  "publishConfig": {
+    "@gymlabs:registry": "https://npm.pkg.github.com/"
+  },
+  "scripts": {
+    "codegen:pre": "NODE_ENV=client ts-node ../../../node_modules/.bin/graphql-codegen --config src/pregen.ts",
+    "operations": "gqlg --schemaFilePath src/gql/schema.graphql --destDirPath src/gql/operations --depthLimit 5",
+    "codegen:post": "graphql-codegen --config src/degen.ts",
+    "codegen": "npm run codegen:pre && npm run operations && npm run codegen:post",
+    "prebuild": "npm run codegen",
+    "build": "tsup"
+  },
+  "nx": {
+    "implicitDependencies": [
+      "@gymlabs/db",
+      "@gymlabs/api"
+    ]
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^3.3.0",
+    "@graphql-codegen/schema-ast": "^3.0.1",
+    "@graphql-codegen/typescript": "^3.0.3",
+    "@graphql-codegen/typescript-operations": "^3.0.3",
+    "@graphql-codegen/typescript-react-apollo": "^3.3.7",
+    "gql-generator": "^1.0.19"
+  },
+  "peerDependencies": {
+    "graphql": "^16.6.0",
+    "@apollo/client": "^3.7.16"
+  }
+}

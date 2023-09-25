@@ -1,0 +1,407 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator dbml {
+  provider            = "prisma-dbml-generator"
+  outputName          = "core.api.dbml"
+  output              = "../"
+  projectDatabaseType = "PostgreSQL"
+}
+
+generator pothos {
+  provider     = "prisma-pothos-types"
+  clientOutput = "../dist/client/"
+  output       = "../dist/photos-types.ts"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../dist/client/"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+
+  firstName String
+  lastName  String
+
+  email                  String  @unique
+  isEmailVerified        Boolean @default(false)
+  // sha256 hash of token
+  emailVerificationToken String? @unique
+
+  password String
+
+  accessTokens AccessToken[]
+  resetRequest ResetRequest[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // sha256 hash of token
+  reactivationToken String?      @unique
+  Membership        Membership[]
+  Employment        Employment[]
+  Post              Post[]
+  Events            Event[]
+}
+
+model AccessToken {
+  id String @id @default(uuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  // sha256 hash of the token
+  token     String   @unique
+  expiresAt DateTime
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("access_token")
+}
+
+enum ResetType {
+  PASSWORD
+  EMAIL
+}
+
+model ResetRequest {
+  id String @id @default(uuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  type ResetType
+
+  // sha256 hash of the token
+  token     String   @unique
+  expiresAt DateTime
+
+  newValue String? @unique
+
+  usedAt DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("reset_request")
+}
+
+// Gym Admin related
+
+model Organization {
+  id String @id @default(uuid())
+
+  name String
+
+  gyms         Gym[]
+  contracts    Contract[]
+  exercises    Exercise[]
+  workoutPlans WorkoutPlan[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("organization")
+}
+
+model Gym {
+  id String @id @default(uuid())
+
+  name        String
+  description String
+  street      String
+  city        String
+  postalCode  String
+  country     String // ISO 3166-1 alpha-2
+
+  memberships Membership[]
+  employments Employment[]
+  roles       Role[]
+  events      Event[]
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime?
+  Post      Post[]
+
+  @@map("gym")
+}
+
+model Membership {
+  id String @id @default(uuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  gym   Gym    @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  gymId String
+
+  contract   Contract @relation(fields: [contractId], references: [id])
+  contractId String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  isActive Boolean @default(false)
+
+  @@unique([userId, gymId])
+  @@map("membership")
+}
+
+model Contract {
+  id               String @id @default(uuid())
+  name             String
+  description      String
+  monthlyCost      Float
+  contractDuration Int // represents contract duration in months
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  deletedAt   DateTime?
+  memberships Membership[]
+
+  @@map("contract")
+}
+
+model Employment {
+  id String @id @default(uuid())
+
+  role   Role   @relation(fields: [roleId], references: [id])
+  roleId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  gym   Gym    @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  gymId String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  isActive Boolean @default(false)
+
+  @@unique([userId, gymId])
+  @@map("employment")
+}
+
+model Role {
+  id String @id @default(uuid())
+
+  name         String
+  accessRights AccessRight[]
+
+  gym   Gym    @relation(fields: [gymId], references: [id])
+  gymId String
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  deletedAt  DateTime?
+  Employment Employment[]
+
+  @@map("role")
+}
+
+model Exercise {
+  id String @id @default(uuid()) @db.Uuid
+
+  name        String
+  description String
+
+  steps            ExerciseStep[]
+  workoutPlanItems WorkoutPlanItem[]
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime?
+
+  @@map("exercise")
+}
+
+model ExerciseStep {
+  id String @id @default(uuid()) @db.Uuid
+
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  exerciseId String   @map("exercise_id") @db.Uuid
+
+  index Int
+
+  name        String
+  description String
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime?
+
+  @@map("exercise_step")
+}
+
+model WorkoutPlan {
+  id String @id @default(uuid()) @db.Uuid
+
+  name        String
+  description String
+
+  items WorkoutPlanItem[]
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime?
+
+  @@map("workout_plan")
+}
+
+model WorkoutPlanItem {
+  id String @id @default(uuid()) @db.Uuid
+
+  exercise      Exercise    @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  exerciseId    String      @map("exercise_id") @db.Uuid
+  workoutPlan   WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  workoutPlanId String      @map("workout_plan_id") @db.Uuid
+
+  repetitions Int[]
+  weights     Float[]
+
+  index Int
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime?
+
+  @@map("workout_plan_item")
+}
+
+enum Category {
+  ORGANIZATION
+  GYM
+  ROLE
+  EVENT
+  EMPLOYMENT
+  CONTRACT
+  MEMBERSHIP
+  EXERCISE
+  WORKOUT
+  EMPLOYMENT_INVITATION
+  MEMBERSHIP_INVITATION
+  POST
+}
+
+model AccessRight {
+  id String @id @default(uuid()) @db.Uuid
+
+  category Category
+
+  create Boolean
+  read   Boolean
+  update Boolean
+  delete Boolean
+  roles  Role[]
+
+  @@unique([category, create, read, update, delete])
+  @@map("access_right")
+}
+
+model Invitation {
+  id String @id @default(uuid())
+
+  email     String
+  inviterId String
+
+  type      InvitationType
+  status    InvitationStatus
+  content   Json
+  token     String           @unique
+  expiresAt DateTime
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime?
+
+  @@map("invitation")
+}
+
+enum InvitationType {
+  USER
+  EMPLOYMENT
+  MEMBERSHIP
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model Post {
+  id String @id @default(uuid())
+
+  title   String
+  content String
+
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+
+  gym   Gym    @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  gymId String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("post")
+}
+
+model Event {
+  id String @id @default(uuid())
+
+  type        EventType
+  title       String
+  description String
+  location    String
+
+  startDate DateTime
+  endDate   DateTime
+
+  gymId String
+  gym   Gym    @relation(fields: [gymId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime?
+
+  @@map("event")
+}
+
+enum EventType {
+  COURSE
+  MEETING
+  TRAINING
+}

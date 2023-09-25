@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2022"],
+    "module": "NodeNext",
+
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUncheckedIndexedAccess": true,
+    "alwaysStrict": true,
+    "allowUnusedLabels": false,
+    "noUnusedLocals": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true
+
+    // SWC related
+    // "verbatimModuleSyntax": true // ensure that TypeScript properly marks all type imports during type checking as type, thus removing them accurately in SWC
+  },
+  "exclude": ["node_modules", "dist", "build"]
+}

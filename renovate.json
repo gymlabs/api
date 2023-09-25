@@ -1,0 +1,35 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":rebaseStalePrs"],
+  "baseBranches": ["preview"],
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "schedule": ["at 6am on thursday"],
+  "assignees": ["caldotdev", "nicolaskurzweil", "kevludwig"],
+  "packageRules": [
+    {
+      "matchPackageNames": ["node", "npm"],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": ["@types/node"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    },
+    {
+      "description": "Automatically merge minor and patch-level updates",
+      "matchUpdateTypes": ["minor", "patch", "lockFileMaintenance"],
+      "automerge": true,
+      "automergeSchedule": ["at 6am on monday"],
+      "groupName": "minor/patch updates"
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"]
+  },
+  "configMigration": true,
+  "automergeStrategy": "squash",
+  "dependencyDashboardAutoclose": true,
+  "dependencyDashboardTitle": "Update dependencies"
+}
