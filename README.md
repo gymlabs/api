@@ -14,6 +14,15 @@
 
 You can paste the generated `.dbml` into [here](https://dbdiagram.io/d) to create an image.
 
+- `pnpm lerna run db:push`
+- `pnpm lerna run db:seed`
+
+### Admin user
+
+- `kevin@gymlabs.de`: `Kevin-Gymlabs`
+- `nicolas@gymlabs.de`: `Nicolas-Gymlabs`
+- `consti@gymlabs.de`: `Consti-Gymlabs`
+
 ## Release Packages
 - `npx changeset add`: create a new changeset for modified packages
 - `npx changeset version`: bump the version of packages that have changesets
