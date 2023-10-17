@@ -34,7 +34,7 @@
     "@types/cookie": "^0.5.1",
     "@types/cors": "^2.8.13",
     "@types/html-to-text": "^9.0.0",
-    "@types/nodemailer": "6.4.9",
+    "@types/nodemailer": "6.4.11",
     "@types/react": "^18.0.33",
     "@types/react-dom": "^18.0.11",
     "chokidar": "^3.5.3",
